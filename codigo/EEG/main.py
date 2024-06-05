@@ -5,7 +5,6 @@ import scipy.interpolate
 def main():
 # Parámetros
     fs = 500
-    #ts = 1/fs
     # Frecuencia de muestreo en Hz
     N = 1000  # Número de muestras
 
@@ -14,24 +13,23 @@ def main():
 
     # Vector de tiempo
     t = np.linspace(0, duration, N, endpoint=False)
-    #print(f"t: {t}")
 
     # signal = square_signal(t)
     # signal = model_signal(signal, N)
     signal = random_signal(signal, N)
-    #signal = pure_signal_eeg(duration, fs)
-
-    #print(f"signal: {signal}")
+    # signal = pure_signal_eeg(duration, fs)
 
     # Aplicar Transformada de Fourier
     signal_fft = np.fft.fft(signal)
-    #print(f"signal_fft: {signal_fft}")
-    frequencies = np.fft.fftfreq(N, d=1/fs)[:N//2]
-    #print(f"frequencies: {frequencies}")
-    signal_fft_magnitude = np.abs(signal_fft)[:N//2] / N
+    frequencies = np.fft.fftfreq(N, d=1/fs)
+    signal_fft_magnitude = np.abs(signal_fft) / N
+
+    signal_fft_reduced = signal_fft[:N//2]
+    frequencies_reduced = frequencies[:N//2]
+    signal_fft_magnitude_reduced = signal_fft_magnitude[:N//2] 
 
     graph_voltage_time(t, signal, title="Señal de entrada", xlabel='Tiempo [s]', ylabel='Magnitud')
-    graph_voltage_frequency(frequencies, signal_fft_magnitude, title='Espectro de Frecuencias', xlabel='Frecuencia [Hz]', ylabel='Magnitud')
+    graph_voltage_frequency(frequencies_reduced, signal_fft_magnitude_reduced, title='Espectro de Frecuencias', xlabel='Frecuencia [Hz]', ylabel='Magnitud')
 
     # Filtramos las ondas específicas
     alpha = (8, 13)
@@ -40,6 +38,7 @@ def main():
     delta = (0.5, 4)
     theta = (4, 8)
 
+    '''
     # Filtramos las frecuencias correspondientes a cada onda
     alpha_indices = np.where((frequencies >= alpha[0]) & (frequencies <= alpha[1]))
     beta_indices = np.where((frequencies >= beta[0]) & (frequencies <= beta[1]))
@@ -54,7 +53,6 @@ def main():
     delta_signal = np.zeros_like(signal_fft)
     theta_signal = np.zeros_like(signal_fft)
 
-    '''
     # Obtener las componentes de frecuencia
     alpha_signal = signal_fft[alpha_indices]
     beta_signal = signal_fft[beta_indices]
@@ -62,19 +60,30 @@ def main():
     delta_signal = signal_fft[delta_indices]
     theta_signal = signal_fft[theta_indices]
     '''
+    '''
     # Asignar componentes de frecuencia filtradas
     alpha_signal[alpha_indices] = signal_fft[alpha_indices]
     beta_signal[beta_indices] = signal_fft[beta_indices]
     gamma_signal[gamma_indices] = signal_fft[gamma_indices]
     delta_signal[delta_indices] = signal_fft[delta_indices]
     theta_signal[theta_indices] = signal_fft[theta_indices]
+    '''
+    
+    # Filtrar y reconstruir señales
+    alpha_t = filter_and_reconstruct(signal_fft, frequencies, alpha, N)
+    beta_t = filter_and_reconstruct(signal_fft, frequencies, beta, N)
+    gamma_t = filter_and_reconstruct(signal_fft, frequencies, gamma, N)
+    delta_t = filter_and_reconstruct(signal_fft, frequencies, delta, N)
+    theta_t = filter_and_reconstruct(signal_fft, frequencies, theta, N)
 
+    '''
     # Reconstruir las señales en el dominio del tiempo utilizando iFFT
     alpha_t = np.fft.ifft(alpha_signal)
     beta_t = np.fft.ifft(beta_signal)
     gamma_t = np.fft.ifft(gamma_signal)
     delta_t = np.fft.ifft(delta_signal)
     theta_t = np.fft.ifft(theta_signal)
+    '''
     
     # Interpolate the time-domain signals to a higher sampling rate
     new_fs = fs * 10  # New sampling rate for interpolation
@@ -91,14 +100,14 @@ def main():
     graph_voltage_time(new_t, gamma_t_interpolated, title="Gamma Interpolated", xlabel="Time [s]", ylabel="Magnitude")
     graph_voltage_time(new_t, delta_t_interpolated, title="Delta Interpolated", xlabel="Time [s]", ylabel="Magnitude")
     graph_voltage_time(new_t, theta_t_interpolated, title="Theta Interpolated", xlabel="Time [s]", ylabel="Magnitude")
-    '''
+    
     # Graficar las señales filtradas en el dominio del tiempo
     graph_voltage_time(t, alpha_t.real, title="Alpha en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
     graph_voltage_time(t, beta_t.real, title="Beta en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
     graph_voltage_time(t, gamma_t.real, title="Gamma en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
     graph_voltage_time(t, delta_t.real, title="Delta en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
     graph_voltage_time(t, theta_t.real, title="Theta en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
-    '''
+    
 
     '''
     alpha_t = np.fft.ifft(alpha_signal)
@@ -121,12 +130,14 @@ def main():
     t_theta = np.linspace(0, duration, len(theta_t))
     graph_voltage_time(t_theta, theta_t.real, title="Theta en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
     '''
+    '''
     graph_voltage_frequency(frequencies[alpha_indices], np.abs(signal_fft[alpha_indices]), title="Onda Alpha", xlabel="Frecuencia [Hz]")
     graph_voltage_frequency(frequencies[beta_indices], np.abs(signal_fft[beta_indices]), title="Onda Beta", xlabel="Frecuencia [Hz]")
     graph_voltage_frequency(frequencies[gamma_indices], np.abs(signal_fft[gamma_indices]), title="Onda Gamma", xlabel="Frecuencia [Hz]")
     graph_voltage_frequency(frequencies[delta_indices], np.abs(signal_fft[delta_indices]), title="Onda Delta", xlabel="Frecuencia [Hz]")
     graph_voltage_frequency(frequencies[theta_indices], np.abs(signal_fft[theta_indices]), title="Onda Theta", xlabel="Frecuencia [Hz]")
-    
+    '''
+
     plt.tight_layout()
     plt.show()
 
@@ -168,20 +179,11 @@ def model_signal(signal, N):
     for _ in range(numero_repeticiones):
         senal_eeg.extend(senal_eeg_base)
 
-    # Verificar la longitud de la lista
-    print(len(senal_eeg))
-
+    assert len(signal) == N, "La longitud de la señal debe ser igual a N"
 
     signal = np.array(senal_eeg)
 
     return signal
-
-def interpolate_signal(t, signal, new_t):
-    # Interpolate the signal to new time points
-  # Clip new_t to the range of t to avoid out-of-bounds values
-  new_t_clipped = np.clip(new_t, t.min(), t.max())
-  interpolated_signal = scipy.interpolate.interp1d(t, signal, kind='cubic')(new_t_clipped)
-  return interpolated_signal
 
 def pure_signal_eeg(duracion, fs, alpha_amp=1, alpha_frec=10, beta_amp=2, beta_frec=20,
                    gamma_amp=3, gamma_frec=40, delta_amp=4, delta_frec=2, theta_amp=5, theta_frec=5):
@@ -193,6 +195,21 @@ def pure_signal_eeg(duracion, fs, alpha_amp=1, alpha_frec=10, beta_amp=2, beta_f
     senal_theta = theta_amp * np.sin(2 * np.pi * theta_frec * t)
     senal = senal_alfa + senal_beta + senal_gamma + senal_delta + senal_theta
     return senal
+
+def filter_and_reconstruct(signal_fft, frequencies, band, N):
+    filtered_fft = np.zeros_like(signal_fft)
+    band_indices = np.where((frequencies >= band[0]) & (frequencies <= band[1]))
+    filtered_fft[band_indices] = signal_fft[band_indices]
+    filtered_fft[-band_indices[0]] = signal_fft[-band_indices[0]]  # Reflejo de la banda positiva a la negativa
+    filtered_signal = np.fft.ifft(filtered_fft)
+    return filtered_signal.real
+
+def interpolate_signal(t, signal, new_t):
+    # Interpolate the signal to new time points
+    # Clip new_t to the range of t to avoid out-of-bounds values
+    new_t_clipped = np.clip(new_t, t.min(), t.max())
+    interpolated_signal = scipy.interpolate.interp1d(t, signal, kind='cubic')(new_t_clipped)
+    return interpolated_signal
 
 def graph_voltage_time(t, signal, title, xlabel, ylabel):
     # Graficar señal de entrada
