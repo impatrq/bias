@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.13)
+include(pico_sdk_import.cmake)
+project(i2c_slave_example)
+pico_sdk_init()
+add_executable(i2c_slave_example i2c_slave_example.c)
+target_link_libraries(i2c_slave_example pico_stdlib hardware_i2c)
+pico_enable_stdio_usb(i2c_slave_example 1)
+pico_add_extra_outputs(i2c_slave_example)
