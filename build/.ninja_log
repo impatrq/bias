@@ -1,0 +1,13 @@
+# ninja log v5
+10305	26024	7394311832978364	CMakeFiles/i2c_slave_example.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/pico_platform/platform.c.obj	1a13919649967f51
+58	2159	7394311597629369	pico-sdk/src/rp2_common/boot_stage2/CMakeFiles/bs2_default.dir/compile_time_choice.S.obj	a6f96e81e8d97e63
+2163	6212	7394311627032049	pico-sdk/src/rp2_common/boot_stage2/bs2_default.elf	1f946f830295440e
+6212	6988	7394311645988262	C:/Users/estudiante/Documents/GitHub/bias/build/pico-sdk/src/rp2_common/boot_stage2/bs2_default.bin	9df05eff3c706e27
+8898	22314	7394311797207286	CMakeFiles/i2c_slave_example.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj	cd4a44fca52637ce
+12422	29438	7394311868749165	CMakeFiles/i2c_slave_example.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_claim/claim.c.obj	ced4d1bb450fbce1
+6212	6988	7394311645988262	pico-sdk/src/rp2_common/boot_stage2/bs2_default.bin	9df05eff3c706e27
+6989	7822	7394311654485637	pico-sdk/src/rp2_common/boot_stage2/bs2_default_padded_checksummed.S	f811f3475bdc832
+6989	7822	7394311654485637	C:/Users/estudiante/Documents/GitHub/bias/build/pico-sdk/src/rp2_common/boot_stage2/bs2_default_padded_checksummed.S	f811f3475bdc832
+8331	19447	7394311760498926	CMakeFiles/i2c_slave_example.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj	e32d42899ca98864
+16534	30468	7394311880864386	CMakeFiles/i2c_slave_example.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_sync/sync.c.obj	e06931d9d5fe1d6
+19449	31582	7394311892055965	CMakeFiles/i2c_slave_example.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj	c3746f786370622d

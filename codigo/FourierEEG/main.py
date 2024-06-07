@@ -15,9 +15,9 @@ def main():
     t = np.linspace(0, duration, N, endpoint=False)
 
     # Stablish which signal to inject
-    signal = square_signal(t)
+    # signal = square_signal(t)
     # signal = model_signal(signal, N)
-    # signal = random_signal(signal, N)
+    signal = random_signal(N)
     # signal = pure_signal_eeg(duration, fs)
 
     # Apply Fourier Transform
@@ -78,7 +78,8 @@ def main():
 
 
 # Create function with random values
-def random_signal(signal, N):
+def random_signal(N):
+    signal = []
     # Set fixed parameter of amplitude for random EEG(uV)
     middle_amplitude = 0 
     standard_deviation = 5

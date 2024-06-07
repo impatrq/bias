@@ -1,3 +1,6 @@
 {
-    "cmake.sourceDirectory": "C:/Users/estudiante/Documents/GitHub/bias/codigo/RecepciónEEG"
+    "cmake.sourceDirectory": "C:/Users/estudiante/Documents/GitHub/bias/codigo/PicoEEG",
+    "files.associations": {
+        "cstdint": "c"
+    }
 }
