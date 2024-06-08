@@ -2,12 +2,13 @@
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "hardware/adc.h"
+#include <stdio.h>
 
 #define I2C_SLAVE_ADDRESS 0x04
 #define I2C_PORT i2c0
 
 void i2c_slave_init(i2c_inst_t *i2c, uint8_t address);
-void i2c_slave_handler(i2c_inst_t *i2c, uint32_t event_mask);
+void i2c_slave_handler();
 void initialize_pins_i2c(i2c_inst_t *i2c, uint8_t sda, uint8_t scl, int baudrate);
 void initialize_i2c(i2c_inst_t *i2c, uint8_t address, uint8_t sda, uint8_t scl, int baudrate);
 void initialize_adc(uint8_t adc_pin, uint8_t adc_input);
@@ -49,17 +50,18 @@ void i2c_slave_init(i2c_inst_t *i2c, uint8_t address) {
     irq_set_enabled(I2C0_IRQ, true);
 }
 
-void i2c_slave_handler(i2c_inst_t *i2c, uint32_t event_mask) {
-    uint8_t data;
-    if (event_mask & I2C_SLAVE_RECEIVE) {
-        if (i2c_slave_get_data(i2c, &data, 1)) {
-            printf("Received data: %d\n", data);
-        }
+void i2c_slave_handler() {
+    i2c_inst_t *i2c = I2C_PORT; // Assuming i2c0
+    uint32_t status = i2c_get_hw(i2c)->intr_stat;
+
+    if (status & I2C_IC_INTR_STAT_R_RX_FULL_BITS) {
+        uint8_t data = i2c_get_hw(i2c)->data_cmd;
+        printf("Received data: %d\n", data);
     }
-    if (event_mask & I2C_SLAVE_REQUEST) {
-        // Respond with data if the master requests
-        uint8_t response = 42;  // Example response skibidi toilet
-        i2c_slave_write(i2c, &response, 1);
+    if (status & I2C_IC_INTR_STAT_R_RD_REQ_BITS) {
+        uint8_t response = 42;  // Example response
+        i2c_get_hw(i2c)->data_cmd = response;
+        i2c_get_hw(i2c)->clr_rd_req;
     }
 }
 

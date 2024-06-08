@@ -155,11 +155,9 @@ def filter_and_reconstruct(signal_fft, frequencies, band, N):
     # Filter each band with the corresponding wave
     filtered_fft = np.zeros_like(signal_fft)
     band_indices = np.where((frequencies >= band[0]) & (frequencies <= band[1]))
-    filtered_fft[band_indices] = signal_fft[band_indices]
-
+    filtered_fft[band_indices] = signal_fft[band_indices] 
     # Reconstruct signal in the negative side
     filtered_fft[-band_indices[0]] = signal_fft[-band_indices[0]]
-
     # Apply inverse Fourier transform in order to obtain a signal in the time domain
     filtered_signal = np.fft.ifft(filtered_fft)
     return filtered_signal.real
