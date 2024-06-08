@@ -8,7 +8,7 @@ def main():
 
     try:
         while True:
-            write_data(0x10, I2C_BUS, I2C_SLAVE_ADDRESS)  # Example data to send
+            write_data(bus, 0x10, I2C_SLAVE_ADDRESS)  # Example data to send
             time.sleep(1)
             read_data(bus, I2C_SLAVE_ADDRESS)
             time.sleep(1)
@@ -18,7 +18,7 @@ def main():
         bus.close()
 
 # Function to write data to the I2C slave
-def write_data(data, bus, address):
+def write_data(bus, data, address):
     bus.write_byte(address, data)
     print(f"Sent data: {data}")
 

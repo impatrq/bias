@@ -12,6 +12,7 @@ void i2c_slave_handler();
 void initialize_pins_i2c(i2c_inst_t *i2c, uint8_t sda, uint8_t scl, int baudrate);
 void initialize_i2c(i2c_inst_t *i2c, uint8_t address, uint8_t sda, uint8_t scl, int baudrate);
 void initialize_adc(uint8_t adc_pin, uint8_t adc_input);
+uint16_t read_adc_value(uint8_t adc_input);
 
 int main() {
     const uint8_t ADC_PIN_1 = 26;
@@ -52,15 +53,25 @@ void i2c_slave_init(i2c_inst_t *i2c, uint8_t address) {
 
 void i2c_slave_handler() {
     i2c_inst_t *i2c = I2C_PORT; // Assuming i2c0
+
     uint32_t status = i2c_get_hw(i2c)->intr_stat;
+
+    static uint8_t adc_input = 0; // ADC input selector
+    uint16_t adc_value;
 
     if (status & I2C_IC_INTR_STAT_R_RX_FULL_BITS) {
         uint8_t data = i2c_get_hw(i2c)->data_cmd;
         printf("Received data: %d\n", data);
+        // Use received data to select ADC input, assuming data is valid ADC input channel
+        adc_input = data;
     }
     if (status & I2C_IC_INTR_STAT_R_RD_REQ_BITS) {
-        uint8_t response = 42;  // Example response
-        i2c_get_hw(i2c)->data_cmd = response;
+        adc_value = read_adc_value(adc_input);  // Read the selected ADC input
+        uint8_t response[2];
+        response[0] = (adc_value >> 8) & 0xFF;  // High byte
+        response[1] = adc_value & 0xFF;         // Low byte
+        i2c_get_hw(i2c)->data_cmd = response[0];
+        i2c_get_hw(i2c)->data_cmd = response[1];
         i2c_get_hw(i2c)->clr_rd_req;
     }
 }
@@ -79,8 +90,14 @@ void initialize_i2c(i2c_inst_t *i2c, uint8_t address, uint8_t sda, uint8_t scl, 
     i2c_slave_init(i2c, address);
 
 }
+
 void initialize_adc(uint8_t adc_pin, uint8_t adc_input) {
     adc_init();
     adc_gpio_init(adc_pin);
     adc_select_input(adc_input);
+}
+
+uint16_t read_adc_value(uint8_t adc_input) {
+    adc_select_input(adc_input);
+    return adc_read();
 }
