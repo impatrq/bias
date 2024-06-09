@@ -37,6 +37,7 @@ int main() {
     initialize_i2c(I2C_PORT, I2C_SLAVE_ADDRESS, SDA_PIN, SCL_PIN, baudrate);
 
     // Initialize ADC pins and channels
+    adc_init();
     initialize_adc(ADC_PIN_1, ADC_INPUT_1);
     initialize_adc(ADC_PIN_2, ADC_INPUT_2);
     initialize_adc(ADC_PIN_3, ADC_INPUT_3);
@@ -106,9 +107,7 @@ void initialize_i2c(i2c_inst_t *i2c, uint8_t address, uint8_t sda, uint8_t scl, 
 
 void initialize_adc(uint8_t adc_pin, uint8_t adc_input) {
     // Initialize ADC
-    adc_init();
     adc_gpio_init(adc_pin);
-    adc_select_input(adc_input);
 }
 
 uint16_t read_adc_value(uint8_t adc_input) {
