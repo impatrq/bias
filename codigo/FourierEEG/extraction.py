@@ -21,6 +21,8 @@ def extract_data():
     df = pd.DataFrame(data)
     df['label'] = labels
 
+    return df
+
 def extract_features(alpha, beta, gamma, delta, theta):
     features = {}
     features.update(compute_features(alpha, 'alpha'))
