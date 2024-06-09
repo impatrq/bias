@@ -55,6 +55,11 @@ def main():
     graph_voltage_time(t, delta_t.real, title="Delta en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
     graph_voltage_time(t, theta_t.real, title="Theta en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
     
+    plt.tight_layout()
+    plt.show()
+
+    return t, alpha_t.real, beta_t.real, gamma_t.real, delta_t.real, theta_t.real
+
     # New sampling rate for interpolation
     new_fs = fs * 10
     new_t = np.linspace(0, duration, int(duration * new_fs), endpoint=True)
@@ -75,6 +80,8 @@ def main():
 
     plt.tight_layout()
     plt.show()
+
+    # return t, alpha_t_interpolated, beta_t_interpolated, gamma_t_interpolated, delta_t_interpolated, theta_t_interpolated
 
 
 # Create function with random values
