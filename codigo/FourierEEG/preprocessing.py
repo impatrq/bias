@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
 
-def preprocess_signal():
+def preprocess_signal(eeg_data=None):
     # Set sampling frequency
     fs = 500
     # Number of samples
@@ -13,12 +13,16 @@ def preprocess_signal():
 
     # Time vector
     t = np.linspace(0, duration, N, endpoint=False)
-
-    # Stablish which signal to inject
-    signal = square_signal(t)
-    # signal = model_signal(N)
-    # signal = random_signal(N)
-    # signal = pure_signal_eeg(duration, fs)
+    
+    if eeg_data is not None:
+        # Injection of real data
+        signal = eeg_data
+    else:
+        # Stablish which signal to inject
+        signal = square_signal(t) 
+        # signal = model_signal(N)
+        # signal = random_signal(N)
+        # signal = pure_signal_eeg(duration, fs)
 
     # Apply Fourier Transform
     signal_fft = np.fft.fft(signal)
@@ -62,7 +66,7 @@ def preprocess_signal():
         graph_voltage_time(new_t, sig, title=f"{band_name.capitalize()} interpolated", xlabel="Time [s]", ylabel="Magnitude")
 
     print(interpolated_signals)
-    
+
     plt.tight_layout()
     plt.show()
 
@@ -155,7 +159,7 @@ def graph_voltage_time(t, signal, title, xlabel, ylabel):
     plt.ylabel(ylabel)
     plt.grid()
 
-def graph_voltage_frequency(frequencies, magnitudes, title, xlabel, ylabel='Magnitud'):
+def graph_voltage_frequency(frequencies, magnitudes, title, xlabel, ylabel='Magnitude'):
     # Plot given signal in the frquency domain
     plt.figure(figsize=(12, 6))
     plt.plot(frequencies, magnitudes)

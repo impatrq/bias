@@ -10,7 +10,7 @@ def extract_data():
     # Example movements
     movements = ['forward', 'backward', 'left', 'right', 'stop']
     for movement in movements:
-        for _ in range(1):  # Assume 100 samples per movement
+        for _ in range(100):  # Assume 100 samples per movement
             # Generate EEG data
             t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal()
             features = extract_features(alpha, beta, gamma, delta, theta)

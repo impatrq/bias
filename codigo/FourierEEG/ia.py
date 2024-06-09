@@ -6,6 +6,7 @@ from keras.layers import Dense, Dropout
 from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 import joblib
 
 def prepare_data():
@@ -35,7 +36,11 @@ def build_model(input_dim, output_dim):
     return model
 
 def train_model(model, X_train, y_train, X_test, y_test):
-    model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
+    callbacks = [
+        EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True),
+        ModelCheckpoint('best_model.h5', monitor='val_loss', save_best_only=True)
+    ]
+    model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), callbacks=callbacks)
     return model
 
 def evaluate_model(model, X_test, y_test):

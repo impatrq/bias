@@ -14,11 +14,13 @@ def classify_signal(model, scaler, features):
     return model.predict(features_scaled)[0]
 
 # Simulate real-time signal processing
-def real_time_prediction(eeg_data, model, scaler):
-    t, alpha, beta, gamma, delta, theta = eeg_data
-    features = extraction.extract_features(alpha, beta, gamma, delta, theta)
-    movement_command = classify_signal(model, scaler, features)
-    send_command_to_wheelchair(movement_command)
+def real_time_prediction(eeg_data_stream, model, scaler):
+    # Assuming eeg_data_stream is an iterable of EEG data
+    for eeg_data in eeg_data_stream:
+        t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal(eeg_data)
+        features = extraction.extract_features(alpha, beta, gamma, delta, theta)
+        movement_command = classify_signal(model, scaler, features)
+        send_command_to_wheelchair(movement_command)
 
 def send_command_to_wheelchair(command):
     movements = ['forward', 'backward', 'left', 'right', 'stop']
