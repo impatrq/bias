@@ -2,71 +2,71 @@ from gpiozero import Motor
 from time import sleep
 
 def main():
-# Configuración de los pines de los motores
-    motor1 = Motor(forward=17, backward=18)  # Motor derecho
-    motor2 = Motor(forward=22, backward=23)  # Motor izquierdo
+    # Configure motor pins
+    right_motor = Motor(forward=17, backward=18)
+    left_motor = Motor(forward=22, backward=23) 
 
-    # Diccionario de comandos
+    # Dictionary of commands
     commands = {
-    'adelante': adelante,
-    'atrás': atras,
-    'izquierda': izquierda,
-    'derecha': derecha,
-    'parar': parar
+    'forward': forward,
+    'backward': backward,
+    'left': left,
+    'right': right,
+    'stop': stop
     }
 
     try:
         while True:
-            # Leer el comando del usuario
-            command = input("Introduce un comando (adelante, atrás, izquierda, derecha, parar): ").strip().lower()
+            # Read user's command
+            command = input("Write a command (forward, backward, left, right, stop): ").strip().lower()
             
-            # Ejecutar el comando si es válido
+            # Execute command only if it's valid
             if command in commands:
-                commands[command](motor1, motor2)
+                commands[command](right_motor, left_motor)
             else:
-                print("Comando no reconocido, intenta de nuevo.")
+                print("Invalid command, try again.")
 
     except KeyboardInterrupt:
-        print("Programa terminado por el usuario.")
+        print("Programm ended by the user")
     finally:
-        parar(motor1, motor2)
+        stop(right_motor, left_motor)
 
-def adelante(motor1, motor2):
-    motor1.forward()
-    motor2.forward()
-    print("Avanzando hacia adelante")
+def forward(right_motor, left_motor):
+    right_motor.forward()
+    left_motor.forward()
+    print("Going forward")
     sleep(3)
-    motor1.stop()
-    motor2.stop()
+    right_motor.stop()
+    left_motor.stop()
 
-def atras(motor1, motor2):
-    motor1.backward()
-    motor2.backward()
-    print("Retrocediendo")
+def backward(right_motor, left_motor):
+    right_motor.backward()
+    left_motor.backward()
+    print("Going backwards")
     sleep(3)
-    motor1.stop()
-    motor2.stop()
+    right_motor.stop()
+    left_motor.stop()
 
-def izquierda(motor1, motor2):
-    motor1.backward()
-    motor2.forward()
-    print("Girando a la izquierda")
+def left(right_motor, left_motor):
+    right_motor.forward()
+    left_motor.backward()
+    print("Turning left")
     sleep(3)
-    motor1.stop()
-    motor2.stop()
+    right_motor.stop()
+    left_motor.stop()
 
-def derecha(motor1, motor2):
-    motor1.forward()
-    motor2.backward()
-    print("Girando a la derecha")
+def right(right_motor, left_motor):
+    right_motor.backward()
+    left_motor.forward()
+    print("Turning right")
     sleep(3)
-    motor1.stop()
-    motor2.stop()
+    right_motor.stop()
+    left_motor.stop()
 
-def parar(motor1, motor2):
-    motor1.stop()
-    motor2.stop()
-    print("Parando")
+def stop(right_motor, left_motor):
+    right_motor.stop()
+    left_motor.stop()
+    print("Stopping")
 
 if __name__ == "__main__":
     main()
