@@ -15,9 +15,9 @@ def preprocess_signal():
     t = np.linspace(0, duration, N, endpoint=False)
 
     # Stablish which signal to inject
-    # signal = square_signal(t)
-    # signal = model_signal(signal, N)
-    signal = random_signal(N)
+    signal = square_signal(t)
+    # signal = model_signal(N)
+    # signal = random_signal(N)
     # signal = pure_signal_eeg(duration, fs)
 
     # Apply Fourier Transform
@@ -31,76 +31,50 @@ def preprocess_signal():
     signal_fft_magnitude_reduced = signal_fft_magnitude[:N//2] 
 
     # Graph the entry signal
-    graph_voltage_time(t, signal, title="Señal de entrada", xlabel='Tiempo [s]', ylabel='Magnitud')
-    graph_voltage_frequency(frequencies_reduced, signal_fft_magnitude_reduced, title='Espectro de Frecuencias', xlabel='Frecuencia [Hz]', ylabel='Magnitud')
+    graph_voltage_time(t, signal, title="Input signal", xlabel='Time [s]', ylabel='Magnitude')
+    graph_voltage_frequency(frequencies_reduced, signal_fft_magnitude_reduced, title='Frequency spectrum', xlabel='Frequency [Hz]', ylabel='Magnitude')
 
     # Set the band of frequencies for each signal
-    alpha = (8, 13)
-    beta = (13, 30)
-    gamma = (30, 100)
-    delta = (0.5, 4)
-    theta = (4, 8)
-    
-    # Filter and reconstruct each signal
-    alpha_t = filter_and_reconstruct(signal_fft, frequencies, alpha, N)
-    beta_t = filter_and_reconstruct(signal_fft, frequencies, beta, N)
-    gamma_t = filter_and_reconstruct(signal_fft, frequencies, gamma, N)
-    delta_t = filter_and_reconstruct(signal_fft, frequencies, delta, N)
-    theta_t = filter_and_reconstruct(signal_fft, frequencies, theta, N)
+    bands = {
+        "alpha": (8, 13),
+        "beta": (13, 30),
+        "gamma": (30, 100),
+        "delta": (0.5, 4),
+        "theta": (4, 8)
+    }
+
+    filtered_signals = {}
 
     # Plot the filtered waves in the time domain
-    graph_voltage_time(t, alpha_t.real, title="Alpha en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
-    graph_voltage_time(t, beta_t.real, title="Beta en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
-    graph_voltage_time(t, gamma_t.real, title="Gamma en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
-    graph_voltage_time(t, delta_t.real, title="Delta en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
-    graph_voltage_time(t, theta_t.real, title="Theta en función del tiempo", xlabel="Tiempo [s]", ylabel="Magnitud")
-    
-    plt.tight_layout()
-    plt.show()
-
-    return t, alpha_t.real, beta_t.real, gamma_t.real, delta_t.real, theta_t.real
+    for band_name, band_range in bands.items():
+        filtered_signals[band_name] = filter_and_reconstruct(signal_fft, frequencies, band_range, N)
+        graph_voltage_time(t, filtered_signals[band_name].real, title=f"{band_name.capitalize()} as a function of time", xlabel="Time [s]", ylabel="Magnitude")
 
     # New sampling rate for interpolation
     new_fs = fs * 10
     new_t = np.linspace(0, duration, int(duration * new_fs), endpoint=True)
 
     # Interpolate each wave
-    alpha_t_interpolated = interpolate_signal(t, alpha_t.real, new_t)
-    beta_t_interpolated = interpolate_signal(t, beta_t.real, new_t)
-    gamma_t_interpolated = interpolate_signal(t, gamma_t.real, new_t)
-    delta_t_interpolated = interpolate_signal(t, delta_t.real, new_t)
-    theta_t_interpolated = interpolate_signal(t, theta_t.real, new_t)
+    interpolated_signals = {band_name: interpolate_signal(t, sig.real, new_t) for band_name, sig in filtered_signals.items()}
 
     # Plot the interpolated signals
-    graph_voltage_time(new_t, alpha_t_interpolated, title="Alpha Interpolated", xlabel="Time [s]", ylabel="Magnitude")
-    graph_voltage_time(new_t, beta_t_interpolated, title="Beta Interpolated", xlabel="Time [s]", ylabel="Magnitude")
-    graph_voltage_time(new_t, gamma_t_interpolated, title="Gamma Interpolated", xlabel="Time [s]", ylabel="Magnitude")
-    graph_voltage_time(new_t, delta_t_interpolated, title="Delta Interpolated", xlabel="Time [s]", ylabel="Magnitude")
-    graph_voltage_time(new_t, theta_t_interpolated, title="Theta Interpolated", xlabel="Time [s]", ylabel="Magnitude")
+    for band_name, sig in interpolated_signals.items():
+        graph_voltage_time(new_t, sig, title=f"{band_name.capitalize()} interpolated", xlabel="Time [s]", ylabel="Magnitude")
 
+    print(interpolated_signals)
+    
     plt.tight_layout()
     plt.show()
 
-    # return t, alpha_t_interpolated, beta_t_interpolated, gamma_t_interpolated, delta_t_interpolated, theta_t_interpolated
+    return t, interpolated_signals['alpha'], interpolated_signals['beta'], interpolated_signals['gamma'], interpolated_signals['delta'], interpolated_signals['theta']
 
 
 # Create function with random values
 def random_signal(N):
-    signal = []
-    # Set fixed parameter of amplitude for random EEG(uV)
+    # Set fixed parameter of amplitude for random EEG (uV)
     middle_amplitude = 0 
     standard_deviation = 5
-
-    # Save random values
-    for _ in range(N):
-        random_value = np.random.normal(middle_amplitude, standard_deviation)
-        signal.append(random_value)
-
-
-    # Asegúrate de que la longitud de la señal coincida con N
-    assert len(signal) == N, "La longitud de la señal debe ser igual a N"
-
-    return signal
+    return np.random.normal(middle_amplitude, standard_deviation, N)
 
 def square_signal(t):
     # Set parameters of square wave
@@ -108,12 +82,11 @@ def square_signal(t):
     frequency = 10
 
     # Save and return square wave
-    square_wave = np.array(amplitude * np.sign(np.sin(2 * np.pi * frequency * t)))
-    return square_wave
+    return amplitude * np.sign(np.sin(2 * np.pi * frequency * t))
 
-def model_signal(signal, N):
+def model_signal(N):
     # Create a model eeg signal
-    basic_eeg_signal = [
+    basic_eeg_signal = np.array([
         0.5, 0.4, 0.3, 0.2, 0.1,
         -0.1, -0.2, -0.3, -0.4, -0.5,
         0.8, 0.7, 0.6, 0.5, 0.4,
@@ -124,39 +97,35 @@ def model_signal(signal, N):
         -0.3, -0.4, -0.5, -0.6, -0.7,
         0.2, 0.1, 0, -0.1, -0.2,
         -0.3, -0.4, -0.5, -0.6, -0.7,
-    ]
+    ])
 
 
     eeg_signal = []
 
     # Repeat it until you have reached the number of samples
     repetitions = N // len(basic_eeg_signal)
-    for _ in range(repetitions):
-        eeg_signal.extend(basic_eeg_signal)
 
-    # Assure that length of signal is equal to the number of samples
-    assert len(signal) == N, "La longitud de la señal debe ser igual a N"
+    eeg_signal = np.tile(basic_eeg_signal, repetitions)
 
-    # Convert it in an array to return it
-    signal = np.array(eeg_signal)
-    return signal
+    return eeg_signal
+
 
 # Create an eeg signal with pure waves
-def pure_signal_eeg(duration, fs, alpha_amp=1, alpha_frec=10, beta_amp=2, beta_frec=20,
-                   gamma_amp=3, gamma_frec=40, delta_amp=4, delta_frec=2, theta_amp=5, theta_frec=5):
+def pure_signal_eeg(duration, fs, alpha_amp=1, alpha_freq=10, beta_amp=2, beta_freq=20,
+                   gamma_amp=3, gamma_freq=40, delta_amp=4, delta_freq=2, theta_amp=5, theta_freq=5):
 
     # Time vector
     t = np.linspace(0, duration, int(duration * fs), endpoint=False)
 
     # Set each wave as a sine wave
-    senal_alfa = alpha_amp * np.sin(2 * np.pi * alpha_frec * t)
-    senal_beta = beta_amp * np.sin(2 * np.pi * beta_frec * t)
-    senal_gamma = gamma_amp * np.sin(2 * np.pi * gamma_frec * t)
-    senal_delta = delta_amp * np.sin(2 * np.pi * delta_frec * t)
-    senal_theta = theta_amp * np.sin(2 * np.pi * theta_frec * t)
-    senal = senal_alfa + senal_beta + senal_gamma + senal_delta + senal_theta
+    alpha_signal = alpha_amp * np.sin(2 * np.pi * alpha_freq * t)
+    beta_signal = beta_amp * np.sin(2 * np.pi * beta_freq * t)
+    gamma_signal = gamma_amp * np.sin(2 * np.pi * gamma_freq * t)
+    delta_signal = delta_amp * np.sin(2 * np.pi * delta_freq * t)
+    theta_signal = theta_amp * np.sin(2 * np.pi * theta_freq * t)
+    signal = alpha_signal + beta_signal + gamma_signal + delta_signal + theta_signal
 
-    return senal
+    return signal
 
 def filter_and_reconstruct(signal_fft, frequencies, band, N):
     # Filter each band with the corresponding wave
