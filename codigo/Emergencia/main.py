@@ -1,4 +1,3 @@
-import pygame
 from gpiozero import Motor
 from time import sleep
 
@@ -6,57 +5,65 @@ from time import sleep
 motor1 = Motor(forward=17, backward=18)  # Motor derecho
 motor2 = Motor(forward=22, backward=23)  # Motor izquierdo
 
-# Inicialización de Pygame y el joystick
-pygame.init()
-pygame.joystick.init()
+def adelante():
+    motor1.forward()
+    motor2.forward()
+    print("Avanzando hacia adelante")
+    sleep(3)
+    motor1.stop()
+    motor2.stop()
 
-# Verificar el número de joysticks conectados
-joystick_count = pygame.joystick.get_count()
-if joystick_count == 0:
-    print("No se encontró ningún joystick.")
-    pygame.quit()
-    exit()
+def atras():
+    motor1.backward()
+    motor2.backward()
+    print("Retrocediendo")
+    sleep(3)
+    motor1.stop()
+    motor2.stop()
 
-joystick = pygame.joystick.Joystick(0)
-joystick.init()
+def izquierda():
+    motor1.backward()
+    motor2.forward()
+    print("Girando a la izquierda")
+    sleep(3)
+    motor1.stop()
+    motor2.stop()
 
-def get_axis_value(axis):
-    value = joystick.get_axis(axis)
-    if abs(value) < 0.1:
-        value = 0
-    return value
+def derecha():
+    motor1.forward()
+    motor2.backward()
+    print("Girando a la derecha")
+    sleep(3)
+    motor1.stop()
+    motor2.stop()
+
+def parar():
+    motor1.stop()
+    motor2.stop()
+    print("Parando")
+
+# Diccionario de comandos
+commands = {
+    'adelante': adelante,
+    'atrás': atras,
+    'izquierda': izquierda,
+    'derecha': derecha,
+    'parar': parar
+}
 
 try:
     while True:
-        pygame.event.pump()
+        # Leer el comando del usuario
+        command = input("Introduce un comando (adelante, atrás, izquierda, derecha, parar): ").strip().lower()
         
-        # Obtener los valores del joystick
-        x = get_axis_value(0)  # Eje X
-        y = get_axis_value(1)  # Eje Y
-        
-        # Control del movimiento
-        if y < 0:
-            motor1.forward(speed=-y)
-            motor2.forward(speed=-y)
-        elif y > 0:
-            motor1.backward(speed=y)
-            motor2.backward(speed=y)
+        # Ejecutar el comando si es válido
+        if command in commands:
+            commands[command]()
         else:
-            motor1.stop()
-            motor2.stop()
+            print("Comando no reconocido, intenta de nuevo.")
 
-        if x < 0:
-            motor1.backward(speed=-x)
-            motor2.forward(speed=-x)
-        elif x > 0:
-            motor1.forward(speed=x)
-            motor2.backward(speed=x)
-        else:
-            motor1.stop()
-            motor2.stop()
-        
-        sleep(0.1)
+except KeyboardInterrupt:
+    print("Programa terminado por el usuario.")
 finally:
     motor1.stop()
     motor2.stop()
-    pygame.quit()
