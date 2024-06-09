@@ -22,7 +22,7 @@ def main():
             
             # Ejecutar el comando si es válido
             if command in commands:
-                commands[command]()
+                commands[command](motor1, motor2)
             else:
                 print("Comando no reconocido, intenta de nuevo.")
 
