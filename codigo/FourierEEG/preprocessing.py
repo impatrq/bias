@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
 
-def main():
+def preprocess_signal():
     # Set sampling frequency
     fs = 500
     # Number of samples
@@ -197,4 +197,4 @@ def graph_voltage_frequency(frequencies, magnitudes, title, xlabel, ylabel='Magn
 
 
 if __name__ == "__main__":
-    main()
+    preprocess_signal()

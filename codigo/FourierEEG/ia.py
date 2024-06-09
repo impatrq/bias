@@ -1,13 +1,13 @@
-import FourierEEG.extraction as ext
+import extraction
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.utils import to_categorical
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
-df = ext.extract_data()
+df = extraction.extract_data()
 
 # Prepare the dataset
 X = df.drop(columns=['label'])
@@ -37,3 +37,9 @@ model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y
 # Evaluate the model
 loss, accuracy = model.evaluate(X_test, y_test)
 print(f'Accuracy: {accuracy}')
+
+# Save model and scaler for real-time prediction
+model.save('wheelchair_model.h5')
+
+import joblib
+joblib.dump(scaler, 'scaler.save')
