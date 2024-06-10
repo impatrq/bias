@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 import preprocessing
+import reception
 
-def extract_data():
+def extract_data(eeg_data):
     # Simulate data collection
     data = []
     labels = []
@@ -12,7 +13,7 @@ def extract_data():
     for movement in movements:
         for _ in range(100):  # Assume 100 samples per movement
             # Generate EEG data
-            t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal()
+            t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal(eeg_data) # Use real data
             features = extract_features(alpha, beta, gamma, delta, theta)
             data.append(features)
             labels.append(movement)
@@ -41,4 +42,6 @@ def compute_features(signal, band_name):
     }
 
 if __name__ == "__main__":
-    extract_data()
+    real_eeg_signal = reception.main()  # Get the real EEG signal
+    df = extract_data(real_eeg_signal)
+    df.to_csv('extracted_features.csv', index=False)

@@ -8,9 +8,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 import joblib
+import reception
 
-def prepare_data():
-    df = extraction.extract_data()
+def prepare_data(eeg_data):
+    df = extraction.extract_data(eeg_data)
     # Prepare the dataset
     X = df.drop(columns=['label'])
     y = pd.get_dummies(df['label'])  # One-hot encoding
@@ -52,6 +53,7 @@ def save_model_and_scaler(model, scaler):
     joblib.dump(scaler, 'scaler.save')
 
 def main():
+    real_eeg_signal = reception.main(real_eeg_signal)  # Get the real EEG signal
     X, y = prepare_data()
     X_train, X_test, y_train, y_test = split_data(X, y)
     X_train, X_test, scaler = standardize_data(X_train, X_test)

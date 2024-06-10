@@ -1,18 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
+import reception
 
 def preprocess_signal(eeg_data=None):
-    # Set sampling frequency
-    fs = 500
-    # Number of samples
-    N = 1000
 
     # Set duration of signal
-    duration = N / fs
+    duration = reception.N / reception.FS
 
     # Time vector
-    t = np.linspace(0, duration, N, endpoint=False)
+    t = np.linspace(0, duration, reception.N, endpoint=False)
     
     if eeg_data is not None:
         # Injection of real data
@@ -26,13 +23,13 @@ def preprocess_signal(eeg_data=None):
 
     # Apply Fourier Transform
     signal_fft = np.fft.fft(signal)
-    frequencies = np.fft.fftfreq(N, d=1/fs)
-    signal_fft_magnitude = np.abs(signal_fft) / N
+    frequencies = np.fft.fftfreq(reception.N, d=1/reception.FS)
+    signal_fft_magnitude = np.abs(signal_fft) / reception.N
 
     # Eliminate the range of negative frequencies
-    signal_fft_reduced = signal_fft[:N//2]
-    frequencies_reduced = frequencies[:N//2]
-    signal_fft_magnitude_reduced = signal_fft_magnitude[:N//2] 
+    signal_fft_reduced = signal_fft[:reception.N//2]
+    frequencies_reduced = frequencies[:reception.N//2]
+    signal_fft_magnitude_reduced = signal_fft_magnitude[:reception.N//2] 
 
     # Graph the entry signal
     graph_voltage_time(t, signal, title="Input signal", xlabel='Time [s]', ylabel='Magnitude')
@@ -51,11 +48,11 @@ def preprocess_signal(eeg_data=None):
 
     # Plot the filtered waves in the time domain
     for band_name, band_range in bands.items():
-        filtered_signals[band_name] = filter_and_reconstruct(signal_fft, frequencies, band_range, N)
-        graph_voltage_time(t, filtered_signals[band_name].real, title=f"{band_name.capitalize()} as a function of time", xlabel="Time [s]", ylabel="Magnitude")
+        filtered_signals[band_name] = filter_and_reconstruct(signal_fft, frequencies, band_range, reception.N)
+        graph_voltage_time(t, filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time", xlabel="Time [s]", ylabel="Magnitude")
 
     # New sampling rate for interpolation
-    new_fs = fs * 10
+    new_fs = reception.FS * 10
     new_t = np.linspace(0, duration, int(duration * new_fs), endpoint=True)
 
     # Interpolate each wave
