@@ -5,8 +5,9 @@ import preprocessing
 
 FS = 500  # Sampling frequency
 N = 1000  # Number of samples
+DURATION = N / FS
 
-def main():
+def get_real_data():
     I2C_SLAVE_ADDRESS = 0x04
     I2C_BUS = 1
 
@@ -14,9 +15,8 @@ def main():
     bus = smbus2.SMBus(I2C_BUS)
 
     try:
-        while True:
-            real_eeg_signal = capture_signal(bus, I2C_SLAVE_ADDRESS, fs=FS, N=N)
-            return real_eeg_signal
+        real_eeg_signal = capture_signal(bus, I2C_SLAVE_ADDRESS, fs=FS, N=N)
+        return real_eeg_signal
 
     except KeyboardInterrupt:
         print("Program stopped")
@@ -35,9 +35,11 @@ def read_adc_value(bus, address):
     adc_value = (data[0] << 8) | data[1]
     return adc_value
 
-def capture_signal(bus, address, channels=4, fs=500, N=1000):
+def capture_signal(bus, address, channels=4, fs=FS, N=N):
     # Initialize variables
     combined_signal = []
+
+    # Check frequency of readings
 
     # Read ADC values alternately from each channel
     for _ in range(N // channels):
@@ -54,4 +56,5 @@ def capture_signal(bus, address, channels=4, fs=500, N=1000):
     return np.array(combined_signal)
 
 if __name__ == "__main__":
-    main()
+    real_eeg_signal = get_real_data()
+    print(real_eeg_signal)

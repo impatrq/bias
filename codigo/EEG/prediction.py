@@ -1,5 +1,5 @@
 import extraction
-import ia
+import ai
 import preprocessing
 from keras.models import load_model
 import joblib
@@ -20,11 +20,19 @@ def classify_eeg(model, scaler, eeg_data):
     predicted_class = prediction.argmax(axis=1)
     return predicted_class
 
+def make_prediction():
+    real_eeg_signal = reception.get_real_data()
+    model, scaler = load_model_and_scaler()
+    prediction_result = classify_eeg(model, scaler, real_eeg_signal)
+    print(f'Predicted class: {prediction_result}')
+
+
 def main():
     model, scaler = load_model_and_scaler()
-    real_eeg_signal = reception.main()
-    prediction = classify_eeg(model, scaler, real_eeg_signal)
-    print(f'Predicted class: {prediction}')
+    while True:
+        real_eeg_signal = reception.get_real_data()
+        prediction = classify_eeg(model, scaler, real_eeg_signal)
+        print(f'Predicted class: {prediction}')
 
 if __name__ == "__main__":
     main()

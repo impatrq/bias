@@ -4,7 +4,6 @@ import preprocessing
 import reception
 
 def extract_data(eeg_data):
-    # Simulate data collection
     data = []
     labels = []
 
@@ -41,7 +40,10 @@ def compute_features(signal, band_name):
         f'{band_name}_kurtosis': np.mean((signal - np.mean(signal))**4) / (np.var(signal)**2)
     }
 
-if __name__ == "__main__":
-    real_eeg_signal = reception.main()  # Get the real EEG signal
+def main():
+    real_eeg_signal = reception.get_real_data()  # Get the real EEG signal
     df = extract_data(real_eeg_signal)
     df.to_csv('extracted_features.csv', index=False)
+
+if __name__ == "__main__":
+    main()

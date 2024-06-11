@@ -1,4 +1,4 @@
-C:/Users/estudiante/Documents/GitHub/bias/build/CMakeFiles/i2c_slave.dir
+C:/Users/estudiante/Documents/GitHub/bias/build/CMakeFiles/reception.dir
 C:/Users/estudiante/Documents/GitHub/bias/build/CMakeFiles/edit_cache.dir
 C:/Users/estudiante/Documents/GitHub/bias/build/CMakeFiles/rebuild_cache.dir
 C:/Users/estudiante/Documents/GitHub/bias/build/pico-sdk/CMakeFiles/edit_cache.dir

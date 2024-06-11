@@ -1030,7 +1030,7 @@
 					[
 						0
 					],
-					"name" : "i2c_slave",
+					"name" : "reception",
 					"targetIndexes" : 
 					[
 						4
@@ -1165,9 +1165,9 @@
 				},
 				{
 					"directoryIndex" : 0,
-					"id" : "i2c_slave::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-i2c_slave-Debug-42881fbe812ff3e9659e.json",
-					"name" : "i2c_slave",
+					"id" : "reception::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-reception-Debug-264f4428bef76438053a.json",
+					"name" : "reception",
 					"projectIndex" : 0
 				},
 				{

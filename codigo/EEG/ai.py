@@ -1,9 +1,7 @@
 import extraction
 import pandas as pd
-import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
-from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -53,8 +51,8 @@ def save_model_and_scaler(model, scaler):
     joblib.dump(scaler, 'scaler.save')
 
 def main():
-    real_eeg_signal = reception.main(real_eeg_signal)  # Get the real EEG signal
-    X, y = prepare_data()
+    real_eeg_signal = reception.get_real_data()
+    X, y = prepare_data(real_eeg_signal)
     X_train, X_test, y_train, y_test = split_data(X, y)
     X_train, X_test, scaler = standardize_data(X_train, X_test)
     model = build_model(X_train.shape[1], y_train.shape[1])
