@@ -1,5 +1,4 @@
 import extraction
-import ai
 import preprocessing
 from keras.models import load_model
 import joblib
@@ -11,8 +10,8 @@ def load_model_and_scaler():
     scaler = joblib.load('scaler.save')
     return model, scaler
 
-def classify_eeg(model, scaler, eeg_data):
-    t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal(eeg_data)
+def classify_eeg(model, scaler, eeg_data, n, duration, fs):
+    t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal(eeg_data, n, duration, fs)
     features = extraction.extract_features(alpha, beta, gamma, delta, theta)
     features_df = pd.DataFrame([features])
     features_scaled = scaler.transform(features_df)
@@ -20,18 +19,18 @@ def classify_eeg(model, scaler, eeg_data):
     predicted_class = prediction.argmax(axis=1)
     return predicted_class
 
-def make_prediction():
-    real_eeg_signal = reception.get_real_data()
+def make_prediction(n, duration, fs):
+    real_eeg_signal = reception.get_real_data(n, fs)
     model, scaler = load_model_and_scaler()
-    prediction_result = classify_eeg(model, scaler, real_eeg_signal)
+    prediction_result = classify_eeg(model, scaler, real_eeg_signal, n, duration, fs)
     print(f'Predicted class: {prediction_result}')
 
 
-def main():
+def main(n=1000, duration=2, fs=500):
     model, scaler = load_model_and_scaler()
     while True:
-        real_eeg_signal = reception.get_real_data()
-        prediction = classify_eeg(model, scaler, real_eeg_signal)
+        real_eeg_signal = reception.get_real_data(n, fs)
+        prediction = classify_eeg(model, scaler, real_eeg_signal, n, duration, fs)
         print(f'Predicted class: {prediction}')
 
 if __name__ == "__main__":

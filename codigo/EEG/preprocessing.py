@@ -1,15 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
-import reception
 
-def preprocess_signal(eeg_data=None):
-
-    # Set duration of signal
-    duration = reception.N / reception.FS
+def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
 
     # Time vector
-    t = np.linspace(0, duration, reception.N, endpoint=False)
+    t = np.linspace(0, duration, n, endpoint=False)
     
     if eeg_data is not None:
         # Injection of real data
@@ -23,13 +19,13 @@ def preprocess_signal(eeg_data=None):
 
     # Apply Fourier Transform
     signal_fft = np.fft.fft(signal)
-    frequencies = np.fft.fftfreq(reception.N, d=1/reception.FS)
-    signal_fft_magnitude = np.abs(signal_fft) / reception.N
+    frequencies = np.fft.fftfreq(n, d=1/fs)
+    signal_fft_magnitude = np.abs(signal_fft) / n
 
     # Eliminate the range of negative frequencies
-    signal_fft_reduced = signal_fft[:reception.N//2]
-    frequencies_reduced = frequencies[:reception.N//2]
-    signal_fft_magnitude_reduced = signal_fft_magnitude[:reception.N//2] 
+    signal_fft_reduced = signal_fft[:n//2]
+    frequencies_reduced = frequencies[:n//2]
+    signal_fft_magnitude_reduced = signal_fft_magnitude[:n//2] 
 
     # Graph the entry signal
     graph_voltage_time(t, signal, title="Input signal", xlabel='Time [s]', ylabel='Magnitude')
@@ -48,11 +44,11 @@ def preprocess_signal(eeg_data=None):
 
     # Plot the filtered waves in the time domain
     for band_name, band_range in bands.items():
-        filtered_signals[band_name] = filter_and_reconstruct(signal_fft, frequencies, band_range, reception.N)
+        filtered_signals[band_name] = filter_and_reconstruct(signal_fft, frequencies, band_range, n)
         graph_voltage_time(t, filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time", xlabel="Time [s]", ylabel="Magnitude")
 
     # New sampling rate for interpolation
-    new_fs = reception.FS * 10
+    new_fs = fs * 10
     new_t = np.linspace(0, duration, int(duration * new_fs), endpoint=True)
 
     # Interpolate each wave
@@ -71,11 +67,11 @@ def preprocess_signal(eeg_data=None):
 
 
 # Create function with random values
-def random_signal(N):
+def random_signal(n):
     # Set fixed parameter of amplitude for random EEG (uV)
     middle_amplitude = 0 
     standard_deviation = 5
-    return np.random.normal(middle_amplitude, standard_deviation, N)
+    return np.random.normal(middle_amplitude, standard_deviation, n)
 
 def square_signal(t):
     # Set parameters of square wave
@@ -85,7 +81,7 @@ def square_signal(t):
     # Save and return square wave
     return amplitude * np.sign(np.sin(2 * np.pi * frequency * t))
 
-def model_signal(N):
+def model_signal(n):
     # Create a model eeg signal
     basic_eeg_signal = np.array([
         0.5, 0.4, 0.3, 0.2, 0.1,
@@ -104,7 +100,7 @@ def model_signal(N):
     eeg_signal = []
 
     # Repeat it until you have reached the number of samples
-    repetitions = N // len(basic_eeg_signal)
+    repetitions = n // len(basic_eeg_signal)
 
     eeg_signal = np.tile(basic_eeg_signal, repetitions)
 
@@ -128,7 +124,7 @@ def pure_signal_eeg(duration, fs, alpha_amp=1, alpha_freq=10, beta_amp=2, beta_f
 
     return signal
 
-def filter_and_reconstruct(signal_fft, frequencies, band, N):
+def filter_and_reconstruct(signal_fft, frequencies, band):
     # Filter each band with the corresponding wave
     filtered_fft = np.zeros_like(signal_fft)
     band_indices = np.where((frequencies >= band[0]) & (frequencies <= band[1]))

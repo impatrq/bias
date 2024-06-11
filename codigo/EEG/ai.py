@@ -8,8 +8,8 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 import joblib
 import reception
 
-def prepare_data(eeg_data):
-    df = extraction.extract_data(eeg_data)
+def prepare_data(eeg_data, n, duration, fs):
+    df = extraction.extract_data(eeg_data, n, duration, fs)
     # Prepare the dataset
     X = df.drop(columns=['label'])
     y = pd.get_dummies(df['label'])  # One-hot encoding
@@ -50,9 +50,9 @@ def save_model_and_scaler(model, scaler):
     model.save('wheelchair_model.h5')
     joblib.dump(scaler, 'scaler.save')
 
-def main():
-    real_eeg_signal = reception.get_real_data()
-    X, y = prepare_data(real_eeg_signal)
+def main(n=1000, duration=2, fs=500):
+    real_eeg_signal = reception.get_real_data(n, fs)
+    X, y = prepare_data(real_eeg_signal, n, duration, fs)
     X_train, X_test, y_train, y_test = split_data(X, y)
     X_train, X_test, scaler = standardize_data(X_train, X_test)
     model = build_model(X_train.shape[1], y_train.shape[1])

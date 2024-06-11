@@ -1,9 +1,9 @@
-import reception
-import preprocessing
-import extraction
-import codigo.EEG.ai as ai
+import ai
 import prediction
-import time
+
+FS = 500  # Sampling frequency
+N = 1000  # Number of samples
+DURATION = N / FS
 
 def main():
     while True:
@@ -14,11 +14,11 @@ def main():
         choice = input("Enter your choice: ")
 
         if choice == '1':
-            ai.main()
+            ai.main(N, DURATION, FS)
         elif choice == '2':
-            prediction.make_prediction()
+            prediction.make_prediction(N, DURATION, FS)
         elif choice == '3':
-            prediction.main()
+            prediction.main(N, DURATION, FS)
         elif choice == '4':
             break
         else:
