@@ -25,11 +25,8 @@ def extract_data(eeg_data, n, duration, fs):
 
 def extract_features(alpha, beta, gamma, delta, theta):
     features = {}
-    features.update(compute_features(alpha, 'alpha'))
-    features.update(compute_features(beta, 'beta'))
-    features.update(compute_features(gamma, 'gamma'))
-    features.update(compute_features(delta, 'delta'))
-    features.update(compute_features(theta, 'theta'))
+    for band_name, signal in zip(['alpha', 'beta', 'gamma', 'delta', 'theta'], [alpha, beta, gamma, delta, theta]):
+            features.update(compute_features(signal, band_name))
     return features
 
 def compute_features(signal, band_name):

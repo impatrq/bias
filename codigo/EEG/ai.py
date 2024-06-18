@@ -34,13 +34,12 @@ def build_model(input_dim, output_dim):
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model
 
-def train_model(model, X_train, y_train, X_test, y_test):
-    callbacks = [
-        EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True),
-        ModelCheckpoint('best_model.h5', monitor='val_loss', save_best_only=True)
-    ]
-    model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), callbacks=callbacks)
-    return model
+def train_model(model, X_train, y_train, X_val, y_val):
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10)
+    model_checkpoint = ModelCheckpoint('best_model.h5', save_best_only=True, monitor='val_loss')
+    history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=100, batch_size=32, callbacks=[early_stopping, model_checkpoint])
+    model.save('final_model.h5')
+    return history
 
 def evaluate_model(model, X_test, y_test):
     loss, accuracy = model.evaluate(X_test, y_test)

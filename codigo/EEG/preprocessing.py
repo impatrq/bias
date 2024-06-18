@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
+import filtering
 
 def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
 
@@ -17,8 +18,10 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
         # signal = random_signal(N)
         # signal = pure_signal_eeg(duration, fs)
 
+    signal_filtered = filtering.digital_filtering(eeg_data, fs)
+
     # Apply Fourier Transform
-    signal_fft = np.fft.fft(signal)
+    signal_fft = np.fft.fft(signal_filtered)
     frequencies = np.fft.fftfreq(n, d=1/fs)
     signal_fft_magnitude = np.abs(signal_fft) / n
 
@@ -28,8 +31,9 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
     signal_fft_magnitude_reduced = signal_fft_magnitude[:n//2] 
 
     # Graph the entry signal
-    graph_voltage_time(t, signal, title="Input signal", xlabel='Time [s]', ylabel='Magnitude')
-    graph_voltage_frequency(frequencies_reduced, signal_fft_magnitude_reduced, title='Frequency spectrum', xlabel='Frequency [Hz]', ylabel='Magnitude')
+    graph_signal_voltage_time(t, signal, title="Input signal")
+    graph_signal_voltage_time(t, signal_filtered, title="Input filtered signal")
+    graph_signal_voltage_frequency(frequencies_reduced, signal_fft_magnitude_reduced, title='Frequency spectrum')
 
     # Set the band of frequencies for each signal
     bands = {
@@ -45,7 +49,7 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
     # Plot the filtered waves in the time domain
     for band_name, band_range in bands.items():
         filtered_signals[band_name] = filter_and_reconstruct(signal_fft, frequencies, band_range, n)
-        graph_voltage_time(t, filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time", xlabel="Time [s]", ylabel="Magnitude")
+        graph_signal_voltage_time(t, filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
 
     # New sampling rate for interpolation
     new_fs = fs * 10
@@ -56,7 +60,7 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
 
     # Plot the interpolated signals
     for band_name, sig in interpolated_signals.items():
-        graph_voltage_time(new_t, sig, title=f"{band_name.capitalize()} interpolated", xlabel="Time [s]", ylabel="Magnitude")
+        graph_signal_voltage_time(new_t, sig, title=f"{band_name.capitalize()} interpolated")
 
     print(interpolated_signals)
 
@@ -143,22 +147,22 @@ def interpolate_signal(t, signal, new_t):
     interpolated_signal = scipy.interpolate.interp1d(t, signal, kind='cubic')(new_t_clipped)
     return interpolated_signal
 
-def graph_voltage_time(t, signal, title, xlabel, ylabel):
+def graph_signal_voltage_time(t, signal, title):
     # Plot given signal in th time domain
     plt.figure(figsize=(12, 6))
     plt.plot(t, signal)
     plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.xlabel("Time [s]")
+    plt.ylabel("Magnitude")
     plt.grid()
 
-def graph_voltage_frequency(frequencies, magnitudes, title, xlabel, ylabel='Magnitude'):
+def graph_signal_voltage_frequency(frequencies, magnitudes, title):
     # Plot given signal in the frquency domain
     plt.figure(figsize=(12, 6))
     plt.plot(frequencies, magnitudes)
     plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.xlabel("Frequency [Hz]")
+    plt.ylabel("Magnitude")
     plt.grid()
 
 

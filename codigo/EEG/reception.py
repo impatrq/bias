@@ -2,6 +2,7 @@ import smbus2
 import time
 import numpy as np
 
+# Get the data from the Raspberry Pi Pico
 def get_real_data(n=1000, fs=500):
     I2C_SLAVE_ADDRESS = 0x04
     I2C_BUS = 1
@@ -10,11 +11,15 @@ def get_real_data(n=1000, fs=500):
     bus = smbus2.SMBus(I2C_BUS)
 
     try:
+        # Capture the signal from the i2c bus
         real_eeg_signal = capture_signal(bus, I2C_SLAVE_ADDRESS, n, fs)
         return real_eeg_signal
 
-    except KeyboardInterrupt:
-        print("Program stopped")
+    # Except error in the bus
+    except Exception as e:
+        print(f"Error: {e}")
+
+    # Close the bus after having measured
     finally:
         bus.close()
 
@@ -33,17 +38,18 @@ def read_adc_value(bus, address):
 def capture_signal(bus, address, channels=4, n=1000, fs=500):
     # Initialize variables
     combined_signal = []
-
-    # Check frequency of readings
+    sampling_period = 1 / fs
 
     # Read ADC values alternately from each channel
     for _ in range(n // channels):
         for adc_channel in range(channels):
+            # Write the channel in order to get the reading
             write_data(bus, adc_channel, address)
-            time.sleep(0.01)
+            # Adjust sleeping time to accomplish sampling frequency
+            time.sleep(sampling_period / channels)
+            # Read ADC channel and combine the signal with the other threes
             adc_value = read_adc_value(bus, address)
             combined_signal.append(adc_value)
-            time.sleep(0.01)
 
     # Ensure the combined signal length matches the expected number of samples
     combined_signal = combined_signal[:n]
