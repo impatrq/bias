@@ -18,6 +18,7 @@ def get_real_data(n=1000, fs=500):
     # Except error in the bus
     except Exception as e:
         print(f"Error: {e}")
+        raise
 
     # Close the bus after having measured
     finally:
@@ -25,15 +26,24 @@ def get_real_data(n=1000, fs=500):
 
 # Function to write data to the I2C slave
 def write_data(bus, data, address):
-    bus.write_byte(address, data)
-    print(f"Sent data: {data}")
+    try:
+        bus.write_byte(address, data)
+        print(f"Sent data: {data}")
+    except Exception as e:
+        print("Error writing data: {e}")
+        raise
 
 # Function to read data from the I2C slave
 def read_adc_value(bus, address):
-    data = bus.read_i2c_block_data(address, 0, 2)
-    # Sum the two bytes of the ADC
-    adc_value = (data[0] << 8) | data[1]
-    return adc_value
+    try:
+        data = bus.read_i2c_block_data(address, 0, 2)
+        # Sum the two bytes of the ADC
+        adc_value = (data[0] << 8) | data[1]
+        return adc_value
+    except Exception as e:
+        print(f"Error reading ADc: {e}")
+        raise
+
 
 def capture_signal(bus, address, channels=4, n=1000, fs=500):
     # Initialize variables

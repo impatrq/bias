@@ -2,6 +2,7 @@ import reception
 import extraction
 import ai
 import prediction
+import preprocessing
 
 def show_menu():
     print("EEG-based Wheelchair Control System")
@@ -31,10 +32,11 @@ def main():
                 print("No EEG data found. Capture data first.")
         elif choice == '3':
             if 'real_eeg_signal' in locals():
+                labels = ['forward', 'backward', 'left', 'right', 'stop', 'rest']
                 n = int(input("Enter number of data points: "))
                 duration = int(input("Enter duration in seconds: "))
                 fs = int(input("Enter sampling frequency: "))
-                df = extraction.extract_data(real_eeg_signal, n, duration, fs)
+                df = extraction.extract_data(real_eeg_signal, labels, n, duration, fs, online=True)
                 df.to_csv('extracted_features.csv', index=False)
                 print("Feature Extraction Complete.")
             else:
@@ -43,7 +45,7 @@ def main():
             n = int(input("Enter number of data points: "))
             duration = int(input("Enter duration in seconds: "))
             fs = int(input("Enter sampling frequency: "))
-            ai.main(n, duration, fs)
+            ai.main(n, duration, fs, online=True)
         elif choice == '5':
             n = int(input("Enter number of data points: "))
             duration = int(input("Enter duration in seconds: "))

@@ -8,12 +8,20 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 import joblib
 import reception
 
-def prepare_data(eeg_data, n, duration, fs):
-    df = extraction.extract_data(eeg_data, n, duration, fs)
-    # Prepare the dataset
-    X = df.drop(columns=['label'])
-    y = pd.get_dummies(df['label'])  # One-hot encoding
-    return X, y
+def prepare_data(eeg_data, n, duration, fs, online=True):
+    try:
+        if online:
+            df = extraction.extract_data(eeg_data, labels=['forward', 'backward', 'left', 'right', 'stop', 'rest'], n=n, duration=duration, fs=fs, online=online)
+        else:
+            df = extraction.extract_data(eeg_data, labels=['forward', 'backward', 'left', 'right', 'stop', 'rest'], n=n, duration=duration, fs=fs, online=online)
+
+        # Prepare the dataset
+        X = df.drop(columns=['label'])
+        y = pd.get_dummies(df['label'])  # One-hot encoding
+        return X, y
+    except Exception as e:
+        print(f"Error preparing data: {e}")
+        raise
 
 def split_data(X, y):
     return train_test_split(X, y, test_size=0.3, random_state=42)
@@ -49,15 +57,23 @@ def save_model_and_scaler(model, scaler):
     model.save('wheelchair_model.h5')
     joblib.dump(scaler, 'scaler.save')
 
-def main(n=1000, duration=2, fs=500):
-    real_eeg_signal = reception.get_real_data(n, fs)
-    X, y = prepare_data(real_eeg_signal, n, duration, fs)
-    X_train, X_test, y_train, y_test = split_data(X, y)
-    X_train, X_test, scaler = standardize_data(X_train, X_test)
-    model = build_model(X_train.shape[1], y_train.shape[1])
-    model = train_model(model, X_train, y_train, X_test, y_test)
-    evaluate_model(model, X_test, y_test)
-    save_model_and_scaler(model, scaler)
+def main(n=1000, duration=2, fs=500, online=True):
+    try:
+        if online:
+            raw = extraction.load_online_data()
+        else:
+            raw = reception.get_real_data(n, fs)
+        X, y = prepare_data(raw, n, duration, fs, online=online)
+        X_train, X_test, y_train, y_test = split_data(X, y)
+        X_train, X_test, scaler = standardize_data(X_train, X_test)
+        model = build_model(X_train.shape[1], y_train.shape[1])
+        model = train_model(model, X_train, y_train, X_test, y_test)
+        evaluate_model(model, X_test, y_test)
+        save_model_and_scaler(model, scaler)
+
+    except Exception as e:
+        print(f"Error in ai main: {e}")
+        raise
 
 if __name__ == "__main__":
     main()
