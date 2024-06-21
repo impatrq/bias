@@ -52,14 +52,20 @@ def capture_signal(bus, address, channels=4, n=1000, fs=500):
 
     # Read ADC values alternately from each channel
     for _ in range(n // channels):
+        # Start timer
+        start_time = time.time()
+
+        # Read all channels
         for adc_channel in range(channels):
             # Write the channel in order to get the reading
             write_data(bus, adc_channel, address)
-            # Adjust sleeping time to accomplish sampling frequency
-            time.sleep(sampling_period / channels)
             # Read ADC channel and combine the signal with the other threes
             adc_value = read_adc_value(bus, address)
             combined_signal.append(adc_value)
+
+    elapsed_time = time.time() - start_time
+    sleep_time = max(sampling_period - elapsed_time, 0)
+    time.sleep(sleep_time)
 
     # Ensure the combined signal length matches the expected number of samples
     combined_signal = combined_signal[:n]

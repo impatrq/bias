@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
 import filtering
-import graphing
+import graphing # type: ignore
 
 def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
     APPLY_DIGITAL_FILTERING = False
@@ -92,6 +92,7 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
     plt.tight_layout()
     plt.show()
 
+    # Return time vector and the signals already processed
     return t, interpolated_signals['alpha'], interpolated_signals['beta'], interpolated_signals['gamma'], interpolated_signals['delta'], interpolated_signals['theta']
 
 

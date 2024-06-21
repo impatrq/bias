@@ -4,7 +4,7 @@ from sklearn.decomposition import FastICA
 import preprocessing
 import pandas as pd
 import matplotlib.pyplot as plt
-import graphing
+import graphing # type: ignore
 
 def butter_bandpass(lowcut, highcut, fs, order=5):
     # Bandpass filter which allows a specific range of frequencies to pass
