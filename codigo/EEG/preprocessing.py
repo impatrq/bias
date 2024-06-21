@@ -2,8 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
 import filtering
+import graphing
 
 def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
+    APPLY_DIGITAL_FILTERING = False
 
     # Time vector
     t = np.linspace(0, duration, n, endpoint=False)
@@ -18,38 +20,42 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
         signal = random_signal(n)
         #signal = pure_signal_eeg(duration, fs)
 
-    signal_filtered = filtering.digital_filtering(signal, fs, notch=True, bandpass=False, car=False, ica=False)
-    graph_signal_voltage_time(t, signal, title="Filtered signal")
-    graph_signal_voltage_time(t, signal, title="Input signal")
-    plt.tight_layout()
-    plt.show()
-    # signal_filtered = signal
+    # Check if filtering wants to be applied
+    # if not APPLY_DIGITAL_FILTERING:
 
-    # Apply Fourier Transform
+    # Apply Fourier Transform for the original signal
     signal_fft = np.fft.fft(signal)
     frequencies = np.fft.fftfreq(n, d=1/fs)
     signal_fft_magnitude = np.abs(signal_fft) / n
 
-    # Eliminate the range of negative frequencies
+    # Eliminate the range of negative frequencies for original signal
     signal_fft_reduced = signal_fft[:n//2]
     frequencies_reduced = frequencies[:n//2]
-    signal_fft_magnitude_reduced = signal_fft_magnitude[:n//2] 
+    signal_fft_magnitude_reduced = signal_fft_magnitude[:n//2]
+
+    # Graph the entry signal
+    graphing.graph_signal_voltage_time(t, signal, title="Input signal")
+    graphing.graph_signal_voltage_frequency(frequencies_reduced, signal_fft_magnitude_reduced, title='Frequency spectrum of original signal')
+
+    # Apply digital filtering for clearer data
+    signal_filtered = filtering.digital_filtering(signal, fs, notch=True, bandpass=False, car=False, ica=False)
 
     # Apply Fourier Transform for filtered signal
     signal_fft_filtered = np.fft.fft(signal_filtered)
     frequencies_filtered = np.fft.fftfreq(n, d=1/fs)
     signal_fft_magnitude_filtered = np.abs(signal_fft_filtered) / n
 
-    # Eliminate the range of negative frequencies
+    # Eliminate the range of negative frequencies for filtered signal
     signal_fft_reduced_filtered = signal_fft_filtered[:n//2]
     frequencies_reduced_filtered = frequencies_filtered[:n//2]
     signal_fft_magnitude_reduced_filtered = signal_fft_magnitude_filtered[:n//2] 
 
     # Graph the entry signal
-    graph_signal_voltage_time(t, signal, title="Input signal")
-    graph_signal_voltage_frequency(frequencies_reduced, signal_fft_magnitude_reduced, title='Frequency spectrum of original signal')
-    graph_signal_voltage_time(t, signal_filtered, title="Input filtered signal")
-    graph_signal_voltage_frequency(frequencies_reduced_filtered, signal_fft_magnitude_reduced_filtered, title='Frequency spectrum of filtered signal')
+    graphing.graph_signal_voltage_time(t, signal, title="Input signal")
+
+    # Graph filtered signal
+    graphing.graph_signal_voltage_time(t, signal_filtered, title="Filtered signal")
+    graphing.graph_signal_voltage_frequency(frequencies_reduced_filtered, signal_fft_magnitude_reduced_filtered, title='Frequency spectrum of filtered signal')
 
     # Set the band of frequencies for each signal
     bands = {
@@ -61,11 +67,13 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
     }
 
     filtered_signals = {}
-
-    # Plot the filtered waves in the time domain
+    
+    # Reconstruct the negative part of signals
     for band_name, band_range in bands.items():
+        # Reconstruct and then apply Fourier in order to get the five signals over time
         filtered_signals[band_name] = filter_and_reconstruct(signal_fft, frequencies, band_range)
-        graph_signal_voltage_time(t, filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
+        # Plot the filtered waves in the time domain
+        graphing.graph_signal_voltage_time(t, filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
 
     # New sampling rate for interpolation
     new_fs = fs * 10
@@ -76,10 +84,11 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
 
     # Plot the interpolated signals
     for band_name, sig in interpolated_signals.items():
-        graph_signal_voltage_time(new_t, sig, title=f"{band_name.capitalize()} interpolated")
+        graphing.graph_signal_voltage_time(new_t, sig, title=f"{band_name.capitalize()} interpolated")
 
     print(interpolated_signals)
 
+    # Plot signals
     plt.tight_layout()
     plt.show()
 
@@ -122,6 +131,7 @@ def model_signal(n):
     # Repeat it until you have reached the number of samples
     repetitions = n // len(basic_eeg_signal)
 
+    # Add repetitions to the signal
     eeg_signal = np.tile(basic_eeg_signal, repetitions)
 
     return eeg_signal
@@ -162,25 +172,6 @@ def interpolate_signal(t, signal, new_t):
     # Interpolate the signal to new time points
     interpolated_signal = scipy.interpolate.interp1d(t, signal, kind='cubic')(new_t_clipped)
     return interpolated_signal
-
-def graph_signal_voltage_time(t, signal, title):
-    # Plot given signal in th time domain
-    plt.figure(figsize=(12, 6))
-    plt.plot(t, signal)
-    plt.title(title)
-    plt.xlabel("Time [s]")
-    plt.ylabel("Magnitude")
-    plt.grid()
-
-def graph_signal_voltage_frequency(frequencies, magnitudes, title):
-    # Plot given signal in the frquency domain
-    plt.figure(figsize=(12, 6))
-    plt.plot(frequencies, magnitudes)
-    plt.title(title)
-    plt.xlabel("Frequency [Hz]")
-    plt.ylabel("Magnitude")
-    plt.grid()
-
 
 if __name__ == "__main__":
     preprocess_signal()

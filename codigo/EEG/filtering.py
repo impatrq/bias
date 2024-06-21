@@ -4,6 +4,7 @@ from sklearn.decomposition import FastICA
 import preprocessing
 import pandas as pd
 import matplotlib.pyplot as plt
+import graphing
 
 def butter_bandpass(lowcut, highcut, fs, order=5):
     # Bandpass filter which allows a specific range of frequencies to pass
@@ -104,23 +105,17 @@ def digital_filtering(eeg_data, fs, notch, bandpass, car, ica):
         print(f"An error occurred during filtering: {e}")
         return None
 
-# Create function with random values
-def random_signal(n):
-    # Set fixed parameter of amplitude for random EEG (uV)
-    middle_amplitude = 0 
-    standard_deviation = 5
-    return np.random.normal(middle_amplitude, standard_deviation, n)
 
 def main():
     # Set parameters of eeg_data
     duration = 2
     n = 1000
-    
+
+    # Generate signal with pure waves
     # eeg_data = reception.get_real_data()
 
     # Generate random signal
-    signal_length = 1000
-    eeg_data = random_signal(signal_length)
+    eeg_data = preprocessing.random_signal(n)
 
     # eeg_data = preprocessing.pure_signal_eeg()
 
@@ -130,15 +125,17 @@ def main():
     # Calculate the time vector
     t = np.linspace(0, duration, n, endpoint=False)
 
-    preprocessing.graph_signal_voltage_time(t, eeg_data, title="Original Signal")
+    graphing.graph_signal_voltage_time(t, eeg_data, title="Original Signal")
 
     # Apply digital filtering
     filtered_data = digital_filtering(eeg_data, fs=fs, notch=True, bandpass=True, car=False, ica=False)
 
+    # Print shape of signals
     print(f"Time vector shape: {t.shape}")
     print(f"Filtered data shape: {filtered_data.shape}")
 
-    preprocessing.graph_signal_voltage_time(t, filtered_data, title="Filtered Signal")
+    # Graph filtered signal
+    graphing.graph_signal_voltage_time(t, filtered_data, title="Filtered Signal")
     plt.tight_layout()
     plt.show()
 
