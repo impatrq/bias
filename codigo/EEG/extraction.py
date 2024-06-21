@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import preprocessing
 import reception
+import mne
 from mne import io, Epochs, pick_types
 from mne.datasets import eegbci
 from mne.io import concatenate_raws, read_raw_edf
@@ -21,8 +22,15 @@ def extract_data(eeg_data, labels, n, duration, fs, online=True):
     data = []
 
     if online:
-        # Process and extract data from the raw signal for online data
-        events = mne.find_events(eeg_data, shortest_event=0, stim_channel='STI 014')
+        # Check if 'STI 014' channel exists
+        if 'STI 014' not in eeg_data.ch_names:
+            print("STI 014 channel not found, using alternative method to find events.")
+            # Example alternative method: using annotations to find events
+            events = mne.events_from_annotations(eeg_data)[0]
+        else:
+            # Process and extract data from the raw signal for online data
+            events = mne.find_events(eeg_data, shortest_event=0, stim_channel='STI 014')
+
         event_id = dict(hands=2, feet=3)
         picks = pick_types(eeg_data.info, meg=False, eeg=True, stim=False, eog=False, exclude='bads')
         

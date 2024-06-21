@@ -1,6 +1,6 @@
 import extraction
 import preprocessing
-from keras.models import load_model
+from keras.models import load_model # type: ignore
 import joblib
 import reception
 import pandas as pd

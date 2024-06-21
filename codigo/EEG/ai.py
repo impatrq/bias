@@ -1,19 +1,16 @@
 import extraction
 import pandas as pd
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
+from keras.models import Sequential # type: ignore
+from keras.layers import Dense, Dropout # type: ignore
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import EarlyStopping, ModelCheckpoint # type: ignore
 import joblib
 import reception
 
 def prepare_data(eeg_data, n, duration, fs, online=True):
     try:
-        if online:
-            df = extraction.extract_data(eeg_data, labels=['forward', 'backward', 'left', 'right', 'stop', 'rest'], n=n, duration=duration, fs=fs, online=online)
-        else:
-            df = extraction.extract_data(eeg_data, labels=['forward', 'backward', 'left', 'right', 'stop', 'rest'], n=n, duration=duration, fs=fs, online=online)
+        df = extraction.extract_data(eeg_data, labels=['forward', 'backward', 'left', 'right', 'stop', 'rest'], n=n, duration=duration, fs=fs, online=online)
 
         # Prepare the dataset
         X = df.drop(columns=['label'])
