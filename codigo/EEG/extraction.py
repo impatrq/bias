@@ -93,7 +93,7 @@ def main(n=1000, duration=2, fs=500, online=True):
         raw = load_online_data()
 
     else:
-        real_eeg_signal = reception.get_real_data(n, fs)  # Get the real EEG signal for offline data
+        real_eeg_signal = reception.get_real_combined_data(n, fs, filter=False)  # Get the real EEG signal for offline data
         raw = real_eeg_signal
     
     df = extract_data(raw, labels, n, duration, fs, online=online)

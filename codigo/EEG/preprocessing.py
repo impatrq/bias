@@ -15,10 +15,10 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
         signal = eeg_data
     else:
         # Stablish which signal to inject
-        # signal = square_signal(t) 
+        signal = square_signal(t) 
         # signal = model_signal(n)
-        signal = random_signal(n)
-        #signal = pure_signal_eeg(duration, fs)
+        # signal = random_signal(n)
+        # signal = pure_signal_eeg(duration, fs)
 
     # Check if filtering wants to be applied
     # if not APPLY_DIGITAL_FILTERING:
@@ -36,9 +36,10 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
     # Graph the entry signal
     graphing.graph_signal_voltage_time(t, signal, title="Input signal")
     graphing.graph_signal_voltage_frequency(frequencies_reduced, signal_fft_magnitude_reduced, title='Frequency spectrum of original signal')
-
+    
+    # else:
     # Apply digital filtering for clearer data
-    signal_filtered = filtering.digital_filtering(signal, fs, notch=True, bandpass=False, car=False, ica=False)
+    signal_filtered = filtering.digital_filtering(signal, fs, notch=True, bandpass=True, car=False, ica=False)
 
     # Apply Fourier Transform for filtered signal
     signal_fft_filtered = np.fft.fft(signal_filtered)
@@ -73,7 +74,7 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
         # Reconstruct and then apply Fourier in order to get the five signals over time
         filtered_signals[band_name] = filter_and_reconstruct(signal_fft, frequencies, band_range)
         # Plot the filtered waves in the time domain
-        graphing.graph_signal_voltage_time(t, filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
+        #graphing.graph_signal_voltage_time(t, filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
 
     # New sampling rate for interpolation
     new_fs = fs * 10
@@ -89,8 +90,7 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
     print(interpolated_signals)
 
     # Plot signals
-    plt.tight_layout()
-    plt.show()
+    graphing.plot_now()
 
     # Return time vector and the signals already processed
     return t, interpolated_signals['alpha'], interpolated_signals['beta'], interpolated_signals['gamma'], interpolated_signals['delta'], interpolated_signals['theta']
@@ -100,7 +100,7 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
 def random_signal(n):
     # Set fixed parameter of amplitude for random EEG (uV)
     middle_amplitude = 0 
-    standard_deviation = 5
+    standard_deviation = 5 # uV
     return np.random.normal(middle_amplitude, standard_deviation, n)
 
 def square_signal(t):

@@ -6,56 +6,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import graphing # type: ignore
 
-def butter_bandpass(lowcut, highcut, fs, order=5):
-    # Bandpass filter which allows a specific range of frequencies to pass
-    nyquist = 0.5 * fs
-    low = lowcut / nyquist
-    high = highcut / nyquist
-    # Range of the bandpass filter
-    b, a = butter(order, [low, high], btype='band')
-    return b, a
-
-def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
-    # Calculate the band
-    b, a = butter_bandpass(lowcut, highcut, fs, order=order)
-    # Check the padding length
-    padlen = 3 * max(len(b), len(a)) 
-    if data.shape[1] <= padlen:
-        raise ValueError(f"The length of the input vector must be greater than padlen, which is {padlen}. Data length is {data.shape[1]}.")
-    # Apply the bandpass filter
-    y = filtfilt(b, a, data, axis=1)
-    return y
-
-def butter_notch_filter(data, notch_freq, fs, quality_factor=30):
-    # Filtere use to remove a specific frequncy
-    nyquist = 0.5 * fs
-    notch = notch_freq / nyquist
-    # Calculate the specific small band which will be filtered
-    b, a = butter(2, [notch - notch / quality_factor, notch + notch / quality_factor], btype='bandstop')
-    # Calculate the padding length
-    padlen = 3 * max(len(b), len(a))
-    print(f"Notch filter pad length: {padlen}")
-    if data.shape[1] <= padlen:
-        raise ValueError(f"The length of the input vector must be greater than padlen, which is {padlen}. Data length is {data.shape[1]}.")
-    # Apply the notch filter
-    y = filtfilt(b, a, data, axis=1)
-    return y
-
-def apply_car(data):
-    # Print the original shape of the function
-    print(f"Data shape before CAR: {data.shape}")
-    # Ensure mean_signal is a 2D array
-    mean_signal = np.mean(data, axis=0, keepdims=True)
-    # Apply CAR filter
-    car_data = data - mean_signal
-    return car_data
-
-def apply_ica(data, n_components=None):
-    # Apply ICA filter
-    ica = FastICA(n_components=n_components)
-    components = ica.fit_transform(data.T).T
-    return components, ica.mixing_
-
 def digital_filtering(eeg_data, fs, notch, bandpass, car, ica):
     try:
         print(f"Original data shape: {eeg_data.shape}")
@@ -105,6 +55,64 @@ def digital_filtering(eeg_data, fs, notch, bandpass, car, ica):
         print(f"An error occurred during filtering: {e}")
         return None
 
+# Preprocessing function to handle inf and NaN values
+def preprocess_data(data):
+    # Replace inf with NaN
+    data = np.where(np.isinf(data), np.nan, data)
+    # Remove NaN values
+    data = np.nan_to_num(data)
+    return data
+
+def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
+    # Bandpass filter which allows a specific range of frequencies to pass
+    nyquist = 0.5 * fs
+    low = lowcut / nyquist
+    high = highcut / nyquist
+
+    # Range of the bandpass filter
+    b, a = butter(order, [low, high], btype='band')
+
+    # Check the padding length
+    padlen = 3 * max(len(b), len(a)) 
+    if data.shape[1] <= padlen:
+        raise ValueError(f"The length of the input vector must be greater than padlen, which is {padlen}. Data length is {data.shape[1]}.")
+    
+    # Apply the bandpass filter
+    y = filtfilt(b, a, data, axis=1)
+    return y
+
+def butter_notch_filter(data, notch_freq, fs, quality_factor=30):
+    # Filtere use to remove a specific frequncy
+    nyquist = 0.5 * fs
+    notch = notch_freq / nyquist
+
+    # Calculate the specific small band which will be filtered
+    b, a = butter(2, [notch - notch / quality_factor, notch + notch / quality_factor], btype='bandstop')
+
+    # Calculate the padding length
+    padlen = 3 * max(len(b), len(a))
+    print(f"Notch filter pad length: {padlen}")
+    if data.shape[1] <= padlen:
+        raise ValueError(f"The length of the input vector must be greater than padlen, which is {padlen}. Data length is {data.shape[1]}.")
+    
+    # Apply the notch filter
+    y = filtfilt(b, a, data, axis=1)
+    return y
+
+def apply_car(data):
+    # Print the original shape of the function
+    print(f"Data shape before CAR: {data.shape}")
+    # Ensure mean_signal is a 2D array
+    mean_signal = np.mean(data, axis=0, keepdims=True)
+    # Apply CAR filter
+    car_data = data - mean_signal
+    return car_data
+
+def apply_ica(data, n_components=None):
+    # Apply ICA filter
+    ica = FastICA(n_components=n_components)
+    components = ica.fit_transform(data.T).T
+    return components, ica.mixing_
 
 def main():
     # Set parameters of eeg_data
@@ -112,12 +120,16 @@ def main():
     n = 1000
 
     # Generate signal with pure waves
-    # eeg_data = reception.get_real_data()
+    # eeg_data = reception.get_real_combined_data(n=n, fs=n/duration, filter=True)
 
     # Generate random signal
     eeg_data = preprocessing.random_signal(n)
 
+    # Generate signal with pure waves
     # eeg_data = preprocessing.pure_signal_eeg()
+
+    # Handle Nan and infinite values
+    eeg_data = preprocess_data(eeg_data) # Could be applied to the filtering function
 
     # Define the sampling frequency
     fs = 500  # Hz

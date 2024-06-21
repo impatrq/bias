@@ -59,7 +59,7 @@ def main(n=1000, duration=2, fs=500, online=True):
         if online:
             raw = extraction.load_online_data()
         else:
-            raw = reception.get_real_data(n, fs)
+            raw = reception.get_real_combined_data(n, fs, filter=False)
         X, y = prepare_data(raw, n, duration, fs, online=online)
         X_train, X_test, y_train, y_test = split_data(X, y)
         X_train, X_test, scaler = standardize_data(X_train, X_test)

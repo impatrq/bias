@@ -29,7 +29,7 @@ def classify_eeg(model, scaler, eeg_data, n, duration, fs):
 
 def make_prediction(n, duration, fs):
     try:
-        real_eeg_signal = reception.get_real_data(n, fs)
+        real_eeg_signal = reception.get_real_combined_data(n, fs, filter=False)
         model, scaler = load_model_and_scaler()
         prediction_result = classify_eeg(model, scaler, real_eeg_signal, n, duration, fs)
         print(f'Predicted class: {prediction_result}')
@@ -43,7 +43,7 @@ def main(n=1000, duration=2, fs=500):
     try:
         model, scaler = load_model_and_scaler()
         while True:
-            real_eeg_signal = reception.get_real_data(n, fs)
+            real_eeg_signal = reception.get_real_combined_data(n, fs, filter=False)
             prediction = classify_eeg(model, scaler, real_eeg_signal, n, duration, fs)
             print(f'Predicted class: {prediction}')
     

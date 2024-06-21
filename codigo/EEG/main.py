@@ -21,7 +21,7 @@ def main():
         if choice == '1':
             n = int(input("Enter number of data points: "))
             fs = int(input("Enter sampling frequency: "))
-            real_eeg_signal = reception.get_real_data(n, fs)
+            real_eeg_signal = reception.get_real_combined_data(n, fs, filter=False)
             print("EEG Data Captured.")
         elif choice == '2':
             if 'real_eeg_signal' in locals():
