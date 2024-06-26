@@ -1,4 +1,4 @@
-import smbus2
+#import smbus2
 import time
 import numpy as np
 import graphing # type: ignore

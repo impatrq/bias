@@ -6,8 +6,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import graphing # type: ignore
 
-def digital_filtering(eeg_data, fs, notch, bandpass, car, ica):
+def digital_filtering(eeg_data, fs, notch, bandpass, car=False, ica=False):
     try:
+        # Handle Nan and infinite values
+        eeg_data = preprocess_data(eeg_data)
+
+        # Print data shape
         print(f"Original data shape: {eeg_data.shape}")
 
         # Check the dimentions of the eeg_data
@@ -91,7 +95,6 @@ def butter_notch_filter(data, notch_freq, fs, quality_factor=30):
 
     # Calculate the padding length
     padlen = 3 * max(len(b), len(a))
-    print(f"Notch filter pad length: {padlen}")
     if data.shape[1] <= padlen:
         raise ValueError(f"The length of the input vector must be greater than padlen, which is {padlen}. Data length is {data.shape[1]}.")
     
@@ -127,9 +130,6 @@ def main():
 
     # Generate signal with pure waves
     # eeg_data = preprocessing.pure_signal_eeg()
-
-    # Handle Nan and infinite values
-    eeg_data = preprocess_data(eeg_data) # Could be applied to the filtering function
 
     # Define the sampling frequency
     fs = 500  # Hz

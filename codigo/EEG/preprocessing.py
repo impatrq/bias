@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import scipy.interpolate
 import filtering
 import graphing # type: ignore
+import mne
 
 def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
     APPLY_DIGITAL_FILTERING = False
@@ -11,8 +12,14 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
     t = np.linspace(0, duration, n, endpoint=False)
     
     if eeg_data is not None:
-        # Injection of real data
-        signal = eeg_data
+        if isinstance(eeg_data, np.ndarray):
+            # Injection of real data
+            signal = eeg_data
+        elif isinstance(eeg_data, mne.epochs.Epochs):
+            signal = eeg_data.get_data(copy=True).mean(axis=0)  # Average over epochs
+            t = np.linspace(0, duration, len(signal), endpoint=False)
+        else:
+            raise ValueError("Unsupported data format")
     else:
         # Stablish which signal to inject
         signal = square_signal(t) 
