@@ -80,8 +80,8 @@ def capture_signals(bus, address, channels=4, n=1000, fs=500):
             # Append the data obtained to each channel data
             signals[adc_channel].append(adc_value)
 
-    # Check the time it takes to read
-    elapsed_time = time.time() - start_time
+        # Check the time it takes to read
+        elapsed_time = time.time() - start_time
 
     # Calculate resting time
     sleep_time = max(sampling_period - elapsed_time, 0)
