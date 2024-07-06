@@ -1,4 +1,4 @@
-#import smbus2
+import smbus
 import time
 import numpy as np
 import graphing # type: ignore
@@ -19,11 +19,11 @@ def get_real_combined_data(n, fs, filter=False):
 
 # Get the data from the Raspberry Pi Pico
 def get_real_data(n=1000, fs=500):
-    I2C_SLAVE_ADDRESS = 0x04
+    I2C_SLAVE_ADDRESS = 0x3E
     I2C_BUS = 1
 
     # Set i2c bus
-    bus = smbus2.SMBus(I2C_BUS)
+    bus = smbus.SMBus(I2C_BUS)
 
     try:
         # Capture the signal from the i2c bus
@@ -66,8 +66,43 @@ def capture_signals(bus, address, channels=4, n=1000, fs=500):
     signals = {ch: [] for ch in range(channels)}
     sampling_period = 1 / fs
 
+    i = 1
+    print ("Loop " + str(n))
+    # start_time = time.time()
     # Read ADC values alternately from each channel
-    for _ in range(n // channels):
+    for _ in range(n):
+        try:
+            print ("Writing data " + str(i))
+            # Write out I2C command: address, cmd, msg[0]
+            bus.write_i2c_block_data(address, i&0xff, [i>>8])
+        except Exception as e:
+            print ("Writing Error " + str(e))
+            continue
+        #sleep (0.1)
+        read = 0
+        while read == 0:
+            try:
+                print ("Reading data")
+                rx_bytes = bus.read_i2c_block_data(address, 0, 8)
+            except Exception as e:
+                print ("Read Error "+str(e))
+                continue
+            read = 1
+        print ("Read "+str(rx_bytes))
+
+        value0 = rx_bytes[0] + (rx_bytes[1] << 8)
+        value1 = rx_bytes[2] + (rx_bytes[3] << 8)
+        value2 = rx_bytes[4] + (rx_bytes[5] << 8)
+        value3 = rx_bytes[6] + (rx_bytes[7] << 8)
+
+        signals[0].append(value0)
+        signals[1].append(value1)
+        signals[2].append(value2)
+        signals[3].append(value3)
+
+        print(f"Read value0: {value0}; value1: {value1}; value2: {value2}; value3: {value3}")
+        i+=1
+        '''
         # Start timer
         start_time = time.time()
 
@@ -78,18 +113,22 @@ def capture_signals(bus, address, channels=4, n=1000, fs=500):
             # Read ADC channel and combine the signal with the other threes
             adc_value = read_adc_value(bus, address)
             # Append the data obtained to each channel data
-            signals[adc_channel].append(adc_value)
-
-        # Check the time it takes to read
-        elapsed_time = time.time() - start_time
+            signals[adc_channel].append(adc_value)}
+        '''
+    
+    '''
+    # Check the time it takes to read
+    elapsed_time = time.time() - start_time
 
     # Calculate resting time
     sleep_time = max(sampling_period - elapsed_time, 0)
     time.sleep(sleep_time)
+    '''
 
     # Ensure all signals have the correct length
     for ch in range(channels):
         signals[ch] = signals[ch][:n // channels]
+    
 
     return signals
 

@@ -4,60 +4,131 @@
 #include <stdio.h>
 
 #define I2C_ADDR 0x3E
+#define ADC_DELAY_US 1000
+#define I2C_PORT i2c0
+#define NUMBER_OF_BYTES_TO_READ 3
+#define NUMBER_OF_CHANNELS 4
+#define NUMBER_OF_BYTES_TO_SEND 8
+
+bool read_adc();
+void init_adc();
+
+const int BAUDRATE = 100 * 1000;
+
+const uint8_t SDA_PIN = 4;
+const uint8_t SCL_PIN = 5;
+
+const uint8_t ADC_PIN_CHANNEL_0 = 26;
+const uint8_t ADC_PIN_CHANNEL_1 = 27;
+const uint8_t ADC_PIN_CHANNEL_2 = 28;
+const uint8_t ADC_PIN_CHANNEL_3 = 29;
 
 // Whch pin to monitor - default to 0
-static int adc_pin = 0;
+static int ADC_CHANNEL = 0;
 
 // ADC value
-uint16_t adc_value;
+uint16_t adc_values[NUMBER_OF_CHANNELS];
 
 // conversion factor is into mili volts
-const float conversion_factor = 3.3f * 1000 / (1<<12);
+const float conversion_factor = 3.3f * 1000 / (1 << 12);
 
 
 int main() {
     // setup ADC
     stdio_init_all();
-    adc_init();
-    // set gpio as adc (no_pullups etc)
-    adc_gpio_init(26);
-    adc_select_input(adc_pin);
+    init_adc();
 
     // i2c setup
-    i2c_init(i2c0, 100 * 1000);
-    i2c_set_slave_mode(i2c0, true, I2C_ADDR);
-    gpio_set_function(4, GPIO_FUNC_I2C);
-    gpio_set_function(5, GPIO_FUNC_I2C);
-    gpio_pull_up(4);
-    gpio_pull_up(5);
+    i2c_init(I2C_PORT, BAUDRATE);
+    i2c_set_slave_mode(I2C_PORT, true, I2C_ADDR);
+    gpio_set_function(SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(SDA_PIN);
+    gpio_pull_up(SCL_PIN);
     
-    uint8_t rxdata[4];
-    uint8_t txdata[2];
-    char message[20];
+    uint8_t rxdata[NUMBER_OF_BYTES_TO_READ + 1];
+    uint8_t txdata[NUMBER_OF_BYTES_TO_SEND];
+    //char message[20];
+
+    int values[NUMBER_OF_CHANNELS];
+
+    struct repeating_timer timer;
+    add_repeating_timer_us(ADC_DELAY_US, read_adc, NULL, &timer);
+
     while (true) {
-        adc_value = adc_read();
-        int value = (int) adc_value * conversion_factor;
-        printf("adc_value: %d; ", value);
+        // read_adc();
+        for (int channel = 0; channel < NUMBER_OF_CHANNELS; channel++) {
+            values[channel] = (int) adc_values[channel] * conversion_factor;
+        }
+        
+        printf("adc_value0: %d; ", values[0]);
+        printf("adc_value1: %d; ", values[1]);
+        printf("adc_value2: %d; ", values[2]);
+        printf("adc_value3: %d; ", values[3]);
+
         // Receive data from controller
         // 3 bytes received - byte 0 is cmd (used as lower byte) byte 2 is higher - byte 3 is 0
-        if (i2c_get_read_available(i2c0) < 3) {
+        if (i2c_get_read_available(I2C_PORT) < NUMBER_OF_BYTES_TO_READ) {
             continue;
         }
 
-        i2c_read_raw_blocking (i2c0, rxdata, 3);
+        i2c_read_raw_blocking(I2C_PORT, rxdata, NUMBER_OF_BYTES_TO_READ);
         //sprintf (message, "Rx: %d %d %d\r\n", rxdata[0], rxdata[1], rxdata[2]);
-        sprintf (message, "Value %d\r\n", rxdata[0] + (rxdata[1]<<8));
-        printf("\nadc_value_sent: %d\n", value);
+        // sprintf (message, "Value %d\r\n", rxdata[0] + (rxdata[1] << 8));
+
+        printf("\nadc_value_sent_0: %d\n", values[0]);
+        printf("\nadc_value_sent_1: %d\n", values[1]);
+        printf("\nadc_value_sent_2: %d\n", values[2]);
+        printf("\nadc_value_sent_3: %d\n", values[3]);
+        
+        //sleep_us(100);
+
         // Note that this will drop fraction rather than round, but close enough
         //int value = (int) adc_value * conversion_factor;
-        txdata[0] = value & 0xFF;
-        txdata[1] = value >> 8;
-        sprintf (message, "Tx: %d %d - %d\r\n", txdata[0], txdata[1], value);
+        for (int channel = 0, bit_number = 0; channel < NUMBER_OF_CHANNELS; channel++, bit_number++) {
+            txdata[bit_number] = values[channel] & 0xFF;
+            bit_number++;
+            txdata[bit_number] = values[channel] >> 8;
+        }
+        /*
+        txdata[0] = values[0] & 0xFF;
+        txdata[1] = values[0] >> 8;
+        txdata[2] = values[1] & 0xFF;
+        txdata[3] = values[1] >> 8;
+        txdata[4] = values[2] & 0xFF;
+        txdata[5] = values[2] >> 8;
+        txdata[6] = values[3] & 0xFF;
+        txdata[7] = values[3] >> 8;
+        */
+
+
+        //sprintf(message, "Tx: %d %d - %d\r\n", txdata[0], txdata[1], values);
+
         // Sends data in mv (as int)
-        i2c_write_raw_blocking(i2c0, txdata, 2);
-        
+        i2c_write_raw_blocking(I2C_PORT, txdata, NUMBER_OF_BYTES_TO_SEND);
+        // sleep_ms(10);
     }
 }
+
+bool read_adc() {
+    for (int channel = 0; channel < NUMBER_OF_CHANNELS; channel++) {
+        adc_select_input(channel);
+        adc_values[channel] = adc_read();
+        // printf("adc_values[%d]: %d\n", i, adc_values[i]);
+    }
+}
+
+void init_adc() {
+    adc_init();
+    adc_gpio_init(ADC_PIN_CHANNEL_0); // ADC Channel 0 (GPIO 26)
+    adc_gpio_init(ADC_PIN_CHANNEL_1); // ADC Channel 1 (GPIO 27)
+    adc_gpio_init(ADC_PIN_CHANNEL_2); // ADC Channel 2 (GPIO 28)
+    adc_gpio_init(ADC_PIN_CHANNEL_3); // ADC Channel 3 (GPIO 29)
+    adc_select_input(ADC_CHANNEL);
+
+    printf("ADC initialized\n");
+}
+
 /*
 #include <stdio.h>
 #include "pico/stdlib.h"
@@ -78,14 +149,6 @@ void init_adc() {
     adc_select_input(0);
 
     printf("ADC initialized\n");
-}
-
-void read_adc() {
-    for (int i = 0; i < 4; i++) {
-        adc_select_input(i);
-        adc_values[i] = adc_read();
-        // printf("adc_values[%d]: %d\n", i, adc_values[i]);
-    }
 }
 
 int main() {
