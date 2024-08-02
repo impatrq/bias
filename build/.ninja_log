@@ -153,3 +153,13 @@
 490155	512565	7397584335245528	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/rp2040_usb_device_enumeration.c.obj	5555409ad8b7ef5e
 494816	514542	7397584357278890	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_i2c/i2c.c.obj	ad27598c232029d9
 499629	515412	7397584366994297	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_adc/adc.c.obj	ad63540b5ec60b7a
+81	3069	7415883623233262	CMakeFiles/reception.dir/reception.c.obj	9cfd02745129285c
+3071	10336	7415883668731211	reception.elf	111394b10b93f6ae
+218	3523	7415888629591015	CMakeFiles/reception.dir/reception.c.obj	9cfd02745129285c
+3526	9514	7415888658098800	reception.elf	111394b10b93f6ae
+696	6141	7416220712349605	CMakeFiles/reception.dir/reception.c.obj	9cfd02745129285c
+6145	14278	7416220767981809	reception.elf	111394b10b93f6ae
+438	4229	7416228255927092	CMakeFiles/reception.dir/reception.c.obj	9cfd02745129285c
+4232	10009	7416228296774345	reception.elf	111394b10b93f6ae
+61	3488	7416231471427550	CMakeFiles/reception.dir/reception.c.obj	9cfd02745129285c
+3490	8112	7416231500435088	reception.elf	111394b10b93f6ae

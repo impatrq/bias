@@ -54,9 +54,9 @@ void i2c_slave_init(i2c_inst_t *i2c, uint8_t address) {
     printf("Slave mode initialized correctly");
     // Handle interruptions
     irq_set_exclusive_handler(I2C0_IRQ, i2c_slave_handler);
-    printf("Problem with irq_set_exclusive_handler");
+    printf("No problem with irq_set_exclusive_handler");
     irq_set_enabled(I2C0_IRQ, true);
-    printf("Problem with irq_set_enabled");
+    printf("No roblem with irq_set_enabled");
 }
 
 void i2c_slave_handler() {
@@ -75,6 +75,8 @@ void i2c_slave_handler() {
         // Use received data to select ADC input, assuming data is valid ADC input channel
         adc_input = data;
     }
+
+    //printf("I2C_IC_INTR_STAT_R_RD_REQ_BITS: %d", I2C_IC_INTR_STAT_R_RD_REQ_BITS);
     if (status & I2C_IC_INTR_STAT_R_RD_REQ_BITS) {
         // Read the selected ADC input
         adc_value = read_adc_value(adc_input);
