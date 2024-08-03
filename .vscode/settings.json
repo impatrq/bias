@@ -1,3 +1,14 @@
 {
-    "cmake.sourceDirectory": "C:/Users/estudiante/Documents/GitHub/bias/codigo/PicoEEG"
+    "cmake.sourceDirectory": "C:/Users/estudiante/Documents/GitHub/bias/codigo/PicoEEG",
+    "files.associations": {
+        "adc.h": "c",
+        "stdlib.h": "c",
+        "i2c_slave.h": "c",
+        "math.h": "c",
+        "i2c.h": "c",
+        "malloc.h": "c",
+        "stdio.h": "c",
+        "type_traits": "c",
+        "uart.h": "c"
+    }
 }

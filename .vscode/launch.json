@@ -1,0 +1,25 @@
+{
+    "configurations": [
+    {
+        "cwd": "${workspaceRoot}",
+        "executable": "./build/reception.elf",
+        "name": "Debug with OpenOCD",
+        "request": "launch",
+        "type": "cortex-debug",
+        "servertype": "openocd",
+        "configFiles": [
+            "interface/cmsis-dap.cfg",
+            "target/rp2040.cfg"
+        ],
+        "openOCDPreConfigLaunchCommands": [
+            "set USE_CORE 0"
+        ],
+        "openOCDLaunchCommands": [
+            "adapter speed 4000"
+        ],
+        "searchDir": [],
+        "runToEntryPoint": "main",
+        "showDevDebugOutput": "none"
+    }
+    ]
+}
