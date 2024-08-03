@@ -235,3 +235,5 @@
 525093	583044	7444180512994856	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/rp2040_usb_device_enumeration.c.obj	efdf831d61d47b0f
 534834	588725	7444180577267693	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_adc/adc.c.obj	8a836c113c55313c
 588727	607095	7444180705949034	reception.elf	6b7d2af4ef46cf82
+467	15223	7444181672899460	CMakeFiles/reception.dir/reception.c.obj	2bc5197ee2238ef1
+15231	54309	7444182020829922	reception.elf	6b7d2af4ef46cf82
