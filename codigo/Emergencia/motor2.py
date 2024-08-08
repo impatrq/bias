@@ -1,13 +1,21 @@
-from gpiozero import PWMOutputDevice, DigitalOutputDevice
+from gpiozero import PWMLED, PWMOutputDevice
+from gpiozero.pins.pigpio import PiGPIOFactory
+from time import sleep
 import time
 
+# Configurar la fábrica de pines para usar pigpio
+factory = PiGPIOFactory()
+
+# Configurar el pin que usaremos para PWM
+pwm_led_pin = PWMLED(18, pin_factory=factory)
+
 # GPIO Pin setup for Motor 1
-motor1_in1 = PWMOutputDevice(13)  # Use PWM-capable pin
-motor1_in2 = PWMOutputDevice(19)  # Use PWM-capable pinx
+motor1_in1 = PWMOutputDevice(13, pin_factory=factory)  # Use PWM-capable pin
+motor1_in2 = PWMOutputDevice(19, pin_factory=factory)  # Use PWM-capable pin (si está en uso, cámbialo)
 
 # GPIO Pin setup for Motor 2
-motor2_in1 = PWMOutputDevice(18)  # Use PWM-capable pin
-motor2_in2 = PWMOutputDevice(12)  # Use PWM-capable pin
+motor2_in1 = PWMOutputDevice(17, pin_factory=factory)  # Use PWM-capable pin (debe estar disponible)
+motor2_in2 = PWMOutputDevice(12, pin_factory=factory)  # Use PWM-capable pin
 
 def set_motor_speed(motor_in1, motor_in2, speed):
     if speed > 0:
@@ -61,7 +69,17 @@ try:
             brake()
         else:
             print("Invalid command")
+
         time.sleep(1)
         brake()  # Stop after each command
+
+        # Controlar el LED PWM (opcional)
+        for value in range(0, 101):
+            pwm_led_pin.value = value / 100.0
+            sleep(0.01)
+        for value in range(100, -1, -1):
+            pwm_led_pin.value = value / 100.0
+            sleep(0.01)
+
 except KeyboardInterrupt:
     pass
