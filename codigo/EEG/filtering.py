@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.signal import butter, filtfilt, firwin, lfilter, iirfilter, firwin, lfilter
+from scipy.signal import butter, filtfilt, firwin, lfilter, iirfilter
 from sklearn.decomposition import FastICA
 import preprocessing
 import matplotlib.pyplot as plt
