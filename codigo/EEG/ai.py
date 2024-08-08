@@ -24,6 +24,7 @@ def split_data(X, y):
     return train_test_split(X, y, test_size=0.3, random_state=42)
 
 def standardize_data(X_train, X_test):
+    # Standirized data for using it later
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)

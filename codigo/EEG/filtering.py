@@ -1,12 +1,20 @@
 import numpy as np
-from scipy.signal import butter, filtfilt
+from scipy.signal import butter, filtfilt, firwin, lfilter
 from sklearn.decomposition import FastICA
 import preprocessing
 import pandas as pd
 import matplotlib.pyplot as plt
 import graphing # type: ignore
 
-def digital_filtering(eeg_data, fs, notch, bandpass, car=False, ica=False):
+def filter_signals(eeg_signals, fs):
+    filtered_signals = {}
+    for ch, signal in eeg_signals.items():
+        filtered_signal = digital_filtering(signal, fs, notch=True, bandpass=True, fir=True, car=False, ica=False)
+        filtered_signals[ch] = filtered_signal
+        graphing.plot_signal(signal, filtered_signal, ch, fs)
+    return filtered_signals
+
+def digital_filtering(eeg_data, fs, notch, bandpass, fir, car=False, ica=False):
     try:
         # Handle Nan and infinite values
         eeg_data = preprocess_data(eeg_data)
@@ -28,6 +36,11 @@ def digital_filtering(eeg_data, fs, notch, bandpass, car=False, ica=False):
             eeg_data = butter_bandpass_filter(eeg_data, lowcut=0.5, highcut=50, fs=fs)
             print(f"Data shape after bandpass filter: {eeg_data.shape}")
         
+        if fir:
+            # Apply FIR filter
+            eeg_data = fir_filter(eeg_data, fs, cutoff=30, numtaps=101)
+            print(f"Data shape after FIR filter: {eeg_data.shape}")
+
         if car:
             # Apply Common Average Reference (CAR)
             eeg_data_car = apply_car(eeg_data)
@@ -117,6 +130,16 @@ def apply_ica(data, n_components=None):
     components = ica.fit_transform(data.T).T
     return components, ica.mixing_
 
+def fir_filter(data, fs, cutoff, numtaps):
+    # Design FIR filter using firwin
+    fir_coefficients = firwin(numtaps, cutoff, fs=fs, pass_zero=True)  # Low-pass FIR filter
+    # Apply the FIR filter using lfilter
+    filtered_data = np.zeros_like(data)
+    for i in range(data.shape[0]):
+        filtered_data[i, :] = lfilter(fir_coefficients, 1.0, data[i, :])
+    
+    return filtered_data
+
 def main():
     # Set parameters of eeg_data
     duration = 2
@@ -140,7 +163,7 @@ def main():
     graphing.graph_signal_voltage_time(t, eeg_data, title="Original Signal")
 
     # Apply digital filtering
-    filtered_data = digital_filtering(eeg_data, fs=fs, notch=True, bandpass=True, car=False, ica=False)
+    filtered_data = digital_filtering(eeg_data, fs=fs, notch=True, bandpass=True, fir=True, car=False, ica=False)
 
     # Print shape of signals
     print(f"Time vector shape: {t.shape}")
