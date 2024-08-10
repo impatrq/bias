@@ -1,7 +1,7 @@
 import serial
 import time
 import numpy as np
-import graphing  # type: ignore
+import graphingPython  # type: ignore
 import json
 import filtering
 
@@ -14,7 +14,7 @@ def get_real_combined_data(n, fs, filter):
     
     # Filter if necessary
     if filter:
-        filtered_signals = filtering.filter_signals(real_eeg_signals, fs)
+        filtered_signals = filtering.filter_signals(eeg_signals=real_eeg_signals, fs=fs)
         combined_signal = combine_signals(filtered_signals)
     else:
         combined_signal = combine_signals(real_eeg_signals)
@@ -77,19 +77,10 @@ def main():
     # Filter if necessary
     if filter:
         filtered_signals = filtering.filter_signals(eeg_signals=signals, fs=fs)
-    
-    print(signals['ch0'])
-    print(signals['ch1'])
-    print(signals['ch2'])
-    print(signals['ch3'])
-    t = np.arange(len(signals['ch0'])) / fs
-    t = np.arange(len(signals['ch1'])) / fs
-    t = np.arange(len(signals['ch2'])) / fs
-    t = np.arange(len(signals['ch3'])) / fs
-    graphing.graph_signal_voltage_time(t=t, signal=np.array(signals['ch0']), title="Channel 0 Signal")
-    graphing.graph_signal_voltage_time(t=t, signal=np.array(signals['ch1']), title="Channel 1 Signal")
-    graphing.graph_signal_voltage_time(t=t, signal=np.array(signals['ch2']), title="Channel 2 Signal")
-    graphing.graph_signal_voltage_time(t=t, signal=np.array(signals['ch3']), title="Channel 3 Signal")
+
+    for ch, signal in signals:
+        t = np.arange(len(signals[ch])) / fs
+        graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Channel 0 Signal")
 
 if __name__ == "__main__":
     main()
