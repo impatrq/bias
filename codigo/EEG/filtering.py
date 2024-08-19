@@ -4,6 +4,35 @@ import preprocessing
 import matplotlib.pyplot as plt
 import graphingPython
 
+def main():
+    # Set parameters of eeg_data
+    duration = 2
+    n = 1000
+
+    # Generate random signal
+    eeg_data = preprocessing.random_signal(n)
+
+    # Define the sampling frequency
+    fs = 500  # Hz
+
+    # Calculate the time vector
+    t = np.linspace(0, duration, n, endpoint=False)
+
+    # Graph original signal
+    graphingPython.graph_signal_voltage_time(t=t, signal=eeg_data, title="Original Signal")
+
+    # Apply digital filtering
+    filtered_data = digital_filtering(eeg_data=eeg_data, fs=fs, notch=True, bandpass=True, fir=True, iir=True)
+
+    # Print shape of signals
+    print(f"Time vector shape: {t.shape}")
+    print(f"Filtered data shape: {filtered_data.shape}")
+
+    # Graph filtered signal
+    graphingPython.graph_signal_voltage_time(t=t, signal=filtered_data, title="Filtered Signal")
+    plt.tight_layout()
+    plt.show()
+
 def filter_signals(eeg_signals, fs):
     filtered_signals = {}
     for ch, signal in eeg_signals.items():
@@ -117,35 +146,6 @@ def iir_filter(data, fs, cutoff):
         filtered_data[i, :] = filtfilt(b, a, data[i, :])
     
     return filtered_data
-
-def main():
-    # Set parameters of eeg_data
-    duration = 2
-    n = 1000
-
-    # Generate random signal
-    eeg_data = preprocessing.random_signal(n)
-
-    # Define the sampling frequency
-    fs = 500  # Hz
-
-    # Calculate the time vector
-    t = np.linspace(0, duration, n, endpoint=False)
-
-    # Graph original signal
-    graphingPython.graph_signal_voltage_time(t=t, signal=eeg_data, title="Original Signal")
-
-    # Apply digital filtering
-    filtered_data = digital_filtering(eeg_data=eeg_data, fs=fs, notch=True, bandpass=True, fir=True, iir=True)
-
-    # Print shape of signals
-    print(f"Time vector shape: {t.shape}")
-    print(f"Filtered data shape: {filtered_data.shape}")
-
-    # Graph filtered signal
-    graphingPython.graph_signal_voltage_time(t=t, signal=filtered_data, title="Filtered Signal")
-    plt.tight_layout()
-    plt.show()
 
 if __name__ == "__main__":
     main()

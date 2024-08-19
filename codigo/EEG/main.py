@@ -4,15 +4,6 @@ import ai
 import prediction
 import preprocessing
 
-def show_menu():
-    print("EEG-based Wheelchair Control System")
-    print("1. Capture EEG Data")
-    print("2. Preprocess EEG Data")
-    print("3. Extract Features")
-    print("4. Train Model")
-    print("5. Predict Action")
-    print("6. Exit")
-
 def main():
     while True:
         show_menu()
@@ -21,12 +12,13 @@ def main():
         if choice == '1':
             n = int(input("Enter number of data points: "))
             fs = int(input("Enter sampling frequency: "))
-            real_eeg_signal = reception.get_real_combined_data(n, fs, filter=False)
+            number_of_channels = int(input("Enter number of channels"))
+            real_eeg_signal = reception.get_real_combined_data(channels=number_of_channels, n=n, fs=fs, filter=False)
             print("EEG Data Captured.")
         elif choice == '2':
             if 'real_eeg_signal' in locals():
                 duration = int(input("Enter duration in seconds: "))
-                t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal(real_eeg_signal, n, duration, fs)
+                t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal(n=n, duration=duration, fs=fs, eeg_data=real_eeg_signal)
                 print("Preprocessing Complete.")
             else:
                 print("No EEG data found. Capture data first.")
@@ -45,16 +37,25 @@ def main():
             n = int(input("Enter number of data points: "))
             duration = int(input("Enter duration in seconds: "))
             fs = int(input("Enter sampling frequency: "))
-            ai.main(n, duration, fs, online=True)
+            ai.main(n, duration, fs, online=True) # Check this
         elif choice == '5':
             n = int(input("Enter number of data points: "))
             duration = int(input("Enter duration in seconds: "))
             fs = int(input("Enter sampling frequency: "))
-            prediction.main(n, duration, fs)
+            prediction.main(n, duration, fs) # Check this
         elif choice == '6':
             break
         else:
             print("Invalid choice. Please try again.")
+
+def show_menu():
+    print("EEG-based Wheelchair Control System")
+    print("1. Capture EEG Data")
+    print("2. Preprocess EEG Data")
+    print("3. Extract Features")
+    print("4. Train Model")
+    print("5. Predict Action")
+    print("6. Exit")
 
 if __name__ == "__main__":
     main()
@@ -88,5 +89,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 '''

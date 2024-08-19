@@ -8,9 +8,20 @@ import filtering
 # Global serial object
 ser = None
 
-def get_real_combined_data(n, fs, filter):
+def main():
+    # Set constants
+    n = 1000
+    fs = 500
+    number_of_channels = 4
+    signals = get_real_combined_data(channels=number_of_channels, n=n, fs=fs, filter=True)
+
+    for ch, signal in signals:
+        t = np.arange(len(signals[ch])) / fs
+        graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Channel {} Signal".format(ch))
+
+def get_real_combined_data(channels, n, fs, filter):
     # Get real data of signals
-    real_eeg_signals = get_real_data(n=n, fs=fs)
+    real_eeg_signals = get_real_data(channels=channels, n=n)
     
     # Filter if necessary
     if filter:
@@ -22,22 +33,22 @@ def get_real_combined_data(n, fs, filter):
     return combined_signal
 
 # Get the data from the RP2040 Zero
-def get_real_data(n=1000, fs=500):
+def get_real_data(channels, n):
     global ser
     ser = init_serial()
     try:
         # Capture the signal from the UART
-        real_eeg_signals = capture_signals(channels=4, n=n, fs=fs)
+        real_eeg_signals = capture_signals(channels=channels, n=n)
         return real_eeg_signals
     finally:
         ser.close()
 
-def capture_signals(channels=4, n=1000, fs=500):
+def capture_signals(channels, n):
     # Initialize variables
     signals = {f'ch{ch}': [] for ch in range(channels)}
     start_time = time.time()
 
-    while len(signals['ch0']) < n:  # Loop until we have enough samples
+    while len(signals['ch3']) < n:  # Loop until we have enough samples
         if ser.in_waiting > 0:
             data = ser.readline().decode('utf-8').strip()
             eeg_data = process_data(data)
@@ -68,19 +79,6 @@ def process_data(data):
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
         return None
-
-def main():
-    # Set constants
-    n = 1000
-    fs = 500
-    signals = get_real_data(n=n, fs=fs)
-    # Filter if necessary
-    if filter:
-        filtered_signals = filtering.filter_signals(eeg_signals=signals, fs=fs)
-
-    for ch, signal in signals:
-        t = np.arange(len(signals[ch])) / fs
-        graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Channel 0 Signal")
 
 if __name__ == "__main__":
     main()

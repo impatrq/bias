@@ -5,6 +5,26 @@ import joblib
 import reception
 import pandas as pd
 
+def main():
+    n = 1000
+    duration = 2
+    fs = 500
+    number_of_channels = 4
+
+    try:
+        model, scaler = load_model_and_scaler()
+        while True:
+            real_eeg_signal = reception.get_real_combined_data(channels=number_of_channels, n=n, fs=fs, filter=False)
+            prediction = classify_eeg(model, scaler, real_eeg_signal, n, duration, fs)
+            print(f'Predicted class: {prediction}')
+    
+    except KeyboardInterrupt:
+        print("Prediction loop terminated by user.")
+
+    except Exception as e:
+        print(f"Error in prediction main: {e}")
+        raise
+
 def load_model_and_scaler():
     try:
         model = load_model('wheelchair_model.h5')
@@ -16,7 +36,7 @@ def load_model_and_scaler():
 
 def classify_eeg(model, scaler, eeg_data, n, duration, fs):
     try:
-        t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal(eeg_data, n, duration, fs)
+        t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal(n=n, duration=duration, fs=fs, eeg_data=eeg_data)
         features = extraction.extract_features(alpha, beta, gamma, delta, theta)
         features_df = pd.DataFrame([features])
         features_scaled = scaler.transform(features_df)
@@ -29,29 +49,13 @@ def classify_eeg(model, scaler, eeg_data, n, duration, fs):
 
 def make_prediction(n, duration, fs):
     try:
-        real_eeg_signal = reception.get_real_combined_data(n, fs, filter=False)
+        real_eeg_signal = reception.get_real_combined_data(channels=4, n=n, fs=fs, filter=False)
         model, scaler = load_model_and_scaler()
         prediction_result = classify_eeg(model, scaler, real_eeg_signal, n, duration, fs)
         print(f'Predicted class: {prediction_result}')
 
     except Exception as e:
         print(f"Error making prediction: {e}")
-        raise
-
-
-def main(n=1000, duration=2, fs=500):
-    try:
-        model, scaler = load_model_and_scaler()
-        while True:
-            real_eeg_signal = reception.get_real_combined_data(n, fs, filter=False)
-            prediction = classify_eeg(model, scaler, real_eeg_signal, n, duration, fs)
-            print(f'Predicted class: {prediction}')
-    
-    except KeyboardInterrupt:
-        print("Prediction loop terminated by user.")
-
-    except Exception as e:
-        print(f"Error in prediction main: {e}")
         raise
 
 if __name__ == "__main__":
