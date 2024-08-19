@@ -15,3 +15,6 @@ def graph_signal_voltage_frequency(frequencies, magnitudes, title):
     plt.xlabel("Frequency [Hz]")
     plt.ylabel("Magnitude")
     plt.show()
+
+def plot_now():
+    pass
