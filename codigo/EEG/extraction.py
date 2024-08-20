@@ -6,6 +6,24 @@ import mne
 from mne.datasets import eegbci
 from mne.io import concatenate_raws, read_raw_edf
 
+def main():
+    n = 1000
+    duration = 2
+    fs = 500
+    online = True
+    number_of_channels = 4
+    labels = ['forward', 'backward', 'left', 'right', 'stop', 'rest']
+
+    if online:
+        raw = load_online_data()
+
+    else:
+        real_eeg_signal = reception.get_real_combined_data(channels=number_of_channels, n=n, fs=fs, filter=False)  # Get the real EEG signal for offline data
+        raw = real_eeg_signal
+    
+    df = extract_data(raw, labels, n, duration, fs, online=online)
+    df.to_csv('extracted_features.csv', index=False)
+
 def load_online_data(subject=1, runs=[3, 7, 11], duration=2):
     # Load the PhysioNet EEG BCI dataset
     raw_files = eegbci.load_data(subject, runs=runs)
@@ -20,7 +38,7 @@ def load_online_data(subject=1, runs=[3, 7, 11], duration=2):
 
 def preprocess_signal_dataset(eeg_data, n, duration, fs):
     # Load offline data, typically from a local EEG recording device
-    t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal(eeg_data, n, duration, fs)
+    t, alpha, beta, gamma, delta, theta = preprocessing.preprocess_signal(n=n, duration=duration, fs=fs, eeg_data=eeg_data)
     return alpha, beta, gamma, delta, theta
 
 def extract_data(eeg_data, labels, n, duration, fs, online=True):
@@ -97,18 +115,6 @@ def hurst_exponent(signal):
     R = np.max(Y) - np.min(Y)
     S = np.std(signal)
     return np.log(R / S) / np.log(N)
-
-def main(n=1000, duration=2, fs=500, online=True):
-    labels = ['forward', 'backward', 'left', 'right', 'stop', 'rest']
-    if online:
-        raw = load_online_data()
-
-    else:
-        real_eeg_signal = reception.get_real_combined_data(n, fs, filter=False)  # Get the real EEG signal for offline data
-        raw = real_eeg_signal
-    
-    df = extract_data(raw, labels, n, duration, fs, online=online)
-    df.to_csv('extracted_features.csv', index=False)
 
 if __name__ == "__main__":
     main()

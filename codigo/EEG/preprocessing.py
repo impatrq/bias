@@ -2,15 +2,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
 import filtering
-import graphing # type: ignore
+import graphingPython # type: ignore
 import mne
 
-def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
-    APPLY_DIGITAL_FILTERING = False
+def main():
+    n = 1000
+    fs = 500
+    duration = n / fs
+    preprocess_signal(n=n, duration=duration, fs=fs)
+
+def preprocess_signal(n, duration, fs, eeg_data=None):
+    # APPLY_DIGITAL_FILTERING = False
 
     # Time vector
     t = np.linspace(0, duration, n, endpoint=False)
-    
+
     if eeg_data is not None:
         if isinstance(eeg_data, np.ndarray):
             # Injection of real data
@@ -41,12 +47,13 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
     signal_fft_magnitude_reduced = signal_fft_magnitude[:n//2]
 
     # Graph the entry signal
-    graphing.graph_signal_voltage_time(t, signal, title="Input signal")
-    graphing.graph_signal_voltage_frequency(frequencies_reduced, signal_fft_magnitude_reduced, title='Frequency spectrum of original signal')
+    graphingPython.graph_signal_voltage_time(t=t, signal=signal, title="Input signal")
+    graphingPython.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title='Frequency spectrum of original signal')
     
+    '''
     # else:
     # Apply digital filtering for clearer data
-    signal_filtered = filtering.digital_filtering(signal, fs, notch=True, bandpass=True, car=False, ica=False)
+        signal_filtered = filtering.digital_filtering(signal, fs, notch=True, bandpass=False, fir=False, iir=False)
 
     # Apply Fourier Transform for filtered signal
     signal_fft_filtered = np.fft.fft(signal_filtered)
@@ -57,13 +64,11 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
     signal_fft_reduced_filtered = signal_fft_filtered[:n//2]
     frequencies_reduced_filtered = frequencies_filtered[:n//2]
     signal_fft_magnitude_reduced_filtered = signal_fft_magnitude_filtered[:n//2] 
-
-    # Graph the entry signal
-    graphing.graph_signal_voltage_time(t, signal, title="Input signal")
+    '''
 
     # Graph filtered signal
-    graphing.graph_signal_voltage_time(t, signal_filtered, title="Filtered signal")
-    graphing.graph_signal_voltage_frequency(frequencies_reduced_filtered, signal_fft_magnitude_reduced_filtered, title='Frequency spectrum of filtered signal')
+    #graphingPython.graph_signal_voltage_time(t, signal_filtered, title="Filtered signal")
+    #graphingPython.graph_signal_voltage_frequency(frequencies_reduced_filtered, signal_fft_magnitude_reduced_filtered, title='Frequency spectrum of filtered signal')
 
     # Set the band of frequencies for each signal
     bands = {
@@ -81,7 +86,7 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
         # Reconstruct and then apply Fourier in order to get the five signals over time
         filtered_signals[band_name] = filter_and_reconstruct(signal_fft, frequencies, band_range)
         # Plot the filtered waves in the time domain
-        #graphing.graph_signal_voltage_time(t, filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
+        graphingPython.graph_signal_voltage_time(t=t, signal=filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
 
     # New sampling rate for interpolation
     new_fs = fs * 10
@@ -92,12 +97,12 @@ def preprocess_signal(eeg_data=None, n=1000, duration=2, fs=500):
 
     # Plot the interpolated signals
     for band_name, sig in interpolated_signals.items():
-        graphing.graph_signal_voltage_time(new_t, sig, title=f"{band_name.capitalize()} interpolated")
+        graphingPython.graph_signal_voltage_time(t=new_t, signal=sig, title=f"{band_name.capitalize()} interpolated")
 
     print(interpolated_signals)
 
     # Plot signals
-    graphing.plot_now()
+    graphingPython.plot_now()
 
     # Return time vector and the signals already processed
     return t, interpolated_signals['alpha'], interpolated_signals['beta'], interpolated_signals['gamma'], interpolated_signals['delta'], interpolated_signals['theta']
@@ -182,4 +187,4 @@ def interpolate_signal(t, signal, new_t):
     return interpolated_signal
 
 if __name__ == "__main__":
-    preprocess_signal()
+    main()

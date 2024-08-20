@@ -8,6 +8,32 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint # type: ignore
 import joblib
 import reception
 
+
+def main():
+    n = 1000
+    duration = 2
+    fs = 500
+    online = True
+    number_of_channels = 4
+
+    try:
+        if online:
+            raw = extraction.load_online_data()
+        else:
+            raw = reception.get_real_combined_data(channels=number_of_channels, n=n, fs=fs, filter=False)
+        X, y = prepare_data(raw, n, duration, fs, online=online)
+        X_train, X_test, y_train, y_test = split_data(X, y)
+        X_train, X_test, scaler = standardize_data(X_train, X_test)
+        model = build_model(X_train.shape[1], y_train.shape[1])
+        model = train_model(model, X_train, y_train, X_test, y_test)
+        evaluate_model(model, X_test, y_test)
+        save_model_and_scaler(model, scaler)
+
+    except Exception as e:
+        print(f"Error in ai main: {e}")
+        raise
+
+
 def prepare_data(eeg_data, n, duration, fs, online=True):
     try:
         df = extraction.extract_data(eeg_data, labels=['forward', 'backward', 'left', 'right', 'stop', 'rest'], n=n, duration=duration, fs=fs, online=online)
@@ -54,24 +80,6 @@ def evaluate_model(model, X_test, y_test):
 def save_model_and_scaler(model, scaler):
     model.save('wheelchair_model.h5')
     joblib.dump(scaler, 'scaler.save')
-
-def main(n=1000, duration=2, fs=500, online=True):
-    try:
-        if online:
-            raw = extraction.load_online_data()
-        else:
-            raw = reception.get_real_combined_data(n, fs, filter=False)
-        X, y = prepare_data(raw, n, duration, fs, online=online)
-        X_train, X_test, y_train, y_test = split_data(X, y)
-        X_train, X_test, scaler = standardize_data(X_train, X_test)
-        model = build_model(X_train.shape[1], y_train.shape[1])
-        model = train_model(model, X_train, y_train, X_test, y_test)
-        evaluate_model(model, X_test, y_test)
-        save_model_and_scaler(model, scaler)
-
-    except Exception as e:
-        print(f"Error in ai main: {e}")
-        raise
 
 if __name__ == "__main__":
     main()
