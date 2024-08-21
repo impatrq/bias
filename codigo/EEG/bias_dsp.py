@@ -27,7 +27,7 @@ def main():
         else:
             graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
 
-    biasfilter = FilterBias(eeg_data=signals, fs=fs, notch=True, bandpass=True, fir=True, iir=True)
+    biasfilter = FilterBias(n=n, fs=fs, eeg_data=signals, notch=True, bandpass=True, fir=True, iir=True)
 
     # Apply digital filtering
     filtered_data = biasfilter.filter_signals()
@@ -50,7 +50,7 @@ def main():
 class BiasDSP:
     def __init__(self, n, fs, eeg_data=None):
         self._n = n
-        self._n = fs
+        self._fs = fs
         self._eeg_signals = eeg_data
         self._duration = self._n / self._fs
 

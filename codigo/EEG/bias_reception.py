@@ -2,8 +2,11 @@ import serial
 import time
 import numpy as np
 import graphingPython  # type: ignore
+import graphingTerminal
 import json
 import filtering
+
+GRAPH_IN_TERMINAL = True
 
 def main():
     # Set constants
@@ -14,7 +17,10 @@ def main():
     signals = biasreception.get_real_data(channels=number_of_channels, n=n)
     for ch, signal in signals.items():
         t = np.arange(len(signals[ch])) / fs
-        graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
+        if GRAPH_IN_TERMINAL:
+            graphingTerminal.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
+        else:
+            graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
 
 class BiasReception:
     def __init__(self, port='/dev/serial0', baudrate=115200, timeout=1):
