@@ -15,7 +15,7 @@ def main():
     duration = n / fs
 
     biasreception = BiasReception()
-    signals = biasreception.get_real_data(channels=number_of_channels, n=n, fs=fs, filter=True)
+    signals = biasreception.get_real_data(channels=number_of_channels, n=n)
 
     for ch, signal in signals.items():
         t = np.arange(len(signals[ch])) / fs
@@ -29,15 +29,9 @@ def main():
     # Calculate the time vector
     t = np.linspace(0, duration, n, endpoint=False)
 
-    # Graph original signal
-    graphingPython.graph_signal_voltage_time(t=t, signal=signals, title="Original Signal")
-
-    # Print shape of signals
-    print(f"Time vector shape: {t.shape}")
-    print(f"Filtered data shape: {filtered_data.shape}")
-
-    # Graph filtered signal
-    graphingPython.graph_signal_voltage_time(t=t, signal=filtered_data, title="Filtered Signal")
+    for ch, signal in filtered_data.items():
+        # Graph filtered signal
+        graphingPython.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
 
     biasprocessing = ProcessingBias(n=n, fs=fs, eeg_data=signals)
     signals = biasprocessing.process_signals()
@@ -60,19 +54,19 @@ class ProcessingBias(BiasDSP):
         processed_signals = {}
 
         for ch, signal in self._eeg_data.items():
-            t, processed_signal = self.process_signal(signal)
+            t, processed_signal = self.preprocess_signal(np.array(signal))
             processed_signals[ch] = processed_signal
             
         return processed_signals
 
-    def preprocess_signal(self):
+    def preprocess_signal(self, eeg_signal):
         # Time vector
         t = np.linspace(0, self._duration, self._n, endpoint=False)
 
-        if isinstance(self._eeg_data, np.ndarray):
+        if isinstance(eeg_signal, np.ndarray):
             # Injection of real data
-            signal = self._eeg_data
-        elif isinstance(self._eeg_data, mne.epochs.Epochs):
+            signal = eeg_signal
+        elif isinstance(eeg_signal, mne.epochs.Epochs):
             signal = self._eeg_data.get_data(copy=True).mean(axis=0)  # Average over epochs
             t = np.linspace(0, self._duration, len(signal), endpoint=False)
         else:
@@ -253,9 +247,9 @@ class FilterBias(BiasDSP):
         y = filtfilt(b, a, data, axis=1)
         return y
 
-    def fir_filter(self, data, fs, cutoff, numtaps):
+    def fir_filter(self, data, cutoff, numtaps):
         # Design FIR filter using firwin
-        fir_coefficients = firwin(numtaps, cutoff, fs=fs, pass_zero=True)  # Low-pass FIR filter
+        fir_coefficients = firwin(numtaps, cutoff, fs=self._fs, pass_zero=True)  # Low-pass FIR filter
         # Apply the FIR filter using lfilter
         filtered_data = np.zeros_like(data)
         for i in range(data.shape[0]):
@@ -265,72 +259,13 @@ class FilterBias(BiasDSP):
 
     def iir_filter(self, data, cutoff):
         # Design IIR filter using iirfilter
-        b, a = iirfilter(4, cutoff, fs=fs, btype='low', ftype='butter')  # Low-pass IIR filter
+        b, a = iirfilter(4, cutoff, fs=self._fs, btype='low', ftype='butter')  # Low-pass IIR filter
         # Apply the IIR filter using filtfilt for zero-phase filtering
         filtered_data = np.zeros_like(data)
         for i in range(data.shape[0]):
             filtered_data[i, :] = filtfilt(b, a, data[i, :])
         
         return filtered_data
-
-
-# Create function with random values
-def random_signal(self):
-    # Set fixed parameter of amplitude for random EEG (uV)
-    middle_amplitude = 0 
-    standard_deviation = 5 # uV
-    return np.random.normal(middle_amplitude, standard_deviation, self._n)
-
-def square_signal(self, t):
-    # Set parameters of square wave
-    amplitude = 3
-    frequency = 10
-
-    # Save and return square wave
-    return amplitude * np.sign(np.sin(2 * np.pi * frequency * t))
-
-def model_signal(self):
-    # Create a model eeg signal
-    basic_eeg_signal = np.array([
-        0.5, 0.4, 0.3, 0.2, 0.1,
-        -0.1, -0.2, -0.3, -0.4, -0.5,
-        0.8, 0.7, 0.6, 0.5, 0.4,
-        -0.4, -0.5, -0.6, -0.7, -0.8,
-        0.3, 0.2, 0.1, 0, -0.1,
-        -0.2, -0.3, -0.4, -0.5, -0.6,
-        0.7, 0.6, 0.5, 0.4, 0.3,
-        -0.3, -0.4, -0.5, -0.6, -0.7,
-        0.2, 0.1, 0, -0.1, -0.2,
-        -0.3, -0.4, -0.5, -0.6, -0.7,
-    ])
-
-
-    eeg_signal = []
-
-    # Repeat it until you have reached the number of samples
-    repetitions = self._n // len(basic_eeg_signal)
-
-    # Add repetitions to the signal
-    eeg_signal = np.tile(basic_eeg_signal, repetitions)
-
-    return eeg_signal
-
-# Create an eeg signal with pure waves
-def pure_signal_eeg(self, alpha_amp=1, alpha_freq=10, beta_amp=2, beta_freq=20,
-                    gamma_amp=3, gamma_freq=40, delta_amp=4, delta_freq=2, theta_amp=5, theta_freq=5):
-
-    # Time vector
-    t = np.linspace(0, self._duration, int(self._duration * self._fs), endpoint=False)
-
-    # Set each wave as a sine wave
-    alpha_signal = alpha_amp * np.sin(2 * np.pi * alpha_freq * t)
-    beta_signal = beta_amp * np.sin(2 * np.pi * beta_freq * t)
-    gamma_signal = gamma_amp * np.sin(2 * np.pi * gamma_freq * t)
-    delta_signal = delta_amp * np.sin(2 * np.pi * delta_freq * t)
-    theta_signal = theta_amp * np.sin(2 * np.pi * theta_freq * t)
-    signal = alpha_signal + beta_signal + gamma_signal + delta_signal + theta_signal
-
-    return signal
     
 if __name__ == "__main__":
     main()

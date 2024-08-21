@@ -11,7 +11,7 @@ def main():
     fs = 500
     number_of_channels = 4
     biasreception = BiasReception()
-    signals = biasreception.get_real_data(channels=number_of_channels, n=n, fs=fs, filter=True)
+    signals = biasreception.get_real_data(channels=number_of_channels, n=n)
     for ch, signal in signals.items():
         t = np.arange(len(signals[ch])) / fs
         graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
