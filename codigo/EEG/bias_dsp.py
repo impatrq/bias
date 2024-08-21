@@ -72,7 +72,12 @@ class ProcessingBias(BiasDSP):
         else:
             raise ValueError("Unsupported data format")
 
-        signal_fft_reduced, frequencies_reduced, signal_fft_magnitude_reduced = self.do_fft(signal)
+        signal_fft, frequencies, signal_fft_magnitude = self.do_fft(signal)
+
+        # Eliminate the range of negative frequencies for original signal
+        signal_fft_reduced = signal_fft[:self._n//2]
+        frequencies_reduced = frequencies[:self._n//2]
+        signal_fft_magnitude_reduced = signal_fft_magnitude[:self._n//2]
 
         # Graph the entry signal
         graphingPython.graph_signal_voltage_time(t=t, signal=signal, title="Input signal")
@@ -91,7 +96,7 @@ class ProcessingBias(BiasDSP):
         # Reconstruct the negative part of signals
         for band_name, band_range in bands.items():
             # Reconstruct and then apply Fourier in order to get the five signals over time
-            filtered_signals[band_name] = self.filter_and_reconstruct(signal_fft_reduced, frequencies_reduced, band_range)
+            filtered_signals[band_name] = self.filter_and_reconstruct(signal_fft, frequencies, band_range)
             # Plot the filtered waves in the time domain
             graphingPython.graph_signal_voltage_time(t=t, signal=filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
 
@@ -118,12 +123,7 @@ class ProcessingBias(BiasDSP):
         frequencies = np.fft.fftfreq(self._n, d=1/self._fs)
         signal_fft_magnitude = np.abs(signal_fft) / self._n
 
-        # Eliminate the range of negative frequencies for original signal
-        signal_fft_reduced = signal_fft[:self._n//2]
-        frequencies_reduced = frequencies[:self._n//2]
-        signal_fft_magnitude_reduced = signal_fft_magnitude[:self._n//2]
-
-        return signal_fft_reduced, frequencies_reduced, signal_fft_magnitude_reduced
+        return signal_fft, frequencies, signal_fft_magnitude
 
     def filter_and_reconstruct(self, signal_fft, frequencies, band):
         # Filter each band with the corresponding wave
