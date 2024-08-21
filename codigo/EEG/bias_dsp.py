@@ -44,8 +44,8 @@ def main():
 
     biasprocessing = ProcessingBias(n=n, fs=fs, eeg_data=filtered_data)
     signals = biasprocessing.process_signals()
-
-    graphingPython.plot_now()
+    if GRAPH_IN_TERMINAL:
+        graphingPython.plot_now()
 
 class BiasDSP:
     def __init__(self, n, fs, eeg_data=None):

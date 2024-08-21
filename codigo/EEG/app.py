@@ -5,6 +5,7 @@ import extraction
 import preprocessing
 import numpy as np
 import graphingTerminal
+from bias import Bias
 
 def main():
     while True:
@@ -49,6 +50,14 @@ def main():
                 t3, alpha3, beta3, gamma3, delta3, theta3 = preprocessing.preprocess_signal(n=n, duration=duration, fs=fs, eeg_data=np.array(signals['ch3']))
                 
                 print("EEG data processed")
+        
+        if choice == '4':
+            n = int(input("Enter number of data points: "))
+            fs = int(input("Enter sampling frequency: "))
+            duration = n / fs
+            number_of_channels = int(input("Enter number of channels: "))
+            bias = Bias()
+            bias.app_run()
 
 def show_menu():
     print("EEG-based Wheelchair Control System")
