@@ -54,5 +54,5 @@ class Bias:
                     else:
                         graphingPython.graph_signal_voltage_time(t=times[ch], signal=sig, title=f"{band_name.capitalize()} interpolated. {ch}")
 
-                    if GRAPH_IN_TERMINAL:
+                    if not GRAPH_IN_TERMINAL:
                         graphingPython.plot_now()
