@@ -30,7 +30,7 @@ def main():
     biasfilter = FilterBias(n=n, fs=fs, eeg_data=signals, notch=True, bandpass=True, fir=True, iir=True)
 
     # Apply digital filtering
-    filtered_data = biasfilter.filter_signals()
+    filtered_data = biasfilter.filter_signals(signals)
 
     # Calculate the time vector
     t = np.linspace(0, duration, n, endpoint=False)
@@ -42,30 +42,32 @@ def main():
         else:
             graphingPython.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
 
-    biasprocessing = ProcessingBias(n=n, fs=fs, eeg_data=filtered_data)
-    signals = biasprocessing.process_signals()
+    biasprocessing = ProcessingBias(n=n, fs=fs)
+    signals = biasprocessing.process_signals(eeg_signals=filtered_data)
+    
     if GRAPH_IN_TERMINAL:
         graphingPython.plot_now()
 
 class BiasDSP:
-    def __init__(self, n, fs, eeg_data=None):
+    def __init__(self, n, fs):
         self._n = n
         self._fs = fs
-        self._eeg_signals = eeg_data
         self._duration = self._n / self._fs
 
 class ProcessingBias(BiasDSP):
-    def __init__(self, n, fs, eeg_data):
-        super().__init__(n, fs, eeg_data)
+    def __init__(self, n, fs):
+        super().__init__(n, fs)
 
-    def process_signals(self):
+    def process_signals(self, eeg_signals):
         processed_signals = {}
+        times = {}
 
-        for ch, signal in self._eeg_signals.items():
+        for ch, signal in eeg_signals.items():
             t, processed_signal = self.preprocess_signal(np.array(signal))
             processed_signals[ch] = processed_signal
+            times[ch] = t
             
-        return processed_signals
+        return times, processed_signals
 
     def preprocess_signal(self, eeg_signal):
         # Time vector
@@ -75,7 +77,7 @@ class ProcessingBias(BiasDSP):
             # Injection of real data
             signal = eeg_signal
         elif isinstance(eeg_signal, mne.epochs.Epochs):
-            signal = self._eeg_signals.get_data(copy=True).mean(axis=0)  # Average over epochs
+            signal = eeg_signal.get_data(copy=True).mean(axis=0)  # Average over epochs
             t = np.linspace(0, self._duration, len(signal), endpoint=False)
         else:
             raise ValueError("Unsupported data format")
@@ -109,12 +111,14 @@ class ProcessingBias(BiasDSP):
         for band_name, band_range in bands.items():
             # Reconstruct and then apply Fourier in order to get the five signals over time
             filtered_signals[band_name] = self.filter_and_reconstruct(signal_fft, frequencies, band_range)
+            '''
             if GRAPH_IN_TERMINAL:
                 graphingTerminal.graph_signal_voltage_time(t=t, signal=filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
             else:
                 # Plot the filtered waves in the time domain
                 graphingPython.graph_signal_voltage_time(t=t, signal=filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
-
+            '''
+                
         # New sampling rate for interpolation
         new_fs = self._fs * 10
         new_t = np.linspace(0, self._duration, int(self._duration * new_fs), endpoint=True)
@@ -122,6 +126,7 @@ class ProcessingBias(BiasDSP):
         # Interpolate each wave
         interpolated_signals = {band_name: self.interpolate_signal(t, sig.real, new_t) for band_name, sig in filtered_signals.items()}
 
+        '''
         # Plot the interpolated signals
         for band_name, sig in interpolated_signals.items():
             if GRAPH_IN_TERMINAL:
@@ -129,12 +134,12 @@ class ProcessingBias(BiasDSP):
             else:
                 graphingPython.graph_signal_voltage_time(t=new_t, signal=sig, title=f"{band_name.capitalize()} interpolated")
 
-        if GRAPH_IN_TERMINAL:
-            # Plot signals
-            graphingPython.plot_now()
+            if GRAPH_IN_TERMINAL:
+                graphingPython.plot_now
+        '''
 
         # Return time vector and the signals already processed
-        return t, interpolated_signals
+        return new_t, interpolated_signals
 
     def do_fft(self, signal):
         # Apply Fourier Transform for the original signal
@@ -164,16 +169,16 @@ class ProcessingBias(BiasDSP):
         return interpolated_signal
 
 class FilterBias(BiasDSP):
-    def __init__(self, n, fs, eeg_data, notch, bandpass, fir, iir):
+    def __init__(self, n, fs, notch, bandpass, fir, iir):
         self._notch = notch
         self._bandpass = bandpass
         self._fir = fir
         self._iir = iir
-        super().__init__(n=n, fs=fs, eeg_data=eeg_data)
+        super().__init__(n=n, fs=fs)
 
-    def filter_signals(self):
+    def filter_signals(self, eeg_signals):
         filtered_signals = {}
-        for ch, signal in self._eeg_signals.items():
+        for ch, signal in eeg_signals.items():
             filtered_signal = self.digital_filtering(eeg_data=signal)
             filtered_signals[ch] = filtered_signal
         return filtered_signals

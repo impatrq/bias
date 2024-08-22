@@ -54,9 +54,11 @@ def main():
         if choice == '4':
             n = int(input("Enter number of data points: "))
             fs = int(input("Enter sampling frequency: "))
-            duration = n / fs
             number_of_channels = int(input("Enter number of channels: "))
-            bias = Bias()
+            port = '/dev/serial0'
+            baudrate = 115200
+            timeout = 1
+            bias = Bias(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
             bias.app_run()
 
 def show_menu():
