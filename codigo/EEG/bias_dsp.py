@@ -44,7 +44,7 @@ def main():
 
     biasprocessing = ProcessingBias(n=n, fs=fs)
     signals = biasprocessing.process_signals(eeg_signals=filtered_data)
-    
+
     if GRAPH_IN_TERMINAL:
         graphingPython.plot_now()
 
@@ -63,13 +63,13 @@ class ProcessingBias(BiasDSP):
         times = {}
 
         for ch, signal in eeg_signals.items():
-            t, processed_signal = self.preprocess_signal(np.array(signal))
+            t, processed_signal = self.preprocess_signal(np.array(signal), ch)
             processed_signals[ch] = processed_signal
             times[ch] = t
             
         return times, processed_signals
 
-    def preprocess_signal(self, eeg_signal):
+    def preprocess_signal(self, eeg_signal, channel_number):
         # Time vector
         t = np.linspace(0, self._duration, self._n, endpoint=False)
 
@@ -90,12 +90,12 @@ class ProcessingBias(BiasDSP):
         signal_fft_magnitude_reduced = signal_fft_magnitude[:self._n//2]
 
         if GRAPH_IN_TERMINAL:
-            graphingTerminal.graph_signal_voltage_time(t=t, signal=signal, title="Input signal")
-            graphingTerminal.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title='Frequency spectrum of original signal')
+            graphingTerminal.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal {channel_number}")
+            graphingTerminal.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
         else:
             # Graph the entry signal
-            graphingPython.graph_signal_voltage_time(t=t, signal=signal, title="Input signal")
-            graphingPython.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title='Frequency spectrum of original signal')
+            graphingPython.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal{channel_number}")
+            graphingPython.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
 
         bands = {
             "alpha": (8, 13),
