@@ -3,8 +3,7 @@ from bias_reception import BiasReception
 import numpy as np
 import graphingTerminal
 import graphingPython
-
-GRAPH_IN_TERMINAL = True
+from bias_graphing import GraphingBias
 
 class Bias:
     def __init__(self, n, fs, channels, port, baudrate, timeout):
@@ -20,16 +19,14 @@ class Bias:
         biasreception = BiasReception(self._port, self._baudrate, self._timeout)
         biasfilter = FilterBias(n=self._n, fs=self._fs, notch=True, bandpass=True, fir=True, iir=True)
         biasprocessing = ProcessingBias(n=self._n, fs=self._fs)
+        biasgraphing = GraphingBias(graph_in_terminal=True)
 
         while True:
             signals = biasreception.get_real_data(channels=self._number_of_channels, n=self._n)
 
             for ch, signal in signals.items():
                 t = np.arange(len(signals[ch])) / self._fs
-                if GRAPH_IN_TERMINAL:
-                    graphingTerminal.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
-                else:
-                    graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
+                biasgraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
 
             # Apply digital filtering
             filtered_data = biasfilter.filter_signals(signals)
@@ -39,20 +36,13 @@ class Bias:
 
             for ch, signal in filtered_data.items():
                 # Graph filtered signal
-                if GRAPH_IN_TERMINAL:
-                    graphingTerminal.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
-                else:
-                    graphingPython.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
+                biasgraphing.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
 
             times, eeg_signals = biasprocessing.process_signals(filtered_data)
 
             for ch, signals in eeg_signals.items():
                 # Plot the interpolated signals
                 for band_name, sig in signals.items():
-                    if GRAPH_IN_TERMINAL:
-                        graphingTerminal.graph_signal_voltage_time(t=times[ch], signal=sig, title=f"{band_name.capitalize()} interpolated. {ch}")
-                    else:
-                        graphingPython.graph_signal_voltage_time(t=times[ch], signal=sig, title=f"{band_name.capitalize()} interpolated. {ch}")
-
-                    if not GRAPH_IN_TERMINAL:
-                        graphingPython.plot_now()
+                    biasgraphing.graph_signal_voltage_time(t=times[ch], signal=sig, title=f"{band_name.capitalize()} interpolated. {ch}")
+                        
+            biasgraphing.plot_now()

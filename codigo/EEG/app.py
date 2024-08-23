@@ -60,7 +60,7 @@ def main():
             timeout = 1
             bias = Bias(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
             bias.app_run()
-
+         
 def show_menu():
     print("EEG-based Wheelchair Control System")
     print("1. Capture EEG Data with graphing in Terminal")

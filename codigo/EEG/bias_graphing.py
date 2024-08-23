@@ -1,50 +1,53 @@
 import matplotlib.pyplot as plt
+import plotext
 
-class graphingPythonBias:
+class GraphingBias:
+    def __init__(self, graph_in_terminal):
+        self._graph_in_terminal = graph_in_terminal
+
     def graph_signal_voltage_time(self, t, signal, title):
-        # Plot given signal in th time domain
-        plt.figure(figsize=(12, 6))
-        if signal.ndim == 1:
-            plt.plot(t, signal)
+        if not self._graph_in_terminal:
+            # Plot given signal in th time domain
+            plt.figure(figsize=(12, 6))
+            if signal.ndim == 1:
+                plt.plot(t, signal)
+            else:
+                for i in range(signal.shape[0]):
+                    plt.plot(t, signal[i])
+            plt.title(title)
+            plt.xlabel("Time [s]")
+            plt.ylabel("Magnitude")
+            plt.grid()
+
         else:
-            for i in range(signal.shape[0]):
-                plt.plot(t, signal[i])
-        plt.title(title)
-        plt.xlabel("Time [s]")
-        plt.ylabel("Magnitude")
-        plt.grid()
+            plotext.clear_data()
+            plotext.plot(t, signal)
+            plotext.title(title)
+            plotext.xlabel("Time [s]")
+            plotext.ylabel("Magnitude")
+            plotext.show()
 
     def graph_signal_voltage_frequency(self, frequencies, magnitudes, title):
-        # Plot given signal in the frquency domain
-        plt.figure(figsize=(12, 6))
-        plt.plot(frequencies, magnitudes)
-        plt.title(title)
-        plt.xlabel("Frequency [Hz]")
-        plt.ylabel("Magnitude")
-        plt.grid()
+        if not self._graph_in_terminal:
+            # Plot given signal in the frquency domain
+            plt.figure(figsize=(12, 6))
+            plt.plot(frequencies, magnitudes)
+            plt.title(title)
+            plt.xlabel("Frequency [Hz]")
+            plt.ylabel("Magnitude")
+            plt.grid()
+
+        else:
+            plotext.clear_data()
+            plotext.plot(frequencies, magnitudes)
+            plotext.title(title)
+            plotext.xlabel("Frequency [Hz]")
+            plotext.ylabel("Magnitude")
+            plotext.show()
 
     def plot_now(self):
-        plt.tight_layout()
-        plt.show()
-
-import plotext as plt
-
-class graphingTerminalBias:
-    def graph_signal_voltage_time(self, t, signal, title):
-        plt.clear_data()
-        plt.plot(t, signal)
-        plt.title(title)
-        plt.xlabel("Time [s]")
-        plt.ylabel("Magnitude")
-        plt.show()
-
-    def graph_signal_voltage_frequency(self, frequencies, magnitudes, title):
-        plt.clear_data()
-        plt.plot(frequencies, magnitudes)
-        plt.title(title)
-        plt.xlabel("Frequency [Hz]")
-        plt.ylabel("Magnitude")
-        plt.show()
-
-def plot_now(self):
-    pass
+        if not self._graph_in_terminal:
+            plt.tight_layout()
+            plt.show()
+        else:
+            pass
