@@ -38,13 +38,13 @@ def main():
 
     biasGraphing.plot_now()
 
-class BiasDSP:
+class DSPBias:
     def __init__(self, n, fs):
         self._n = n
         self._fs = fs
         self._duration = self._n / self._fs
 
-class ProcessingBias(BiasDSP):
+class ProcessingBias(DSPBias):
 
     def __init__(self, n, fs):
         super().__init__(n, fs)
@@ -156,7 +156,7 @@ class ProcessingBias(BiasDSP):
         interpolated_signal = scipy.interpolate.interp1d(t, signal, kind='cubic')(new_t_clipped)
         return interpolated_signal
 
-class FilterBias(BiasDSP):
+class FilterBias(DSPBias):
     def __init__(self, n, fs, notch, bandpass, fir, iir):
         self._notch = notch
         self._bandpass = bandpass
