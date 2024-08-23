@@ -2,15 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
 import mne
-import numpy as np
 from scipy.signal import butter, filtfilt, firwin, lfilter, iirfilter
 import matplotlib.pyplot as plt
-import graphingPython
-import graphingTerminal
-from bias_reception import BiasReception
+from bias_reception import ReceptionBias
 from bias_graphing import GraphingBias
-
-GRAPH_IN_TERMINAL = True
 
 def main():
     n = 1000
@@ -18,31 +13,30 @@ def main():
     number_of_channels = 4
     duration = n / fs
 
-    biasreception = BiasReception()
-    signals = biasreception.get_real_data(channels=number_of_channels, n=n)
-    biasgraphing = GraphingBias(graph_in_terminal=True)
+    biasReception = ReceptionBias()
+    signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    biasGraphing = GraphingBias(graph_in_terminal=True)
 
     for ch, signal in signals.items():
         t = np.arange(len(signals[ch])) / fs
-        biasgraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
+        biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
 
-    biasfilter = FilterBias(n=n, fs=fs, eeg_data=signals, notch=True, bandpass=True, fir=True, iir=True)
+    biasFilter = FilterBias(n=n, fs=fs, eeg_data=signals, notch=True, bandpass=True, fir=True, iir=True)
 
     # Apply digital filtering
-    filtered_data = biasfilter.filter_signals(signals)
+    filtered_data = biasFilter.filter_signals(signals)
 
     # Calculate the time vector
     t = np.linspace(0, duration, n, endpoint=False)
 
     for ch, signal in filtered_data.items():
         # Graph filtered signal
-        biasgraphing.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
+        biasGraphing.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
 
-    biasprocessing = ProcessingBias(n=n, fs=fs)
-    signals = biasprocessing.process_signals(eeg_signals=filtered_data)
+    biasProcessing = ProcessingBias(n=n, fs=fs)
+    signals = biasProcessing.process_signals(eeg_signals=filtered_data)
 
-    if not GRAPH_IN_TERMINAL:
-        graphingPython.plot_now()
+    biasGraphing.plot_now()
 
 class BiasDSP:
     def __init__(self, n, fs):
@@ -51,8 +45,10 @@ class BiasDSP:
         self._duration = self._n / self._fs
 
 class ProcessingBias(BiasDSP):
+
     def __init__(self, n, fs):
         super().__init__(n, fs)
+        self._biasGraphing = GraphingBias(graph_in_terminal=True)
 
     def process_signals(self, eeg_signals):
         processed_signals = {}
@@ -66,7 +62,6 @@ class ProcessingBias(BiasDSP):
         return times, processed_signals
 
     def preprocess_signal(self, eeg_signal, channel_number):
-        biasgraphing = GraphingBias(graph_in_terminal=True)
         # Time vector
         t = np.linspace(0, self._duration, self._n, endpoint=False)
 
@@ -86,8 +81,8 @@ class ProcessingBias(BiasDSP):
         frequencies_reduced = frequencies[:self._n//2]
         signal_fft_magnitude_reduced = signal_fft_magnitude[:self._n//2]
 
-        biasgraphing.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal {channel_number}")
-        biasgraphing.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
+        self._biasGraphing.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal {channel_number}")
+        self._biasGraphing.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
 
         bands = {
             "alpha": (8, 13),

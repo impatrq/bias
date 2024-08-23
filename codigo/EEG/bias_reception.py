@@ -1,45 +1,26 @@
 import serial
 import time
 import numpy as np
-import graphingPython  # type: ignore
-import graphingTerminal
 import json
-import filtering
-
-GRAPH_IN_TERMINAL = True
+from bias_graphing import GraphingBias
 
 def main():
     # Set constants
     n = 1000
     fs = 500
     number_of_channels = 4
-    biasreception = BiasReception()
+    biasreception = ReceptionBias()
     signals = biasreception.get_real_data(channels=number_of_channels, n=n)
+    biasGraphing = GraphingBias(graph_in_terminal=True)
     for ch, signal in signals.items():
         t = np.arange(len(signals[ch])) / fs
-        if GRAPH_IN_TERMINAL:
-            graphingTerminal.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
-        else:
-            graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
+        biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
 
-class BiasReception:
+class ReceptionBias:
     def __init__(self, port='/dev/serial0', baudrate=115200, timeout=1):
         self._port = port
         self._baudrate = baudrate
         self._timeout = timeout
-        
-    def get_real_combined_data(self, channels, n, fs, filter):
-        # Get real data of signals
-        real_eeg_signals = self.get_real_data(channels=channels, n=n)
-        
-        # Filter if necessary
-        if filter:
-            filtered_signals = filtering.filter_signals(eeg_signals=real_eeg_signals, fs=fs)
-            combined_signal = self.combine_signals(filtered_signals)
-        else:
-            combined_signal = self.combine_signals(real_eeg_signals)
-
-        return combined_signal
 
     # Get the data from the RP2040 Zero
     def get_real_data(self, channels, n):
