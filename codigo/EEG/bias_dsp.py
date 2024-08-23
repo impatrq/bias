@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import graphingPython
 import graphingTerminal
 from bias_reception import BiasReception
+from bias_graphing import GraphingBias
 
 GRAPH_IN_TERMINAL = True
 
@@ -19,13 +20,11 @@ def main():
 
     biasreception = BiasReception()
     signals = biasreception.get_real_data(channels=number_of_channels, n=n)
+    biasgraphing = GraphingBias(graph_in_terminal=True)
 
     for ch, signal in signals.items():
         t = np.arange(len(signals[ch])) / fs
-        if GRAPH_IN_TERMINAL:
-            graphingTerminal.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
-        else:
-            graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
+        biasgraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
 
     biasfilter = FilterBias(n=n, fs=fs, eeg_data=signals, notch=True, bandpass=True, fir=True, iir=True)
 
@@ -37,10 +36,7 @@ def main():
 
     for ch, signal in filtered_data.items():
         # Graph filtered signal
-        if GRAPH_IN_TERMINAL:
-            graphingTerminal.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
-        else:
-            graphingPython.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
+        biasgraphing.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
 
     biasprocessing = ProcessingBias(n=n, fs=fs)
     signals = biasprocessing.process_signals(eeg_signals=filtered_data)
@@ -70,6 +66,7 @@ class ProcessingBias(BiasDSP):
         return times, processed_signals
 
     def preprocess_signal(self, eeg_signal, channel_number):
+        biasgraphing = GraphingBias(graph_in_terminal=True)
         # Time vector
         t = np.linspace(0, self._duration, self._n, endpoint=False)
 
@@ -89,13 +86,8 @@ class ProcessingBias(BiasDSP):
         frequencies_reduced = frequencies[:self._n//2]
         signal_fft_magnitude_reduced = signal_fft_magnitude[:self._n//2]
 
-        if GRAPH_IN_TERMINAL:
-            graphingTerminal.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal {channel_number}")
-            graphingTerminal.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
-        else:
-            # Graph the entry signal
-            graphingPython.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal{channel_number}")
-            graphingPython.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
+        biasgraphing.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal {channel_number}")
+        biasgraphing.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
 
         bands = {
             "alpha": (8, 13),
@@ -116,6 +108,7 @@ class ProcessingBias(BiasDSP):
                 graphingTerminal.graph_signal_voltage_time(t=t, signal=filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
             else:
                 # Plot the filtered waves in the time domain
+ 
                 graphingPython.graph_signal_voltage_time(t=t, signal=filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
             '''
                 
