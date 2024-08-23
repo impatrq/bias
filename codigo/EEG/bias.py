@@ -2,6 +2,7 @@ from bias_dsp import FilterBias, ProcessingBias
 from bias_reception import ReceptionBias
 import numpy as np
 from bias_graphing import GraphingBias
+from bias_motors import MotorBias
 
 class Bias:
     def __init__(self, n, fs, channels, port, baudrate, timeout):
@@ -16,6 +17,9 @@ class Bias:
         self._biasFilter = FilterBias(n=self._n, fs=self._fs, notch=True, bandpass=True, fir=True, iir=True)
         self._biasProcessing = ProcessingBias(n=self._n, fs=self._fs)
         self._biasGraphing = GraphingBias(graph_in_terminal=True)
+        self._biasMotor = MotorBias(echo_forward=18, trigger_forward=17, echo_backwards=23, trigger_backwards=22, echo_right=5, trigger_right=6,
+                                    echo_left=27, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, moto1_in1=13, 
+                                    motor1_in2=19, motor2_in1=7, motor_2_in2=8)
 
     def app_run(self):
         while True:
@@ -43,3 +47,6 @@ class Bias:
                     self._biasGraphing.graph_signal_voltage_time(t=times[ch], signal=sig, title=f"{band_name.capitalize()} interpolated. {ch}")
                         
             self._biasGraphing.plot_now()
+            
+            # command = self._biasPrediction()
+            #self._biasMotor.move_if_possible(command)

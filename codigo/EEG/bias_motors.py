@@ -11,10 +11,10 @@ class MotorBias:
         factory = PiGPIOFactory()
 
         # Configuración de los sensores de ultrasonido y LEDs
-        self._ultrasonido_forward = DistanceSensor(echo=echo_forward, trigger=trigger_forward, pin_factory=factory)
-        self._ultrasonido_backwards = DistanceSensor(echo=echo_backwards, trigger=trigger_backwards, pin_factory=factory)
-        self._ultrasonido_right = DistanceSensor(echo=echo_right, trigger=trigger_right, pin_factory=factory)
-        self._ultrasonido_left = DistanceSensor(echo=echo_left, trigger=trigger_left, pin_factory=factory)
+        self._ultrasonic_forward = DistanceSensor(echo=echo_forward, trigger=trigger_forward, pin_factory=factory)
+        self._ultrasonic_backwards = DistanceSensor(echo=echo_backwards, trigger=trigger_backwards, pin_factory=factory)
+        self._ultrasonic_right = DistanceSensor(echo=echo_right, trigger=trigger_right, pin_factory=factory)
+        self._ultrasonic_left = DistanceSensor(echo=echo_left, trigger=trigger_left, pin_factory=factory)
 
         self._led_forward = PWMLED(led_forward, pin_factory=factory)
         self._led_backwards = PWMLED(led_backwards, pin_factory=factory)
@@ -32,64 +32,60 @@ class MotorBias:
         self._motor2_in1 = PWMOutputDevice(motor2_in1, pin_factory=factory)
         self._motor2_in2 = PWMOutputDevice(motor_2_in2, pin_factory=factory)
 
-    def get_data_and_move_motors(self):
+    def move_if_possible(self, command):
         try:
-            while True:
-                # Procesar comandos de señales cerebrales (simuladas)
-                command = self.get_brain_signal_command()
-
-                if command == 'w':  # Mover hacia adelante
-                    distancia = self._ultrasonido_forward.distance * 100
-                    if distancia < 20:  # Umbral de 20 cm
-                        self._led_forward.on()
-                        self._buzzer.on()
-                        print(f"Obastacle forward: {distancia:.1f} cm. Blocked movement.")
-                    else:
-                        self._led_forward.off()
-                        self._buzzer.off()
-                        self.move_forward(50)
-                elif command == 's':  # Mover hacia atrás
-                    distancia = self._ultrasonido_backwards.distance * 100
-                    if distancia < 20:  # Umbral de 20 cm
-                        self._led_backwards.on()
-                        self._buzzer.on()
-                        print(f"Obstacle backwards: {distancia:.1f} cm. Blocked movement.")
-                    else:
-                        self._led_backwards.off()
-                        self._buzzer.off()
-                        self.move_backward(50)
-                elif command == 'a':  # Girar a la izquierda
-                    distancia = self._ultrasonido_left.distance * 100
-                    if distancia < 20:  # Umbral de 20 cm
-                        self._led_left.on()
-                        self._buzzer.on()
-                        print(f"Obstacle on the left: {distancia:.1f} cm. Blocked movement")
-                    else:
-                        self._led_left.off()
-                        self._buzzer.off()
-                        self.turn_left(50)
-                elif command == 'd':  # Girar a la derecha
-                    distancia = self._ultrasonido_right.distance * 100
-                    if distancia < 20:  # Umbral de 20 cm
-                        self._led_right.on()
-                        self._buzzer.on()
-                        print(f"Obstacle on the right: {distancia:.1f} cm. Blocked movement.")
-                    else:
-                        self._led_right.off()
-                        self._buzzer.off()
-                        self.turn_right(50)
-                elif command == 'b':  # Frenar
-                    self.brake()
+            if command == 'w':  # Mover hacia adelante
+                distancia = self._ultrasonic_forward.distance * 100
+                if distancia < 20:  # Umbral de 20 cm
+                    self._led_forward.on()
+                    self._buzzer.on()
+                    print(f"Obastacle forward: {distancia:.1f} cm. Blocked movement.")
+                else:
                     self._led_forward.off()
+                    self._buzzer.off()
+                    self.move_forward(50)
+            elif command == 's':  # Mover hacia atrás
+                distancia = self._ultrasonic_backwards.distance * 100
+                if distancia < 20:  # Umbral de 20 cm
+                    self._led_backwards.on()
+                    self._buzzer.on()
+                    print(f"Obstacle backwards: {distancia:.1f} cm. Blocked movement.")
+                else:
                     self._led_backwards.off()
+                    self._buzzer.off()
+                    self.move_backward(50)
+            elif command == 'a':  # Girar a la izquierda
+                distancia = self._ultrasonic_left.distance * 100
+                if distancia < 20:  # Umbral de 20 cm
+                    self._led_left.on()
+                    self._buzzer.on()
+                    print(f"Obstacle on the left: {distancia:.1f} cm. Blocked movement")
+                else:
                     self._led_left.off()
+                    self._buzzer.off()
+                    self.turn_left(50)
+            elif command == 'd':  # Girar a la derecha
+                distancia = self._ultrasonic_right.distance * 100
+                if distancia < 20:  # Umbral de 20 cm
+                    self._led_right.on()
+                    self._buzzer.on()
+                    print(f"Obstacle on the right: {distancia:.1f} cm. Blocked movement.")
+                else:
                     self._led_right.off()
                     self._buzzer.off()
-                else:
-                    print("Invalid command")
+                    self.turn_right(50)
+            elif command == 'b':  # Frenar
+                self.brake()
+                self._led_forward.off()
+                self._led_backwards.off()
+                self._led_left.off()
+                self._led_right.off()
+                self._buzzer.off()
+            else:
+                print("Invalid command")
 
-                time.sleep(1)
-                self.brake() # Detener después de cada comando
+            time.sleep(1)
+            self.brake() # Detener después de cada comando
         
         except KeyboardInterrupt:
             print("Program stopped by user")
