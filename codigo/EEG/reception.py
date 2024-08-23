@@ -16,7 +16,7 @@ def main():
     signals = get_real_data(channels=number_of_channels, n=n, fs=fs, filter=True)
     for ch, signal in signals.items():
         t = np.arange(len(signals[ch])) / fs
-        graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal".format(ch))
+        graphingPython.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
 
 def get_real_combined_data(channels, n, fs, filter):
     # Get real data of signals

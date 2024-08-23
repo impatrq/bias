@@ -149,7 +149,6 @@ def model_signal(n):
 
     return eeg_signal
 
-
 # Create an eeg signal with pure waves
 def pure_signal_eeg(duration=2, fs=500, alpha_amp=1, alpha_freq=10, beta_amp=2, beta_freq=20,
                    gamma_amp=3, gamma_freq=40, delta_amp=4, delta_freq=2, theta_amp=5, theta_freq=5):
