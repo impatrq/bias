@@ -2,6 +2,14 @@ from gpiozero import DistanceSensor, PWMLED, Buzzer, PWMOutputDevice
 from gpiozero.pins.pigpio import PiGPIOFactory
 import time
 
+def main():
+    biasMotor = MotorBias(echo_forward=18, trigger_forward=17, echo_backwards=23, trigger_backwards=22, echo_right=5, trigger_right=6,
+                          echo_left=27, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, moto1_in1=13, 
+                          motor1_in2=19, motor2_in1=7, motor_2_in2=8)
+    while True:
+        command = input("Enter command w/a/s/d/b")
+        biasMotor.move_if_possible(command)
+        
 class MotorBias:
     def __init__(self, echo_forward, trigger_forward, echo_backwards, trigger_backwards, echo_right, trigger_right,
                  echo_left, trigger_left, led_forward, led_backwards, led_left, led_right, buzzer, moto1_in1, 
@@ -85,7 +93,7 @@ class MotorBias:
                 print("Invalid command")
 
             time.sleep(1)
-            self.brake() # Detener después de cada comando
+            self.brake() # Stop after each command
         
         except KeyboardInterrupt:
             print("Program stopped by user")
