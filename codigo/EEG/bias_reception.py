@@ -9,8 +9,8 @@ def main():
     n = 1000
     fs = 500
     number_of_channels = 4
-    biasreception = ReceptionBias()
-    signals = biasreception.get_real_data(channels=number_of_channels, n=n)
+    biasReception = ReceptionBias()
+    signals = biasReception.get_real_data(channels=number_of_channels, n=n)
     biasGraphing = GraphingBias(graph_in_terminal=True)
     for ch, signal in signals.items():
         t = np.arange(len(signals[ch])) / fs
