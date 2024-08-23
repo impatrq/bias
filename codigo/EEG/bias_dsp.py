@@ -13,10 +13,11 @@ def main():
     number_of_channels = 4
     duration = n / fs
 
+    # Receive data from RP2040 Zero
     biasReception = ReceptionBias()
     signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    # Graph signals
     biasGraphing = GraphingBias(graph_in_terminal=True)
-
     for ch, signal in signals.items():
         t = np.arange(len(signals[ch])) / fs
         biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
@@ -33,27 +34,33 @@ def main():
         # Graph filtered signal
         biasGraphing.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
 
+    # Process data
     biasProcessing = ProcessingBias(n=n, fs=fs)
     signals = biasProcessing.process_signals(eeg_signals=filtered_data)
 
+    # Plot
     biasGraphing.plot_now()
 
+# Parent class
 class DSPBias:
     def __init__(self, n, fs):
         self._n = n
         self._fs = fs
         self._duration = self._n / self._fs
 
+# Process signals
 class ProcessingBias(DSPBias):
-
+    # Constructor
     def __init__(self, n, fs):
         super().__init__(n, fs)
         self._biasGraphing = GraphingBias(graph_in_terminal=True)
 
+    # Process all the data
     def process_signals(self, eeg_signals):
         processed_signals = {}
         times = {}
 
+        # Process each signal in each channel for processing
         for ch, signal in eeg_signals.items():
             t, processed_signal = self.preprocess_signal(np.array(signal), ch)
             processed_signals[ch] = processed_signal
@@ -61,10 +68,12 @@ class ProcessingBias(DSPBias):
             
         return times, processed_signals
 
+    # Process one signal in particular
     def preprocess_signal(self, eeg_signal, channel_number):
         # Time vector
         t = np.linspace(0, self._duration, self._n, endpoint=False)
 
+        # Check that eeg_signal is a numpy array
         if isinstance(eeg_signal, np.ndarray):
             # Injection of real data
             signal = eeg_signal
@@ -74,6 +83,7 @@ class ProcessingBias(DSPBias):
         else:
             raise ValueError("Unsupported data format")
 
+        # Make Fourier transform
         signal_fft, frequencies, signal_fft_magnitude = self.do_fft(signal)
 
         # Eliminate the range of negative frequencies for original signal
@@ -81,9 +91,11 @@ class ProcessingBias(DSPBias):
         frequencies_reduced = frequencies[:self._n//2]
         signal_fft_magnitude_reduced = signal_fft_magnitude[:self._n//2]
 
+        # Graph signal in frequency and in time domain
         self._biasGraphing.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal {channel_number}")
         self._biasGraphing.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
 
+        # EEG bands
         bands = {
             "alpha": (8, 13),
             "beta": (13, 30),
@@ -157,6 +169,7 @@ class ProcessingBias(DSPBias):
         return interpolated_signal
 
 class FilterBias(DSPBias):
+    # Constructor
     def __init__(self, n, fs, notch, bandpass, fir, iir):
         self._notch = notch
         self._bandpass = bandpass
@@ -164,8 +177,10 @@ class FilterBias(DSPBias):
         self._iir = iir
         super().__init__(n=n, fs=fs)
 
+    # Filter all the signals
     def filter_signals(self, eeg_signals):
         filtered_signals = {}
+        # Filter by signals in each channel
         for ch, signal in eeg_signals.items():
             filtered_signal = self.digital_filtering(eeg_data=signal)
             filtered_signals[ch] = filtered_signal

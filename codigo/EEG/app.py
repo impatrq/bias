@@ -52,24 +52,27 @@ def main():
                 print("EEG data processed")
         
         if choice == '4':
+            # Define propieties for Bias instance
             n = int(input("Enter number of data points: "))
             fs = int(input("Enter sampling frequency: "))
             number_of_channels = int(input("Enter number of channels: "))
             port = '/dev/serial0'
             baudrate = 115200
             timeout = 1
-            bias = Bias(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
-            bias.app_run()
+            # Create object and run the app
+            biasInstance = Bias(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
+            biasInstance.app_run()
          
 def show_menu():
     print("EEG-based Wheelchair Control System")
     print("1. Capture EEG Data with graphing in Terminal")
     print("2. Capture and combine EEG")
     print("3. Preprocess EEG Data")
-    print("4. Extract Features")
-    print("5. Train Model")
-    print("6. Predict Action")
-    print("7. Exit")
+    print("4. App run")
+    print("5. Extract Features")
+    print("6. Train Model")
+    print("7. Predict Action")
+    print("8. Exit")
 
 if __name__ == "__main__":
     main()
