@@ -15,7 +15,7 @@ def main():
     fs = 500
     online = True
     number_of_channels = 4
-    
+
     try:
         pass
     except Exception as e:
@@ -23,11 +23,13 @@ def main():
         raise
 
 class AIBias:
-    class Extraction:
-        pass
-    class Training:
-        pass
-    class Prediction:
+     pass
+
+class Extraction(AIBias):
+    pass
+class Training(AIBias):
+    pass
+class Prediction(AIBias):
         pass
 if __name__ == "__main__":
     main()
