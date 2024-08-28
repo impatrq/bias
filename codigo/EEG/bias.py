@@ -3,6 +3,7 @@ from bias_reception import ReceptionBias
 import numpy as np
 from bias_graphing import GraphingBias
 from bias_motors import MotorBias
+from bias_ai import AIBias
 
 class Bias:
     # Constructor
@@ -15,16 +16,24 @@ class Bias:
         self._port = port
         self._baudrate = baudrate
         self._timeout = timeout
+        self._commands = ["forward", "backward", "left", "right", "stop", "rest"]
+
         # Create objects as propieties in order to apply the rest of the code in Bias class
         self._biasReception = ReceptionBias(self._port, self._baudrate, self._timeout)
         self._biasFilter = FilterBias(n=self._n, fs=self._fs, notch=True, bandpass=True, fir=False, iir=False)
         self._biasProcessing = ProcessingBias(n=self._n, fs=self._fs)
         self._biasGraphing = GraphingBias(graph_in_terminal=True)
         self._biasMotor = MotorBias(echo_forward=18, trigger_forward=17, echo_backwards=23, trigger_backwards=22, echo_right=5, trigger_right=6,
-                                    echo_left=27, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, moto1_in1=13, 
+                                    echo_left=25, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, moto1_in1=13, 
                                     motor1_in2=19, motor2_in1=7, motor_2_in2=8)
+        self._biasAI = AIBias()
 
     def app_run(self):
+        '''
+        if (not self._biasAI.ai_is_trained()):
+            self._biasAI.collect_and_train(self, self._commands)
+        '''
+
         while True:
             # Receive eeg data
             signals = self._biasReception.get_real_data(channels=self._number_of_channels, n=self._n)
@@ -56,6 +65,6 @@ class Bias:
             
             # Plot
             self._biasGraphing.plot_now()
-            
-            # command = self._biasPrediction()
+
+            #command = self._biasAI.predict_command(eeg_data=eeg_signals)
             #self._biasMotor.move_if_possible(command)
