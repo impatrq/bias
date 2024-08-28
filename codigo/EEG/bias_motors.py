@@ -5,11 +5,11 @@ import time
 def main():
     # Define motor instance
     biasMotor = MotorBias(echo_forward=18, trigger_forward=17, echo_backwards=23, trigger_backwards=22, echo_right=5, trigger_right=6,
-                          echo_left=27, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, moto1_in1=13, 
+                          echo_left=25, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, moto1_in1=13, 
                           motor1_in2=19, motor2_in1=7, motor_2_in2=8)
     while True:
         # Get command
-        command = input("Enter command (w/a/s/d/b for forward/left/backward/right/brake): ").strip()
+        command = input("Enter command (forward/left/backwards/right/stop): ").strip()
         biasMotor.move_if_possible(command)
 
 class MotorBias:
@@ -46,7 +46,7 @@ class MotorBias:
     def move_if_possible(self, command):
         try:
             # Move forward
-            if command == 'w': 
+            if command == "forward": 
                 distance = self._ultrasonic_forward.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
@@ -58,9 +58,9 @@ class MotorBias:
                     # Do the movement
                     self._led_forward.off()
                     self._buzzer.off()
-                    self.move_forward(50)
+                    self.move_forward(25)
             # Move backwards
-            elif command == 's':
+            elif command == "backwards":
                 distance = self._ultrasonic_backwards.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
@@ -72,9 +72,9 @@ class MotorBias:
                     # Do the movement
                     self._led_backwards.off()
                     self._buzzer.off()
-                    self.move_backward(50)
+                    self.move_backward(25)
             # Turn left
-            elif command == 'a':
+            elif command == "left":
                 distance = self._ultrasonic_left.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
@@ -86,9 +86,9 @@ class MotorBias:
                     # Do the movement
                     self._led_left.off()
                     self._buzzer.off()
-                    self.turn_left(50)
+                    self.turn_left(25)
             # Turn right
-            elif command == 'd':
+            elif command == "right":
                 distance = self._ultrasonic_right.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
@@ -100,9 +100,9 @@ class MotorBias:
                     # Do the movement
                     self._led_right.off()
                     self._buzzer.off()
-                    self.turn_right(50)
+                    self.turn_right(25)
             # Brake
-            elif command == 'b':
+            elif command == "stop":
                 # Make all parameters off
                 self.brake()
                 self._led_forward.off()
@@ -115,6 +115,11 @@ class MotorBias:
 
             time.sleep(1)
             self.brake() # Stop after each command
+            self._led_forward.off()
+            self._led_backwards.off()
+            self._led_left.off()
+            self._led_right.off()
+            self._buzzer.off()
         
         except KeyboardInterrupt:
             print("Program stopped by user")
@@ -123,12 +128,12 @@ class MotorBias:
     def set_motor_speed(self, motor_in1, motor_in2, speed, invert=False):
         # Define positive speed
         if speed > 0:
-            motor_in1.value = (100.0 - speed / 100.0) if invert else speed / 100.0
+            motor_in1.value = ((100.0 - speed) / 100.0) if invert else speed / 100.0
             motor_in2.value = 0
         # Define negative speed
         elif speed < 0:
             motor_in1.value = 0
-            motor_in2.value = (100.0 - abs(speed) / 100.0) if invert else abs(speed) / 100.0
+            motor_in2.value = ((100.0 - abs(speed)) / 100.0) if invert else abs(speed) / 100.0
         # If it's zero brake
         else:
             motor_in1.value = 0
