@@ -62,6 +62,18 @@ def main():
             # Create object and run the app
             biasInstance = Bias(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
             biasInstance.app_run()
+
+        if choice == '6':
+            # Define propieties for Bias instance
+            n = int(input("Enter number of data points: "))
+            fs = int(input("Enter sampling frequency: "))
+            number_of_channels = int(input("Enter number of channels: "))
+            port = '/dev/serial0'
+            baudrate = 115200
+            timeout = 1
+            # Create object and run the app
+            biasInstance = Bias(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
+            biasInstance.train_ai_model()
          
 def show_menu():
     print("EEG-based Wheelchair Control System")

@@ -28,7 +28,7 @@ class Bias:
                                     motor1_in2=19, motor2_in1=7, motor_2_in2=8)
         self._biasAI = AIBias()
 
-    def train_ai(self):
+    def train_ai_model(self):
         self._biasAI.collect_and_train(self, self._commands)
 
     def app_run(self):
