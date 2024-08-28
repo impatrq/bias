@@ -28,12 +28,10 @@ class Bias:
                                     motor1_in2=19, motor2_in1=7, motor_2_in2=8)
         self._biasAI = AIBias()
 
-    def app_run(self):
-        '''
-        if (not self._biasAI.ai_is_trained()):
-            self._biasAI.collect_and_train(self, self._commands)
-        '''
+    def train_ai(self):
+        self._biasAI.collect_and_train(self, self._commands)
 
+    def app_run(self):
         while True:
             # Receive eeg data
             signals = self._biasReception.get_real_data(channels=self._number_of_channels, n=self._n)
