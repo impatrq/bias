@@ -1,7 +1,11 @@
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelBinarizer
 from bias import Bias
+from scipy.signal import welch
+from scipy.stats import skew, kurtosis
+import pywt
 import numpy as np
 
 def main():
@@ -14,8 +18,8 @@ def main():
     baudrate = 115200
     timeout = 1
     biasInstance = Bias(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
-    biasAI = AIBias()
-    biasAI.collect_and_train(biasInstance)
+    biasAI = AIBias(n=n, channels=number_of_channels)
+    biasAI.collect_and_train(biasInstance, biasInstance._commands)
     signals = biasInstance._biasReception.get_real_data(channels=number_of_channels, n=n)
     filtered_data = biasInstance._biasFilter.filter_signals(signals)
     # Process data
@@ -25,7 +29,9 @@ def main():
 
 
 class AIBias:
-    def __init__(self):
+    def __init__(self, n, channels):
+        self._n = n
+        self._number_of_channels = channels
         self.model = self.build_model()
         self.is_trained = False
 
@@ -56,12 +62,17 @@ class AIBias:
         X = np.array(X)
         y = np.array(y)
 
+
+        # Convert y to one-hot encoding
+        lb = LabelBinarizer()
+        y = lb.fit_transform(y)
+
         # Train the model with the collected data
         self.train_model(X, y)
 
     def build_model(self):
         model = Sequential([
-            Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(1000, 4)),  # Adjust input_shape based on your data
+            Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(self._n, self._number_of_channels)),  # Adjust input_shape based on your data
             MaxPooling1D(pool_size=2),
             Dropout(0.5),
             Flatten(),
@@ -73,14 +84,49 @@ class AIBias:
         return model
 
     def extract_features(self, eeg_data):
+        '''
+        features = []
+        for ch, signals in eeg_data.items():
+            for band_name, sig in signals.items():
+                features.append(np.array(sig))
+        features = np.array(features).T  # Transpose to get the correct shape
+        return features
+        '''
         """
         Convert your eeg_data to a 2D array, shape it into the appropriate input format for your model.
         """
         features = []
         for ch, signals in eeg_data.items():
             for band_name, sig in signals.items():
-                features.append(np.array(sig))
-        features = np.array(features).T  # Transpose to get the correct shape
+                sig = np.array(sig)
+
+                # Statistical Features
+                mean = np.mean(sig)
+                variance = np.var(sig)
+                skewness = skew(sig)
+                kurt = kurtosis(sig)
+                energy = np.sum(sig ** 2)
+
+                # Frequency Domain Features (Power Spectral Density)
+                freqs, psd = welch(sig, fs=500)  # Assuming fs = 500 Hz
+
+                # Band Power for specific frequency bands (e.g., alpha, beta, theta)
+                alpha_power = np.sum(psd[(freqs >= 8) & (freqs <= 13)])
+                beta_power = np.sum(psd[(freqs >= 13) & (freqs <= 30)])
+                theta_power = np.sum(psd[(freqs >= 4) & (freqs <= 8)])
+                delta_power = np.sum(psd[(freqs >= 0.5) & (freqs <= 4)])
+                gamma_power = np.sum(psd[(freqs >= 30) & (freqs <= 100)])
+
+                # Wavelet Transform (using the Morlet wavelet)
+                coeffs, _ = pywt.cwt(sig, scales=np.arange(1, 31), wavelet='morl')
+                wavelet_energy = np.sum(coeffs ** 2)
+
+                # Append all features together
+                features.extend([mean, variance, skewness, kurt, energy,
+                                 alpha_power, beta_power, theta_power, delta_power, gamma_power,
+                                 wavelet_energy])
+                
+        features = np.array(features)
         return features
 
     def train_model(self, X, y):
@@ -92,7 +138,8 @@ class AIBias:
         if not self.is_trained:
             raise Exception("Model has not been trained yet.")
         features = self.extract_features(eeg_data)
-        features = features.reshape(1, -1, self._number_of_channels)  # Reshape for the model input
+        # features = features.reshape(1, -1, self._number_of_channels)
+        features = features.reshape(1, -1)  # Reshape for the model input
         prediction = self.model.predict(features)
         return np.argmax(prediction, axis=1)[0]
     
