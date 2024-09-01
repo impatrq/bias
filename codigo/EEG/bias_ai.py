@@ -10,6 +10,7 @@ from scipy.signal import welch
 from scipy.stats import skew, kurtosis
 from scipy.signal import cwt, morlet
 import numpy as np
+import random
 
 def main():
     n = 1000
@@ -23,9 +24,9 @@ def main():
     biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
     biasProcessing = ProcessingBias(n=n, fs=fs)
     commands = ["forward", "backward", "left", "right", "stop", "rest"]
-    biasAI = AIBias(n=n, fs=fs, channels=number_of_channels)
+    biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
     biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
-                             commands=commands, real_data=False)
+                             samples_per_command=1, real_data=False)
     # Generate synthetic data
     signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
     #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
@@ -38,7 +39,7 @@ def main():
 
 
 class AIBias:
-    def __init__(self, n, fs, channels):
+    def __init__(self, n, fs, channels, commands):
         self._n = n
         self._fs = fs
         self._number_of_channels = channels
@@ -46,33 +47,38 @@ class AIBias:
         self._is_trained = False
         self._pca = PCA(n_components=0.95)  # Retain 95% of variance
         self._scaler = StandardScaler()
+        self._commands = commands
 
+        # Create a reverse mapping from label indices to commands
+        self._label_map = {"forward": 0, "backward": 1, "left": 2, "right": 3, "stop": 4, "rest": 5}
+        self._reverse_label_map = {v: k for k, v in self._label_map.items()}
 
     # Define getter
     def ai_is_trained(self):
         return self._is_trained
     
-    def collect_and_train(self, reception_instance, filter_instance, processing_instance, commands, real_data=True):
+    def collect_and_train(self, reception_instance, filter_instance, processing_instance, samples_per_command, real_data=True):
         """
         Collects EEG data, extracts features, and trains the model.
         """
         X = []
         y = []
-        label_map = {"forward": 0, "backward": 1, "left": 2, "right": 3, "stop": 4, "rest": 5}
 
-        for command in commands:
-            # Get real data from the Bias instance
-            if real_data:
-                signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
-            else:
-                signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
-            filtered_data = filter_instance.filter_signals(signals)
-            _, eeg_signals = processing_instance.process_signals(filtered_data)
+        for command in self._commands:
+            for _ in range(samples_per_command):
+                # Get real data or generate synthetic data
+                if real_data:
+                    signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
+                else:
+                    signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
+                
+                filtered_data = filter_instance.filter_signals(signals)
+                _, eeg_signals = processing_instance.process_signals(filtered_data)
 
-            # Extract features and append to X
-            features = self.extract_features(eeg_signals)
-            X.append(features)
-            y.append(label_map[command])
+                # Extract features and append to X
+                features = self.extract_features(eeg_signals)
+                X.append(features)
+                y.append(self._label_map[command])
 
         # Convert X and y to numpy arrays
         X = np.array(X)
@@ -157,10 +163,23 @@ class AIBias:
     def predict_command(self, eeg_data):
         if not self._is_trained:
             raise Exception("Model has not been trained yet.")
+        
+        # Extract features from the EEG data
         features = self.extract_features(eeg_data)
-        features = features.reshape(1, -1)  # Reshape for the model input
+        
+        # Ensure the features have the correct shape (1, number_of_channels, number_of_features)
+        features = features.reshape(1, self._number_of_channels, -1)
+        
+        # Make prediction
         prediction = self._model.predict(features)
-        return np.argmax(prediction, axis=1)[0]
+        
+        # Get the predicted label index
+        predicted_label_index = np.argmax(prediction, axis=1)[0]
+        
+        # Convert the numerical prediction to the text label
+        predicted_command = self._reverse_label_map[predicted_label_index]
+        
+        return predicted_command
 
 def generate_synthetic_eeg(n_samples, n_channels, fs):
     """
@@ -173,11 +192,11 @@ def generate_synthetic_eeg(n_samples, n_channels, fs):
     for ch in range(n_channels):
         # Create a raw EEG signal by summing several sine waves to simulate brain activity
         signal = (
-            np.sin(2 * np.pi * 10 * t) +  # Simulate alpha wave (8-13 Hz)
-            np.sin(2 * np.pi * 20 * t) +  # Simulate beta wave (13-30 Hz)
-            np.sin(2 * np.pi * 6 * t) +   # Simulate theta wave (4-8 Hz)
-            np.sin(2 * np.pi * 2 * t) +   # Simulate delta wave (0.5-4 Hz)
-            np.sin(2 * np.pi * 40 * t)    # Simulate gamma wave (30-100 Hz)
+            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(8, 13) * t) +  # Simulate alpha wave (8-13 Hz)
+            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(13, 30) * t) +  # Simulate beta wave (13-30 Hz)
+            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(4, 8) * t) +   # Simulate theta wave (4-8 Hz)
+            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(1, 4) * t) +   # Simulate delta wave (0.5-4 Hz)
+            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(0, 50) * t)    # Simulate gamma wave (30-100 Hz)
         )
 
         # Add random noise to simulate realistic EEG signals
