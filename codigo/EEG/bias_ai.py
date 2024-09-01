@@ -13,7 +13,6 @@ import numpy as np
 
 def main():
     n = 1000
-    duration = 2
     fs = 500
     online = True
     number_of_channels = 4
@@ -28,14 +27,9 @@ def main():
     biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
                              commands=commands, real_data=False)
     # Generate synthetic data
-    synthetic_data = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, duration=duration, fs=fs)
-    
-    # Wrap synthetic data in the format expected by your model
-    signals = {ch: {'alpha': synthetic_data[ch], 'beta': synthetic_data[ch], 
-                        'theta': synthetic_data[ch], 'delta': synthetic_data[ch], 
-                        'gamma': synthetic_data[ch]} for ch in range(number_of_channels)}
-    
+    signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
     #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    
     filtered_data = biasFilter.filter_signals(signals)
     # Process data
     times, eeg_signals = biasProcessing.process_signals(filtered_data)
@@ -47,7 +41,6 @@ class AIBias:
     def __init__(self, n, fs, channels):
         self._n = n
         self._fs = fs
-        self._duration = n / fs
         self._number_of_channels = channels
         self._model = self.build_model()
         self._is_trained = False
@@ -72,7 +65,7 @@ class AIBias:
             if real_data:
                 signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
             else:
-                eeg_signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, duration=self._duration, fs=self._fs)
+                signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
             filtered_data = filter_instance.filter_signals(signals)
             _, eeg_signals = processing_instance.process_signals(filtered_data)
 
@@ -162,33 +155,31 @@ class AIBias:
         prediction = self._model.predict(features)
         return np.argmax(prediction, axis=1)[0]
 
-def generate_synthetic_eeg(n_samples, n_channels, duration, fs):
+def generate_synthetic_eeg(n_samples, n_channels, fs):
     """
-    Generate synthetic EEG data.
+    Generate synthetic raw EEG data for multiple channels. 
+    The output is a dictionary where each channel has 1000 raw samples.
     """
-    t = np.linspace(0, duration, int(fs * duration), endpoint=False)
-    data = []
+    t = np.linspace(0, n_samples/fs, n_samples, endpoint=False)
+    data = {}
 
-    for _ in range(n_channels):
-        # Base random noise
-        signal = np.random.normal(0, 0.5, size=t.shape)
-        
-        # Add sinusoidal components to simulate EEG bands
-        alpha = np.sin(2 * np.pi * 10 * t)  # Alpha band (8-13 Hz)
-        beta = np.sin(2 * np.pi * 20 * t)   # Beta band (13-30 Hz)
-        theta = np.sin(2 * np.pi * 6 * t)   # Theta band (4-8 Hz)
-        delta = np.sin(2 * np.pi * 2 * t)   # Delta band (0.5-4 Hz)
-        gamma = np.sin(2 * np.pi * 40 * t)  # Gamma band (30-100 Hz)
-        
-        # Create different patterns for each "command"
-        if np.random.rand() > 0.5:
-            signal += alpha + beta
-        else:
-            signal += theta + delta + gamma
-        
-        data.append(signal)
-    
-    data = np.array(data)
+    for ch in range(n_channels):
+        # Create a raw EEG signal by summing several sine waves to simulate brain activity
+        signal = (
+            np.sin(2 * np.pi * 10 * t) +  # Simulate alpha wave (8-13 Hz)
+            np.sin(2 * np.pi * 20 * t) +  # Simulate beta wave (13-30 Hz)
+            np.sin(2 * np.pi * 6 * t) +   # Simulate theta wave (4-8 Hz)
+            np.sin(2 * np.pi * 2 * t) +   # Simulate delta wave (0.5-4 Hz)
+            np.sin(2 * np.pi * 40 * t)    # Simulate gamma wave (30-100 Hz)
+        )
+
+        # Add random noise to simulate realistic EEG signals
+        noise = np.random.normal(0, 0.5, size=t.shape)
+        signal += noise
+
+        # Store the raw signal in the dictionary
+        data[ch] = signal
+
     return data
 
 if __name__ == "__main__":
