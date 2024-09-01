@@ -29,7 +29,8 @@ class BiasClass:
         self._biasAI = AIBias(self._n, self._fs, self._number_of_channels)
 
     def train_ai_model(self):
-        self._biasAI.collect_and_train(self, self._commands)
+        self._biasAI.collect_and_train(reception_instance=self._biasReception, filter_instance=self._biasFilter, 
+                                       processing_instance=self._biasProcessing, commands=self._commands)
 
     def app_run(self):
         while True:

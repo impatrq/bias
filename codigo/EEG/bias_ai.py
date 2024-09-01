@@ -4,7 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from bias import BiasClass
+from bias_reception import ReceptionBias
+from bias_dsp import FilterBias, ProcessingBias
 from scipy.signal import welch
 from scipy.stats import skew, kurtosis
 import pywt
@@ -19,9 +20,13 @@ def main():
     port = '/dev/serial0'
     baudrate = 115200
     timeout = 1
-    biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
+    biasReception = ReceptionBias(port, baudrate, timeout)
+    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
+    biasProcessing = ProcessingBias(n=n, fs=fs)
+    commands = ["forward", "backward", "left", "right", "stop", "rest"]
     biasAI = AIBias(n=n, fs=fs, channels=number_of_channels)
-    biasAI.collect_and_train(biasInstance, biasInstance._commands)
+    biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
+                             commands=commands)
     # Generate synthetic data
     synthetic_data = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, duration=duration, fs=fs)
     
@@ -30,10 +35,10 @@ def main():
                         'theta': synthetic_data[ch], 'delta': synthetic_data[ch], 
                         'gamma': synthetic_data[ch]} for ch in range(number_of_channels)}
     
-    #signals = biasInstance._biasReception.get_real_data(channels=number_of_channels, n=n)
-    filtered_data = biasInstance._biasFilter.filter_signals(signals)
+    #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    filtered_data = biasFilter.filter_signals(signals)
     # Process data
-    times, eeg_signals = biasInstance._biasProcessing.process_signals(filtered_data)
+    times, eeg_signals = biasProcessing.process_signals(filtered_data)
     predicted_command = biasAI.predict_command(eeg_data=eeg_signals)
     print(f"Predicted Command: {predicted_command}")
 
@@ -53,7 +58,7 @@ class AIBias:
     def ai_is_trained(self):
         return self._is_trained
     
-    def collect_and_train(self, bias_instance, commands):
+    def collect_and_train(self, reception_instance, filter_instance, processing_instance, commands):
         """
         Collects EEG data, extracts features, and trains the model.
         """
@@ -63,9 +68,9 @@ class AIBias:
 
         for command in commands:
             # Get real data from the Bias instance
-            signals = bias_instance._biasReception.get_real_data(channels=bias_instance._number_of_channels, n=bias_instance._n)
-            filtered_data = bias_instance._biasFilter.filter_signals(signals)
-            _, eeg_signals = bias_instance._biasProcessing.process_signals(filtered_data)
+            signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
+            filtered_data = filter_instance.filter_signals(signals)
+            _, eeg_signals = processing_instance.process_signals(filtered_data)
 
             # Extract features and append to X
             features = self.extract_features(eeg_signals)
