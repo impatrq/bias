@@ -1,5 +1,5 @@
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer # type: ignore
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import StandardScaler
@@ -8,7 +8,7 @@ from bias_reception import ReceptionBias
 from bias_dsp import FilterBias, ProcessingBias
 from scipy.signal import welch
 from scipy.stats import skew, kurtosis
-import pywt
+import pywt # type: ignore
 import numpy as np
 
 def main():
@@ -26,7 +26,7 @@ def main():
     commands = ["forward", "backward", "left", "right", "stop", "rest"]
     biasAI = AIBias(n=n, fs=fs, channels=number_of_channels)
     biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
-                             commands=commands)
+                             commands=commands, real_data=False)
     # Generate synthetic data
     synthetic_data = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, duration=duration, fs=fs)
     
@@ -47,6 +47,7 @@ class AIBias:
     def __init__(self, n, fs, channels):
         self._n = n
         self._fs = fs
+        self._duration = n / fs
         self._number_of_channels = channels
         self._model = self.build_model()
         self._is_trained = False
@@ -58,7 +59,7 @@ class AIBias:
     def ai_is_trained(self):
         return self._is_trained
     
-    def collect_and_train(self, reception_instance, filter_instance, processing_instance, commands):
+    def collect_and_train(self, reception_instance, filter_instance, processing_instance, commands, real_data=True):
         """
         Collects EEG data, extracts features, and trains the model.
         """
@@ -68,7 +69,10 @@ class AIBias:
 
         for command in commands:
             # Get real data from the Bias instance
-            signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
+            if real_data:
+                signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
+            else:
+                eeg_signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, duration=self._duration, fs=self._fs)
             filtered_data = filter_instance.filter_signals(signals)
             _, eeg_signals = processing_instance.process_signals(filtered_data)
 
@@ -91,7 +95,7 @@ class AIBias:
 
     def build_model(self):
         model = Sequential([
-            InputLayer(input_shape=(self._n, self._number_of_channels)),
+            InputLayer(shape=(self._n, self._number_of_channels)),
             Conv1D(filters=64, kernel_size=3, activation='relu'),  # Adjust input_shape based on your data
             MaxPooling1D(pool_size=2),
             Dropout(0.5),
