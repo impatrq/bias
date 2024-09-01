@@ -49,9 +49,9 @@ class AIBias:
         self._scaler = StandardScaler()
         self._commands = commands
 
-        # Create a reverse mapping from label indices to commands
-        self._label_map = {"forward": 0, "backward": 1, "left": 2, "right": 3, "stop": 4, "rest": 5}
-        self._reverse_label_map = {v: k for k, v in self._label_map.items()}
+        # Create a dynamic label map based on the provided commands
+        self._label_map = {command: idx for idx, command in enumerate(commands)}
+        self._reverse_label_map = {idx: command for command, idx in self._label_map.items()}
 
     # Define getter
     def ai_is_trained(self):
