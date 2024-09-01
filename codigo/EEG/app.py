@@ -5,7 +5,7 @@ import extraction
 import preprocessing
 import numpy as np
 import graphingTerminal
-from bias import Bias
+from bias import BiasClass
 
 def main():
     while True:
@@ -60,7 +60,7 @@ def main():
             baudrate = 115200
             timeout = 1
             # Create object and run the app
-            biasInstance = Bias(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
+            biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
             biasInstance.app_run()
 
         if choice == '6':
@@ -72,7 +72,7 @@ def main():
             baudrate = 115200
             timeout = 1
             # Create object and run the app
-            biasInstance = Bias(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
+            biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
             biasInstance.train_ai_model()
          
 def show_menu():

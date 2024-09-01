@@ -5,7 +5,7 @@ from bias_graphing import GraphingBias
 from bias_motors import MotorBias
 from bias_ai import AIBias
 
-class Bias:
+class BiasClass:
     # Constructor
     def __init__(self, n, fs, channels, port, baudrate, timeout):
         # Define propieties for the class
@@ -26,7 +26,7 @@ class Bias:
         self._biasMotor = MotorBias(echo_forward=18, trigger_forward=17, echo_backwards=23, trigger_backwards=22, echo_right=5, trigger_right=6,
                                     echo_left=25, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, moto1_in1=13, 
                                     motor1_in2=19, motor2_in1=7, motor_2_in2=8)
-        self._biasAI = AIBias(self._n, self._number_of_channels)
+        self._biasAI = AIBias(self._n, self._fs, self._number_of_channels)
 
     def train_ai_model(self):
         self._biasAI.collect_and_train(self, self._commands)
