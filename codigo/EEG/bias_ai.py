@@ -8,7 +8,7 @@ from bias_reception import ReceptionBias
 from bias_dsp import FilterBias, ProcessingBias
 from scipy.signal import welch
 from scipy.stats import skew, kurtosis
-import pywt # type: ignore
+from scipy.signal import cwt, morlet
 import numpy as np
 
 def main():
@@ -78,7 +78,6 @@ class AIBias:
         X = np.array(X)
         y = np.array(y)
 
-
         # Convert y to one-hot encoding
         lb = LabelBinarizer()
         y = lb.fit_transform(y)
@@ -88,8 +87,8 @@ class AIBias:
 
     def build_model(self):
         model = Sequential([
-            InputLayer(shape=(self._n, self._number_of_channels)),
-            Conv1D(filters=64, kernel_size=3, activation='relu'),  # Adjust input_shape based on your data
+            InputLayer(shape=(self._number_of_channels, 55)),  # Adjusted input shape to match the feature count
+            Conv1D(filters=64, kernel_size=3, activation='relu'),
             MaxPooling1D(pool_size=2),
             Dropout(0.5),
             Flatten(),
@@ -101,6 +100,7 @@ class AIBias:
         return model
 
     def extract_features(self, eeg_data):
+        features = []
         for ch, signals in eeg_data.items():
             channel_features = []
             for band_name, sig in signals.items():
@@ -123,8 +123,9 @@ class AIBias:
                 delta_power = np.sum(psd[(freqs >= 0.5) & (freqs <= 4)])
                 gamma_power = np.sum(psd[(freqs >= 30) & (freqs <= 100)])
 
-                # Wavelet Transform (using the Morlet wavelet)
-                coeffs, _ = pywt.cwt(sig, scales=np.arange(1, 31), wavelet='morl')
+                # Use scipy.signal.cwt instead of pywt
+                scales = np.arange(1, 31)
+                coeffs = cwt(sig, morlet, scales)
                 wavelet_energy = np.sum(coeffs ** 2)
 
                 # Append all features together
@@ -134,12 +135,18 @@ class AIBias:
                 
             features.append(channel_features)
 
-        features = np.array(features)
+        features = np.abs(np.array(features))
         features = self._scaler.fit_transform(features)  # Normalize
-        features = self._pca.fit_transform(features)  # Dimensionality Reduction
-        features = features.reshape(self._n, self._number_of_channels, 1)
+        # Perform PCA if needed, currently commented out
+        # features = self._pca.fit_transform(features)  # Dimensionality Reduction
 
-        features = np.array(features)
+        # Adjust reshaping based on actual size
+        # Get the total number of features per channel
+        num_features_per_channel = features.shape[1]
+
+        # Reshape based on the number of samples, channels, and features
+        expected_shape = (self._number_of_channels, num_features_per_channel, 1)
+        features = features.reshape(expected_shape)
         return features
 
     def train_model(self, X, y):
