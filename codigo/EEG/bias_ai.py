@@ -25,7 +25,7 @@ def main():
     biasProcessing = ProcessingBias(n=n, fs=fs)
     commands = ["forward", "backward", "left", "right", "stop", "rest"]
     biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
-    train = input("Do you want to train model? y/n ")
+    train = input("Do you want to train model? (y/n): ")
     if train.lower() == "y":
         saved_dataset_path = None
         save_path = None
@@ -34,7 +34,7 @@ def main():
             saved_dataset_path = input("Write the name of the file where dataset was saved: ")
         else:
             save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
-            if save_new_dataset:
+            if save_new_dataset == "y":
                 save_path = input("Write the path where you want to save the dataset: ")
         biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
                                  samples_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
