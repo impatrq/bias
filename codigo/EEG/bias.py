@@ -16,7 +16,7 @@ class BiasClass:
         self._port = port
         self._baudrate = baudrate
         self._timeout = timeout
-        self._commands = ["forward", "backward", "left", "right", "stop", "rest"]
+        self._commands = ["forward", "backwards", "left", "right", "stop", "rest"]
         self._samples_trainig_command = 100
 
         # Create objects as propieties in order to apply the rest of the code in Bias class

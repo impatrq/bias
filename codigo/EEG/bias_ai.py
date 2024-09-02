@@ -11,6 +11,7 @@ from scipy.stats import skew, kurtosis
 from scipy.signal import cwt, morlet
 import numpy as np
 import random
+import time
 
 def main():
     n = 1000
@@ -23,7 +24,7 @@ def main():
     biasReception = ReceptionBias(port, baudrate, timeout)
     biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
     biasProcessing = ProcessingBias(n=n, fs=fs)
-    commands = ["forward", "backward", "left", "right", "stop", "rest"]
+    commands = ["forward", "backwards", "left", "right", "stop", "rest"]
     biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
     train = input("Do you want to train model? (y/n): ")
     if train.lower() == "y":
@@ -39,7 +40,7 @@ def main():
         biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
                                  samples_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
     # Generate synthetic data
-    signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
+    signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
     #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
     
     filtered_data = biasFilter.filter_signals(signals)
@@ -59,6 +60,8 @@ class AIBias:
         self._pca = PCA(n_components=0.95)  # Retain 95% of variance
         self._scaler = StandardScaler()
         self._commands = commands
+        self._features_length = 11
+        self._number_of_waves_per_channel = 5
 
         # Create a dynamic label map based on the provided commands
         self._label_map = {command: idx for idx, command in enumerate(commands)}
@@ -78,12 +81,14 @@ class AIBias:
 
         if saved_dataset_path is None:
             for command in self._commands:
-                for _ in range(samples_per_command):
+                for sample in range(samples_per_command):
                     # Get real data or generate synthetic data
                     if real_data:
+                        print(f"Think about {command}. Sample: {sample}")
                         signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
                     else:
-                        signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
+                        print(f"Sample: {sample}")
+                        signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs, command=command)
                     
                     filtered_data = filter_instance.filter_signals(signals)
                     _, eeg_signals = processing_instance.process_signals(filtered_data)
@@ -92,6 +97,13 @@ class AIBias:
                     features = self.extract_features(eeg_signals)
                     X.append(features)
                     y.append(self._label_map[command])
+
+                    if real_data:
+                        time.sleep(1)
+                
+                if real_data:
+                    print("Changing command. Be ready")
+                    time.sleep(20)
 
             # Convert X and y to numpy arrays
             X = np.array(X)
@@ -115,7 +127,7 @@ class AIBias:
 
     def build_model(self):
         model = Sequential([
-            InputLayer(shape=(self._number_of_channels, 55)),  # Adjusted input shape to match the feature count
+            InputLayer(shape=(self._number_of_channels, self._features_length * self._number_of_waves_per_channel)),  # Adjusted input shape to match the feature count
             Conv1D(filters=64, kernel_size=3, activation='relu'),
             MaxPooling1D(pool_size=2),
             Dropout(0.5),
@@ -203,6 +215,75 @@ class AIBias:
         
         return predicted_command
 
+def generate_synthetic_eeg(n_samples, n_channels, fs, command=None):
+    """
+    Generate synthetic raw EEG data for multiple channels.
+    The output is a dictionary where each channel has 1000 raw samples.
+    Simulate different tasks by altering the signal patterns.
+    """
+    t = np.linspace(0, n_samples/fs, n_samples, endpoint=False)
+    data = {}
+
+    for ch in range(n_channels):
+        # Simulate different frequency bands with some basic correlations
+        base_alpha = np.sin(2 * np.pi * 10 * t)  # Alpha wave (10 Hz)
+        base_beta = np.sin(2 * np.pi * 20 * t)   # Beta wave (20 Hz)
+        base_theta = np.sin(2 * np.pi * 6 * t)   # Theta wave (6 Hz)
+        base_delta = np.sin(2 * np.pi * 2 * t)   # Delta wave (2 Hz)
+        base_gamma = np.sin(2 * np.pi * 40 * t)  # Gamma wave (40 Hz)
+
+        alpha_power = 1.0
+        beta_power = 1.0
+        theta_power = 1.0
+        delta_power = 1.0
+        gamma_power = 1.0 # Adjust signal based on the command
+
+        if command == "forward":
+            alpha_power = 1.5
+            beta_power = 0.5
+        elif command == "backward":
+            alpha_power = 0.5
+            beta_power = 1.5
+        elif command == "left":
+            theta_power = 1.5
+            delta_power = 0.5
+        elif command == "right":
+            theta_power = 0.5
+            delta_power = 1.5
+        elif command == "stop":
+            alpha_power = 0.2
+            beta_power = 0.2
+            gamma_power = 0.2
+        else:  # rest
+            alpha_power = 1.0
+            beta_power = 1.0
+            theta_power = 1.0
+            delta_power = 1.0
+            gamma_power = 1.0        
+        
+        # Generate signal with some added randomness and correlations
+        signal = (
+            alpha_power * base_alpha +
+            beta_power * base_beta +
+            theta_power * base_theta +
+            delta_power * base_delta +
+            gamma_power * base_gamma
+        )
+
+        # Add channel correlation (e.g., 10% of the previous channel’s signal)
+        if ch > 0:
+            signal += 0.1 * data[ch-1]
+
+        # Add random noise to simulate realistic EEG signals
+        noise = np.random.normal(0, 0.1, size=t.shape)
+        signal += noise
+
+        # Store the raw signal in the dictionary
+        data[ch] = signal
+
+    return data
+
+'''
 def generate_synthetic_eeg(n_samples, n_channels, fs):
     """
     Generate synthetic raw EEG data for multiple channels. 
@@ -229,6 +310,7 @@ def generate_synthetic_eeg(n_samples, n_channels, fs):
         data[ch] = signal
 
     return data
+'''
 
 if __name__ == "__main__":
     main()
