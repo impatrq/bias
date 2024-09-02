@@ -73,7 +73,18 @@ def main():
             timeout = 1
             # Create object and run the app
             biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
-            biasInstance.train_ai_model()
+            saved_dataset_path = None
+            save_path = None
+            
+            loading_dataset = input("Do you want to load an existing dataset? y/n")
+            if loading_dataset.lower() == "y":
+                saved_dataset_path = input("Write the name of the file where dataset was saved (without extension)")
+            else:
+                save_new_dataset = input("Do you want to save the new dataset? y/n")
+                if save_new_dataset:
+                    save_path = input("Write the path where you want to save the dataset (without extension)")
+
+            biasInstance.train_ai_model(save_path, saved_dataset_path)
          
 def show_menu():
     print("EEG-based Wheelchair Control System")

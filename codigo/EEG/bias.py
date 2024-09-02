@@ -29,10 +29,11 @@ class BiasClass:
                                     motor1_in2=19, motor2_in1=7, motor_2_in2=8)
         self._biasAI = AIBias(self._n, self._fs, self._number_of_channels, self._commands)
 
-    def train_ai_model(self):
-        self._biasAI.collect_and_train(reception_instance=self._biasReception, filter_instance=self._biasFilter, 
+    def train_ai_model(self, save_path, saved_dataset_path):
+        self._biasAI.collect_and_train(reception_instance=self._biasReception, filter_instance=self._biasFilter,
                                        processing_instance=self._biasProcessing, 
-                                       samples_per_command=self._samples_trainig_command, real_data=True)
+                                       samples_per_command=self._samples_trainig_command, save_path=save_path,
+                                       saved_dataset_path=saved_dataset_path, real_data=True)
 
     def app_run(self):
         while True:
