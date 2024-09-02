@@ -29,15 +29,15 @@ def main():
     if train.lower() == "y":
         saved_dataset_path = None
         save_path = None
-        loading_dataset = input("Do you want to load a existent dataset? y/n")
+        loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
         if loading_dataset.lower() == "y":
-            saved_dataset_path = input("Write the name of the file where dataset was saved")
+            saved_dataset_path = input("Write the name of the file where dataset was saved: ")
         else:
-            save_new_dataset = input("Do you want to save the new dataset? y/n")
+            save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
             if save_new_dataset:
-                save_path = input("Write the path where you want to save the dataset")
+                save_path = input("Write the path where you want to save the dataset: ")
         biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
-                                 samples_per_command=1, save_path=saved_dataset_path, save_path=save_path, real_data=False)
+                                 samples_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
     # Generate synthetic data
     signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
     #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
@@ -69,14 +69,14 @@ class AIBias:
         return self._is_trained
     
     def collect_and_train(self, reception_instance, filter_instance, processing_instance, samples_per_command, 
-                          save_path=None, saved_path_dataset=None, real_data=True):
+                          save_path=None, saved_dataset_path=None, real_data=True):
         """
         Collects EEG data, extracts features, and trains the model.
         """
         X = []
         y = []
 
-        if saved_path_dataset is None:
+        if saved_dataset_path is None:
             for command in self._commands:
                 for _ in range(samples_per_command):
                     # Get real data or generate synthetic data
@@ -103,7 +103,7 @@ class AIBias:
                 print(f"Dataset saved to {save_path}.npz")
         
         else:
-            data = np.load(f"{saved_path_dataset}.npz")
+            data = np.load(f"{saved_dataset_path}.npz")
             X, y = data['X'], data['y']
 
         # Convert y to one-hot encoding

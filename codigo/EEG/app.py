@@ -76,13 +76,13 @@ def main():
             saved_dataset_path = None
             save_path = None
             
-            loading_dataset = input("Do you want to load an existing dataset? y/n")
+            loading_dataset = input("Do you want to load an existent dataset? (y/n): ")
             if loading_dataset.lower() == "y":
-                saved_dataset_path = input("Write the name of the file where dataset was saved (without extension)")
+                saved_dataset_path = input("Write the name of the file where dataset was saved (without extension): ")
             else:
-                save_new_dataset = input("Do you want to save the new dataset? y/n")
+                save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
                 if save_new_dataset:
-                    save_path = input("Write the path where you want to save the dataset (without extension)")
+                    save_path = input("Write the path where you want to save the dataset (without extension): ")
 
             biasInstance.train_ai_model(save_path, saved_dataset_path)
          
