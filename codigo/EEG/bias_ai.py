@@ -1,5 +1,6 @@
 from tensorflow.keras.models import Sequential # type: ignore
-from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer # type: ignore
+from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer, BatchNormalization # type: ignore
+from tensorflow.keras.regularizers import l2 # type: ignore
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import StandardScaler
@@ -7,7 +8,7 @@ from sklearn.decomposition import PCA
 from bias_reception import ReceptionBias
 from bias_dsp import FilterBias, ProcessingBias
 from scipy.signal import welch
-from scipy.stats import skew, kurtosis
+from scipy.stats import skew, kurtosis, entropy
 from scipy.signal import cwt, morlet
 import numpy as np
 import random
@@ -57,16 +58,16 @@ class AIBias:
         self._number_of_channels = channels
         self._features_length = len(["mean", "variance", "skewness", "kurt", "energy",
                                  "alpha_power", "beta_power", "theta_power", "delta_power", "gamma_power",
-                                 "wavelet_energy"])
+                                 "wavelet_energy", "entropy"])
         self._number_of_waves_per_channel = len(["alpha", "beta", "gamma", "delta", "theta"])
-        self._model = self.build_model()
+        self._commands = commands
+        self._model = self.build_model(output_dimension=len(self._commands))
         self._is_trained = False
         self._pca = PCA(n_components=0.95)  # Retain 95% of variance
         self._scaler = StandardScaler()
-        self._commands = commands
 
         # Create a dynamic label map based on the provided commands
-        self._label_map = {command: idx for idx, command in enumerate(commands)}
+        self._label_map = {command: idx for idx, command in enumerate(self._commands)}
         self._reverse_label_map = {idx: command for command, idx in self._label_map.items()}
 
     # Define getter
@@ -127,16 +128,21 @@ class AIBias:
         # Train the model with the collected data
         self.train_model(X, y)
 
-    def build_model(self):
+    def build_model(self, output_dimension):
         model = Sequential([
             InputLayer(shape=(self._number_of_channels, self._features_length * self._number_of_waves_per_channel)),  # Adjusted input shape to match the feature count
             Conv1D(filters=64, kernel_size=3, activation='relu'),
+            #BatchNormalization(),
             MaxPooling1D(pool_size=2),
             Dropout(0.5),
             Flatten(),
-            Dense(100, activation='relu'),
-            Dense(50, activation='relu'),
-            Dense(6, activation='softmax')  # 6 output classes (forward, backward, etc.)
+            Dense(100, activation='relu'), #, kernel_regularizer=l2(0.01)),
+            #BatchNormalization(),
+            Dropout(0.5),
+            Dense(50, activation='relu'), #, kernel_regularizer=l2(0.01)),
+            #BatchNormalization(),
+            Dropout(0.5),
+            Dense(output_dimension, activation='softmax')  # 6 output classes (forward, backward, etc.)
         ])
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         return model
@@ -173,8 +179,11 @@ class AIBias:
                 coeffs = cwt(signal_wave, morlet, scales)
                 wavelet_energy = np.sum(coeffs ** 2)
 
+                # Entropy
+                signal_entropy = entropy(np.histogram(signal_wave, bins=10)[0])
+
                 list_of_features = [mean, variance, skewness, kurt, energy, alpha_power, beta_power, theta_power, 
-                                    delta_power, gamma_power, wavelet_energy]
+                                    delta_power, gamma_power, wavelet_energy, signal_entropy]
 
                 # Append all features together
                 channel_features.extend(list_of_features)
