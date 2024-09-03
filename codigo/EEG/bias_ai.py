@@ -55,13 +55,15 @@ class AIBias:
         self._n = n
         self._fs = fs
         self._number_of_channels = channels
+        self._features_length = len(["mean", "variance", "skewness", "kurt", "energy",
+                                 "alpha_power", "beta_power", "theta_power", "delta_power", "gamma_power",
+                                 "wavelet_energy"])
+        self._number_of_waves_per_channel = len(["alpha", "beta", "gamma", "delta", "theta"])
         self._model = self.build_model()
         self._is_trained = False
         self._pca = PCA(n_components=0.95)  # Retain 95% of variance
         self._scaler = StandardScaler()
         self._commands = commands
-        self._features_length = 11
-        self._number_of_waves_per_channel = 5
 
         # Create a dynamic label map based on the provided commands
         self._label_map = {command: idx for idx, command in enumerate(commands)}
@@ -127,7 +129,7 @@ class AIBias:
 
     def build_model(self):
         model = Sequential([
-            InputLayer(shape=(self._number_of_channels, 55)),  # Adjusted input shape to match the feature count
+            InputLayer(shape=(self._number_of_channels, self._features_length * self._number_of_waves_per_channel)),  # Adjusted input shape to match the feature count
             Conv1D(filters=64, kernel_size=3, activation='relu'),
             MaxPooling1D(pool_size=2),
             Dropout(0.5),
