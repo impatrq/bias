@@ -175,6 +175,8 @@ class AIBias:
                                  alpha_power, beta_power, theta_power, delta_power, gamma_power,
                                  wavelet_energy])
                 
+                assert(channel_features == self._features_length)
+                
             features.append(channel_features)
 
         features = np.abs(np.array(features))
