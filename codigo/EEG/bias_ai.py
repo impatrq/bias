@@ -143,20 +143,23 @@ class AIBias:
 
     def extract_features(self, eeg_data):
         features = []
-        for ch, signals in eeg_data.items():
+        # Iterate over each channel in eeg_data
+        for ch, signals_per_channel in eeg_data.items():
             channel_features = []
-            for band_name, sig in signals.items():
-                sig = np.array(sig)
+            assert(len(signals_per_channel) == self._number_of_waves_per_channel)
+            # Iterate over the signals of each channel
+            for band_name, signal_wave in signals_per_channel.items():
+                signal_wave = np.array(signal_wave)
 
                 # Statistical Features
-                mean = np.mean(sig)
-                variance = np.var(sig)
-                skewness = skew(sig)
-                kurt = kurtosis(sig)
-                energy = np.sum(sig ** 2)
+                mean = np.mean(signal_wave)
+                variance = np.var(signal_wave)
+                skewness = skew(signal_wave)
+                kurt = kurtosis(signal_wave)
+                energy = np.sum(signal_wave ** 2)
 
                 # Frequency Domain Features (Power Spectral Density)
-                freqs, psd = welch(sig, fs=self._fs)  # Assuming fs = 500 Hz
+                freqs, psd = welch(signal_wave, fs=self._fs)  # Assuming fs = 500 Hz
 
                 # Band Power for specific frequency bands (e.g., alpha, beta, theta)
                 alpha_power = np.sum(psd[(freqs >= 8) & (freqs <= 13)])
@@ -167,15 +170,16 @@ class AIBias:
 
                 # Use scipy.signal.cwt instead of pywt
                 scales = np.arange(1, 31)
-                coeffs = cwt(sig, morlet, scales)
+                coeffs = cwt(signal_wave, morlet, scales)
                 wavelet_energy = np.sum(coeffs ** 2)
 
+                list_of_features = [mean, variance, skewness, kurt, energy, alpha_power, beta_power, theta_power, 
+                                    delta_power, gamma_power, wavelet_energy]
+
                 # Append all features together
-                channel_features.extend([mean, variance, skewness, kurt, energy,
-                                 alpha_power, beta_power, theta_power, delta_power, gamma_power,
-                                 wavelet_energy])
+                channel_features.extend(list_of_features)
                 
-                assert(channel_features == self._features_length)
+                assert(len(list_of_features) == self._features_length)
                 
             features.append(channel_features)
 
@@ -230,11 +234,11 @@ def generate_synthetic_eeg(n_samples, n_channels, fs, command=None):
 
     for ch in range(n_channels):
         # Simulate different frequency bands with some basic correlations
-        base_alpha = np.sin(2 * np.pi * 10 * t)  # Alpha wave (10 Hz)
-        base_beta = np.sin(2 * np.pi * 20 * t)   # Beta wave (20 Hz)
-        base_theta = np.sin(2 * np.pi * 6 * t)   # Theta wave (6 Hz)
-        base_delta = np.sin(2 * np.pi * 2 * t)   # Delta wave (2 Hz)
-        base_gamma = np.sin(2 * np.pi * 40 * t)  # Gamma wave (40 Hz)
+        base_alpha = np.sin(2 * np.pi * 10 * t)  # Alpha signal_wave (10 Hz)
+        base_beta = np.sin(2 * np.pi * 20 * t)   # Beta signal_wave (20 Hz)
+        base_theta = np.sin(2 * np.pi * 6 * t)   # Theta signal_wave (6 Hz)
+        base_delta = np.sin(2 * np.pi * 2 * t)   # Delta signal_wave (2 Hz)
+        base_gamma = np.sin(2 * np.pi * 40 * t)  # Gamma signal_wave (40 Hz)
 
         alpha_power = 1.0
         beta_power = 1.0
@@ -299,11 +303,11 @@ def generate_synthetic_eeg(n_samples, n_channels, fs):
     for ch in range(n_channels):
         # Create a raw EEG signal by summing several sine waves to simulate brain activity
         signal = (
-            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(8, 13) * t) +  # Simulate alpha wave (8-13 Hz)
-            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(13, 30) * t) +  # Simulate beta wave (13-30 Hz)
-            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(4, 8) * t) +   # Simulate theta wave (4-8 Hz)
-            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(1, 4) * t) +   # Simulate delta wave (0.5-4 Hz)
-            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(0, 50) * t)    # Simulate gamma wave (30-100 Hz)
+            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(8, 13) * t) +  # Simulate alpha signal_wave (8-13 Hz)
+            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(13, 30) * t) +  # Simulate beta signal_wave (13-30 Hz)
+            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(4, 8) * t) +   # Simulate theta signal_wave (4-8 Hz)
+            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(1, 4) * t) +   # Simulate delta signal_wave (0.5-4 Hz)
+            random.randrange(0, 10) * np.sin(2 * np.pi * random.randrange(0, 50) * t)    # Simulate gamma signal_wave (30-100 Hz)
         )
 
         # Add random noise to simulate realistic EEG signals
