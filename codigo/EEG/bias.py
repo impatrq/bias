@@ -5,7 +5,7 @@ from bias_graphing import GraphingBias
 from bias_motors import MotorBias
 from bias_ai import AIBias
 
-class Bias:
+class BiasClass:
     # Constructor
     def __init__(self, n, fs, channels, port, baudrate, timeout):
         # Define propieties for the class
@@ -16,7 +16,8 @@ class Bias:
         self._port = port
         self._baudrate = baudrate
         self._timeout = timeout
-        self._commands = ["forward", "backward", "left", "right", "stop", "rest"]
+        self._commands = ["forward", "backwards", "left", "right", "stop", "rest"]
+        self._samples_trainig_command = 100
 
         # Create objects as propieties in order to apply the rest of the code in Bias class
         self._biasReception = ReceptionBias(self._port, self._baudrate, self._timeout)
@@ -26,10 +27,13 @@ class Bias:
         self._biasMotor = MotorBias(echo_forward=18, trigger_forward=17, echo_backwards=23, trigger_backwards=22, echo_right=5, trigger_right=6,
                                     echo_left=25, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, moto1_in1=13, 
                                     motor1_in2=19, motor2_in1=7, motor_2_in2=8)
-        self._biasAI = AIBias()
+        self._biasAI = AIBias(self._n, self._fs, self._number_of_channels, self._commands)
 
-    def train_ai_model(self):
-        self._biasAI.collect_and_train(self, self._commands)
+    def train_ai_model(self, save_path, saved_dataset_path):
+        self._biasAI.collect_and_train(reception_instance=self._biasReception, filter_instance=self._biasFilter,
+                                       processing_instance=self._biasProcessing, 
+                                       samples_per_command=self._samples_trainig_command, save_path=save_path,
+                                       saved_dataset_path=saved_dataset_path, real_data=True)
 
     def app_run(self):
         while True:
