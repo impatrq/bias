@@ -138,10 +138,10 @@ class AIBias:
             Flatten(),
             Dense(100, activation='relu'), #, kernel_regularizer=l2(0.01)),
             #BatchNormalization(),
-            Dropout(0.5),
+            #Dropout(0.5),
             Dense(50, activation='relu'), #, kernel_regularizer=l2(0.01)),
             #BatchNormalization(),
-            Dropout(0.5),
+            #Dropout(0.5),
             Dense(output_dimension, activation='softmax')  # 6 output classes (forward, backward, etc.)
         ])
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
