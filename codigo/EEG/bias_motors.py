@@ -40,8 +40,8 @@ class MotorBias:
         self._motor1_in2 = PWMOutputDevice(motor1_in2, frequency=50, pin_factory=factory)
 
         # GPIO Pin setup for Motor 2
-        self._motor2_in1 = PWMOutputDevice(motor2_in1, pin_factory=factory)
-        self._motor2_in2 = PWMOutputDevice(motor_2_in2, pin_factory=factory)
+        self._motor2_in1 = PWMOutputDevice(motor2_in1, frequency=50, pin_factory=factory)
+        self._motor2_in2 = PWMOutputDevice(motor_2_in2, frequency=50, pin_factory=factory)
 
     def move_if_possible(self, command):
         try:
