@@ -1,16 +1,16 @@
-import reception
-import extraction
-#import ai
-#import prediction
-import preprocessing
 import numpy as np
-import graphingTerminal
 from bias import BiasClass
+from bias_reception import ReceptionBias
+from bias_dsp import FilterBias, ProcessingBias
+from bias_motors import MotorBias
+from bias_ai import AIBias
+from bias_graphing import GraphingBias
 
 def main():
     while True:
         show_menu()
         choice = input("Enter your choice: ")
+        '''
         if choice == '1':
             n = int(input("Enter number of data points: "))
             fs = int(input("Enter sampling frequency: "))
@@ -19,7 +19,7 @@ def main():
                 signals = reception.get_real_data(channels=number_of_channels, n=n)
 
                 for ch, signal in signals.items():
-                    t = np.arange(len(signals[ch])) / fs
+                    t = np.arange(loen(signals[ch])) / fs
                     graphingTerminal.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
                 print("EEG data captured.")
 
@@ -50,7 +50,7 @@ def main():
                 t3, alpha3, beta3, gamma3, delta3, theta3 = preprocessing.preprocess_signal(n=n, duration=duration, fs=fs, eeg_data=np.array(signals['ch3']))
                 
                 print("EEG data processed")
-        
+        '''
         if choice == '4':
             # Define propieties for Bias instance
             n = int(input("Enter number of data points: "))
