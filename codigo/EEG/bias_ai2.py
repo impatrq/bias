@@ -19,8 +19,8 @@ from mne.io import concatenate_raws
 
 '''
 def main():
-    n = 1024
-    fs = 512
+    n = 1000
+    fs = 500
     online = True
     number_of_channels = 4
     port = '/dev/serial0'
