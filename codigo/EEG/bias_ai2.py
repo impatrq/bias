@@ -13,7 +13,11 @@ from scipy.signal import cwt, morlet
 import numpy as np
 import random
 import time
+import mne
+from mne.datasets import eegbci
+from mne.io import concatenate_raws
 
+'''
 def main():
     n = 1024
     fs = 512
@@ -49,6 +53,60 @@ def main():
     times, eeg_signals = biasProcessing.process_signals(filtered_data)
     predicted_command = biasAI.predict_command(eeg_data=eeg_signals)
     print(f"Predicted Command: {predicted_command}")
+'''
+
+def main():
+    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
+    biasProcessing = ProcessingBias(n=n, fs=fs)
+
+    # Load EEGBCI motor imagery dataset from PhysioNet
+    subject = 1
+    runs = [3, 4, 7, 8, 11, 12]  # Motor imagery tasks
+    raw = load_and_preprocess_data(subject, runs)
+
+    # Filter data for motor imagery analysis
+    raw.filter(7., 30., fir_design='firwin', skip_by_annotation='edge')
+
+    # Extract events (motor imagery tasks)
+    events, event_id = mne.events_from_annotations(raw)
+
+    # Epoch the data
+    tmin, tmax = -1., 4.
+    epochs = mne.Epochs(raw, events, event_id, tmin, tmax, proj=True, baseline=None, preload=True)
+
+    # Get data and labels
+    X = epochs.get_data()  # EEG data
+    y = epochs.events[:, -1]  # Labels
+
+    # Preprocess and train the model
+    biasAI = AIBias(X.shape[2], epochs.info['sfreq'], X.shape[1], commands=list(event_id.keys()))
+    Signals = {}
+
+    # Iterate over each channel in eeg_data
+    for ch in range(X.shape[0]):  # Assuming eeg_data is [channels, samples]
+        signal_wave = X[ch, :]  # Select data for the channel
+        Signals[ch] = signal_wave
+
+    filtered_signals = biasFilter.filter_signals(Signals)
+    processed_signals = biasProcessing.process_signals(filtered_signals)
+
+    # Convert y to one-hot encoding
+    lb = LabelBinarizer()
+    y = lb.fit_transform(y)
+    biasAI.train_model(processed_signals, y)
+
+def load_and_preprocess_data(subject, runs):
+    """
+    Load and preprocess EEG data from PhysioNet BCI dataset.
+    """
+    # Download data if necessary
+    raw_fnames = eegbci.load_data(subject, runs)
+    raw = concatenate_raws([mne.io.read_raw_edf(f, preload=True) for f in raw_fnames])
+    
+    # Set the EEG channel types
+    raw.pick_types(eeg=True, stim=False, exclude='bads')
+    raw.set_eeg_reference('average', projection=True)
+    return raw
 
 
 class AIBias:
@@ -90,7 +148,7 @@ class AIBias:
                         signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
                     else:
                         print(f"Sample: {sample}")
-                        signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs, command=command)
+                        signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs) #, command=command)
                     
                     filtered_data = filter_instance.filter_signals(signals)
                     _, eeg_signals = processing_instance.process_signals(filtered_data)
@@ -166,14 +224,6 @@ class AIBias:
                 # Frequency Domain Features (Power Spectral Density)
                 freqs, psd = welch(signal_wave, fs=self._fs)  # Assuming fs = 500 Hz
 
-                '''
-                # Band Power for specific frequency bands (e.g., alpha, beta, theta)
-                alpha_power = np.sum(psd[(freqs >= 8) & (freqs <= 13)])
-                beta_power = np.sum(psd[(freqs >= 13) & (freqs <= 30)])
-                theta_power = np.sum(psd[(freqs >= 4) & (freqs <= 8)])
-                delta_power = np.sum(psd[(freqs >= 0.5) & (freqs <= 4)])
-                gamma_power = np.sum(psd[(freqs >= 30) & (freqs <= 100)])
-                '''
                 # Band Power
                 band_power = np.sum(psd)  # Total power within this band
 
@@ -185,8 +235,6 @@ class AIBias:
                 # Entropy
                 signal_entropy = entropy(np.histogram(signal_wave, bins=10)[0])
                 list_of_features = [mean, variance, skewness, kurt, energy, band_power, wavelet_energy, signal_entropy]
-                #list_of_features = [mean, variance, skewness, kurt, energy, alpha_power, beta_power, theta_power, 
-                #                    delta_power, gamma_power, wavelet_energy, signal_entropy]
 
                 # Append all features together
                 channel_features.extend(list_of_features)
@@ -205,13 +253,14 @@ class AIBias:
         num_features_per_channel = features.shape[1]
 
         # Reshape based on the number of samples, channels, and features
-        expected_shape = (self._number_of_channels, num_features_per_channel, 1)
-        features = features.reshape(expected_shape)
+        #expected_shape = (self._number_of_channels, num_features_per_channel, 1)
+        #features = features.reshape(expected_shape)
+        features = features.reshape(self._number_of_channels, -1, 1)  # Adjust as needed
         return features
 
     def train_model(self, X, y):
-        # X_processed = np.array([self.extract_features(epoch) for epoch in X])
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        X_processed = np.array([self.extract_features(epoch) for epoch in X])
+        X_train, X_test, y_train, y_test = train_test_split(X_processed, y, test_size=0.2, random_state=42)
         self._model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
         self._is_trained = True
 
@@ -236,75 +285,7 @@ class AIBias:
         
         return predicted_command
 
-def generate_synthetic_eeg(n_samples, n_channels, fs, command=None):
-    """
-    Generate synthetic raw EEG data for multiple channels.
-    The output is a dictionary where each channel has 1000 raw samples.
-    Simulate different tasks by altering the signal patterns.
-    """
-    t = np.linspace(0, n_samples/fs, n_samples, endpoint=False)
-    data = {}
 
-    for ch in range(n_channels):
-        # Simulate different frequency bands with some basic correlations
-        base_alpha = np.sin(2 * np.pi * 10 * t)  # Alpha signal_wave (10 Hz)
-        base_beta = np.sin(2 * np.pi * 20 * t)   # Beta signal_wave (20 Hz)
-        base_theta = np.sin(2 * np.pi * 6 * t)   # Theta signal_wave (6 Hz)
-        base_delta = np.sin(2 * np.pi * 2 * t)   # Delta signal_wave (2 Hz)
-        base_gamma = np.sin(2 * np.pi * 40 * t)  # Gamma signal_wave (40 Hz)
-
-        alpha_power = 1.0
-        beta_power = 1.0
-        theta_power = 1.0
-        delta_power = 1.0
-        gamma_power = 1.0 # Adjust signal based on the command
-
-        if command == "forward":
-            alpha_power = 1.5
-            beta_power = 0.5
-        elif command == "backward":
-            alpha_power = 0.5
-            beta_power = 1.5
-        elif command == "left":
-            theta_power = 1.5
-            delta_power = 0.5
-        elif command == "right":
-            theta_power = 0.5
-            delta_power = 1.5
-        elif command == "stop":
-            alpha_power = 0.2
-            beta_power = 0.2
-            gamma_power = 0.2
-        else:  # rest
-            alpha_power = 1.0
-            beta_power = 1.0
-            theta_power = 1.0
-            delta_power = 1.0
-            gamma_power = 1.0        
-        
-        # Generate signal with some added randomness and correlations
-        signal = (
-            alpha_power * base_alpha +
-            beta_power * base_beta +
-            theta_power * base_theta +
-            delta_power * base_delta +
-            gamma_power * base_gamma
-        )
-
-        # Add channel correlation (e.g., 10% of the previous channel’s signal)
-        if ch > 0:
-            signal += 0.1 * data[ch-1]
-
-        # Add random noise to simulate realistic EEG signals
-        noise = np.random.normal(0, 0.1, size=t.shape)
-        signal += noise
-
-        # Store the raw signal in the dictionary
-        data[ch] = signal
-
-    return data
-
-'''
 def generate_synthetic_eeg(n_samples, n_channels, fs):
     """
     Generate synthetic raw EEG data for multiple channels. 
@@ -331,7 +312,7 @@ def generate_synthetic_eeg(n_samples, n_channels, fs):
         data[ch] = signal
 
     return data
-'''
+
 
 if __name__ == "__main__":
     main()
