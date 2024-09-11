@@ -92,8 +92,8 @@ class ProcessingBias(DSPBias):
         signal_fft_magnitude_reduced = signal_fft_magnitude[:self._n//2]
 
         # Graph signal in frequency and in time domain
-        self._biasGraphing.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal {channel_number}")
-        self._biasGraphing.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
+        # self._biasGraphing.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal {channel_number}")
+        # self._biasGraphing.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
 
         # EEG bands
         bands = {
@@ -110,14 +110,6 @@ class ProcessingBias(DSPBias):
         for band_name, band_range in bands.items():
             # Reconstruct and then apply Fourier in order to get the five signals over time
             filtered_signals[band_name] = self.filter_and_reconstruct(signal_fft, frequencies, band_range)
-            '''
-            if GRAPH_IN_TERMINAL:
-                graphingTerminal.graph_signal_voltage_time(t=t, signal=filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
-            else:
-                # Plot the filtered waves in the time domain
- 
-                graphingPython.graph_signal_voltage_time(t=t, signal=filtered_signals[band_name].real, title=f"{band_name.capitalize()} over time")
-            '''
                 
         # New sampling rate for interpolation
         new_fs = self._fs * 10
@@ -125,18 +117,6 @@ class ProcessingBias(DSPBias):
 
         # Interpolate each wave
         interpolated_signals = {band_name: self.interpolate_signal(t, sig.real, new_t) for band_name, sig in filtered_signals.items()}
-
-        '''
-        # Plot the interpolated signals
-        for band_name, sig in interpolated_signals.items():
-            if GRAPH_IN_TERMINAL:
-                graphingTerminal.graph_signal_voltage_time(t=new_t, signal=sig, title=f"{band_name.capitalize()} interpolated")
-            else:
-                graphingPython.graph_signal_voltage_time(t=new_t, signal=sig, title=f"{band_name.capitalize()} interpolated")
-
-            if GRAPH_IN_TERMINAL:
-                graphingPython.plot_now
-        '''
 
         # Return time vector and the signals already processed
         return new_t, interpolated_signals
