@@ -72,9 +72,9 @@ def run_motor_control():
         echo_left=25, trigger_left=24,
         led_forward=16, led_backwards=20,
         led_left=21, led_right=26,
-        buzzer=12, moto1_in1=13,
+        buzzer=12, motor1_in1=13,
         motor1_in2=19, motor2_in1=7,
-        motor_2_in2=8
+        motor2_in2=8
     )
 
     while True:

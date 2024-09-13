@@ -6,16 +6,16 @@ import time
 
 def motor_task():
     biasMotor = MotorBias(echo_forward=18, trigger_forward=17, echo_backwards=23, trigger_backwards=22, echo_right=5, trigger_right=6,
-                          echo_left=25, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, moto1_in1=13, 
-                          motor1_in2=19, motor2_in1=7, motor_2_in2=8)
+                          echo_left=25, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, motor1_in1=13, 
+                          motor1_in2=19, motor2_in1=7, motor2_in2=8)
     while True:
         command = input("Enter command (forward/left/backwards/right/stop): ").strip()
         biasMotor.move_if_possible(command)
 
 class MotorBias:
     def __init__(self, echo_forward, trigger_forward, echo_backwards, trigger_backwards, echo_right, trigger_right,
-                 echo_left, trigger_left, led_forward, led_backwards, led_left, led_right, buzzer, moto1_in1, 
-                 motor1_in2, motor2_in1, motor_2_in2):
+                 echo_left, trigger_left, led_forward, led_backwards, led_left, led_right, buzzer, motor1_in1, 
+                 motor1_in2, motor2_in1, motor2_in2):
         
         factory = PiGPIOFactory()
         
@@ -31,10 +31,10 @@ class MotorBias:
         
         self._buzzer = Buzzer(buzzer)
         
-        self._motor1_in1 = PWMOutputDevice(moto1_in1, frequency=50, pin_factory=factory)
+        self._motor1_in1 = PWMOutputDevice(motor1_in1, frequency=50, pin_factory=factory)
         self._motor1_in2 = PWMOutputDevice(motor1_in2, frequency=50, pin_factory=factory)
         self._motor2_in1 = PWMOutputDevice(motor2_in1, frequency=50, pin_factory=factory)
-        self._motor2_in2 = PWMOutputDevice(motor_2_in2, frequency=50, pin_factory=factory)
+        self._motor2_in2 = PWMOutputDevice(motor2_in2, frequency=50, pin_factory=factory)
 
     def move_if_possible(self, command):
         try:
