@@ -6,6 +6,7 @@ from scipy.signal import butter, filtfilt, firwin, lfilter, iirfilter
 import matplotlib.pyplot as plt
 from bias_reception import ReceptionBias
 from bias_graphing import GraphingBias
+from signals import random_signal
 
 def main():
     n = 1000
@@ -15,14 +16,20 @@ def main():
 
     # Receive data from RP2040 Zero
     biasReception = ReceptionBias()
-    signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    signals = {}
+    signals['ch0'] = random_signal(n)
+    signals['ch1'] = random_signal(n)
+    signals['ch2'] = random_signal(n)
+    signals['ch3'] = random_signal(n)
+
     # Graph signals
-    biasGraphing = GraphingBias(graph_in_terminal=True)
+    biasGraphing = GraphingBias(graph_in_terminal=False)
     for ch, signal in signals.items():
         t = np.arange(len(signals[ch])) / fs
         biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
 
-    biasFilter = FilterBias(n=n, fs=fs, eeg_data=signals, notch=True, bandpass=True, fir=True, iir=True)
+    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=True, iir=True)
 
     # Apply digital filtering
     filtered_data = biasFilter.filter_signals(signals)
@@ -53,7 +60,7 @@ class ProcessingBias(DSPBias):
     # Constructor
     def __init__(self, n, fs):
         super().__init__(n, fs)
-        self._biasGraphing = GraphingBias(graph_in_terminal=True)
+        self._biasGraphing = GraphingBias(graph_in_terminal=False)
 
     # Process all the data
     def process_signals(self, eeg_signals):
@@ -92,8 +99,8 @@ class ProcessingBias(DSPBias):
         signal_fft_magnitude_reduced = signal_fft_magnitude[:self._n//2]
 
         # Graph signal in frequency and in time domain
-        # self._biasGraphing.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal {channel_number}")
-        # self._biasGraphing.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
+        self._biasGraphing.graph_signal_voltage_time(t=t, signal=signal, title=f"Input signal {channel_number}")
+        self._biasGraphing.graph_signal_voltage_frequency(frequencies=frequencies_reduced, magnitudes=signal_fft_magnitude_reduced, title=f'Frequency spectrum of signal of {channel_number}')
 
         # EEG bands
         bands = {
