@@ -1,6 +1,10 @@
 import numpy as np
 from bias import BiasClass
+from bias_reception import ReceptionBias
+from bias_dsp import FilterBias, ProcessingBias
 from bias_motors import MotorBias
+from bias_ai import AIBias
+from bias_graphing import GraphingBias
 
 def main():
     while True:
@@ -16,7 +20,6 @@ def main():
         if choice == '3':
             run_motor_control()
             
-
         if choice == '4':
             # Define propiedades para la instancia de Bias
             n = int(input("Enter number of data points: "))

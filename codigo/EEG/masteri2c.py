@@ -1,4 +1,4 @@
-import smbus
+import smbus # type ignore
 import time
 from gpiozero import Motor
 

@@ -57,8 +57,7 @@ class AIBias:
         self._fs = fs
         self._number_of_channels = channels
         self._features_length = len(["mean", "variance", "skewness", "kurt", "energy",
-                                 "alpha_power", "beta_power", "theta_power", "delta_power", "gamma_power",
-                                 "wavelet_energy", "entropy"])
+                                 "band_power", "wavelet_energy", "entropy"])
         self._number_of_waves_per_channel = len(["alpha", "beta", "gamma", "delta", "theta"])
         self._commands = commands
         self._model = self.build_model(output_dimension=len(self._commands))
@@ -138,10 +137,10 @@ class AIBias:
             Flatten(),
             Dense(100, activation='relu'), #, kernel_regularizer=l2(0.01)),
             #BatchNormalization(),
-            #Dropout(0.5),
+            Dropout(0.5),
             Dense(50, activation='relu'), #, kernel_regularizer=l2(0.01)),
             #BatchNormalization(),
-            #Dropout(0.5),
+            Dropout(0.5),
             Dense(output_dimension, activation='softmax')  # 6 output classes (forward, backward, etc.)
         ])
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
@@ -167,12 +166,16 @@ class AIBias:
                 # Frequency Domain Features (Power Spectral Density)
                 freqs, psd = welch(signal_wave, fs=self._fs)  # Assuming fs = 500 Hz
 
+                '''
                 # Band Power for specific frequency bands (e.g., alpha, beta, theta)
                 alpha_power = np.sum(psd[(freqs >= 8) & (freqs <= 13)])
                 beta_power = np.sum(psd[(freqs >= 13) & (freqs <= 30)])
                 theta_power = np.sum(psd[(freqs >= 4) & (freqs <= 8)])
                 delta_power = np.sum(psd[(freqs >= 0.5) & (freqs <= 4)])
                 gamma_power = np.sum(psd[(freqs >= 30) & (freqs <= 100)])
+                '''
+                # Band Power
+                band_power = np.sum(psd)  # Total power within this band
 
                 # Use scipy.signal.cwt instead of pywt
                 scales = np.arange(1, 31)
@@ -181,9 +184,9 @@ class AIBias:
 
                 # Entropy
                 signal_entropy = entropy(np.histogram(signal_wave, bins=10)[0])
-
-                list_of_features = [mean, variance, skewness, kurt, energy, alpha_power, beta_power, theta_power, 
-                                    delta_power, gamma_power, wavelet_energy, signal_entropy]
+                list_of_features = [mean, variance, skewness, kurt, energy, band_power, wavelet_energy, signal_entropy]
+                #list_of_features = [mean, variance, skewness, kurt, energy, alpha_power, beta_power, theta_power, 
+                #                    delta_power, gamma_power, wavelet_energy, signal_entropy]
 
                 # Append all features together
                 channel_features.extend(list_of_features)
@@ -207,6 +210,7 @@ class AIBias:
         return features
 
     def train_model(self, X, y):
+        # X_processed = np.array([self.extract_features(epoch) for epoch in X])
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self._model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
         self._is_trained = True
