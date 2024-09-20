@@ -6,7 +6,6 @@ from scipy.signal import butter, filtfilt, firwin, lfilter, iirfilter
 import matplotlib.pyplot as plt
 from bias_reception import ReceptionBias
 from bias_graphing import GraphingBias
-from signals import random_signal
 
 def main():
     n = 1000
