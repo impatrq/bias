@@ -16,12 +16,8 @@ def main():
 
     # Receive data from RP2040 Zero
     biasReception = ReceptionBias()
-    #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
-    signals = {}
-    signals['ch0'] = random_signal(n)
-    signals['ch1'] = random_signal(n)
-    signals['ch2'] = random_signal(n)
-    signals['ch3'] = random_signal(n)
+
+    signals = biasReception.get_real_data(channels=number_of_channels, n=n)
 
     # Graph signals
     biasGraphing = GraphingBias(graph_in_terminal=False)
