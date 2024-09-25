@@ -293,7 +293,32 @@ La implementación de este elemento se realiza mediante una caja metálica que s
 \subsection{Sistema de control}
 
 \subsection{Puentes H}
+Un Puente H es un circuito utilizado para invertir el sentido de giro de un motor y para separar su etapa de potencia con la de control. Su nombre viene de la forma gráfica que tiene el circuito. Se construye con 4 interruptores, pueden ser mecánicos o transistores. En la siguiente imágen se puede ver la forma de un puente H.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Images//puente h/H_bridge.svg.png}
+    \caption{Puente H Genérico por medio de llaves mecánicas}
+\end{figure}
+
+En este ejemplo, cuando la llave S1 y S4 se cierran, correrá corriente por esta rama, haciendo que el motor funcione y tenga un sentido de giro. Cuando la llave S2 y S3 se cierran, correrá corriente por esta rama también, pero con sentido de giro invertido. En este circuito, S1 y S2 nunca pueden estar cerradas al mismo tiempo, porque esto generaría un corto circuito, lo mismo con las llaves S3 y S4.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.70\linewidth]{Images//puente h/H_bridge_operating.svg.png}
+    \caption{Puente H Operando}
+\end{figure}
+
+Un puente H de potencia es un tipo de circuito en el que la etapa de potencia, que incluye el motor, los transistores y está conectada a altas tensiones y corrientes, se encuentra separada de la etapa de control, la cual generalmente opera con voltajes más bajos. Esta separación se realiza para proteger la etapa de control de las altas tensiones, que podrían dañar o quemar sus circuitos. Podemos utilizar nuestro puente H como ejemplo para ilustrar este concepto:
+
+ \begin{figure}[H]
+     \centering
+     \includegraphics[width=0.85\linewidth]{Images//puente h/WhatsApp Image 2024-08-28 at 9.05.56 AM.jpeg}
+     \caption{Nuestro Puente H de potencia}
+     \label{fig:enter-label}
+ \end{figure}
+
+En nuestro puente H, hemos separado las ramas del motor de las de control, ya que el motor opera con 24V DC y tiene una corriente eficaz de 5A. Para controlar el motor de manera eficiente, hemos optado por un diseño que incluye cuatro transistores MOSFET de potencia, los cuales pueden soportar picos de hasta 74A y 82A, garantizando que puedan manejar la corriente del motor de manera continua. Además, los transistores son controlados mediante señales PWM, las cuales atraviesan un optoacoplador para minimizar el riesgo de que la corriente del motor regrese a la placa de control y cause daños. De ésta manera, podemos controlar el giro del motor de manera segura y regulada.
 
 
 \subsection{Sistema de recepción de señales}
