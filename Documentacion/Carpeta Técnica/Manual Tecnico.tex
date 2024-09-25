@@ -261,6 +261,9 @@ En este capítulo se describirán y desarrollarán todos los aspectos teóricos 
 \subsection{Comunicación UART}
 
 \subsection{Gráfico de Fourier}
+que es
+por que la necesitamos
+como lo aplicamos
 Explicar ondas cerebrales
 
 \subsection{Filtros digitales}
@@ -268,8 +271,18 @@ Explicar ondas cerebrales
 \subsection{Cantidad de canales}
 
 \subsection{Uso del gel conductor}
+que es
+por que la necesitamos
+como lo aplicamos
+
 
 \subsection{Jaula de Faraday}
+Una jaula de Faraday es, esencialmente, una estructura metálica diseñada para proteger su interior de los campos eléctricos estáticos. Su nombre proviene del físico Michael Faraday, quien construyó la primera de estas estructuras en 1836. Las jaulas de Faraday se utilizan para proteger su contenido de descargas eléctricas y del ruido electromagnético, debido a que, en su interior, el campo eléctrico es nulo. Su principio de funcionamiento se basa en las propiedades de un conductor en equilibrio electrostático, lo que impide que cualquier carga eléctrica atraviese la estructura. Por esta razón, se emplean para proteger dispositivos sensibles a las cargas eléctricas. Este fenómeno es conocido como apantallamiento eléctrico.
+
+\subsubsection{¿Por qué utilizamos una Jaula de Faraday?}
+Dado que trabajamos con señales altamente susceptibles al ruido debido a su frecuencia y voltaje, como es el caso de las señales captadas por el EEG, es fundamental mantenerlas lo más aisladas posible de interferencias externas. Además, contamos con una fuente importante de ruido electromagnético: el motor. Por esta razón, es esencial posicionar los componentes lo más alejados posible entre sí y utilizar una Jaula de Faraday en la sección destinada a la recepción y procesamiento de las señales.
+
+La implementación de este elemento se realiza mediante una caja metálica que será ubicada en la parte superior trasera de la silla de ruedas, es decir, en la zona de apoyo de la espalda, para mantenerla lo más distante posible de los motores.
 
 \subsection{Utilización de offsets}
 
@@ -280,6 +293,8 @@ Explicar ondas cerebrales
 \subsection{Sistema de control}
 
 \subsection{Puentes H}
+
+
 
 \subsection{Sistema de recepción de señales}
 
