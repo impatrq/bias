@@ -261,6 +261,9 @@ En este capítulo se describirán y desarrollarán todos los aspectos teóricos 
 \subsection{Comunicación UART}
 
 \subsection{Gráfico de Fourier}
+que es
+por que la necesitamos
+como lo aplicamos
 Explicar ondas cerebrales
 
 \subsection{Filtros digitales}
@@ -268,8 +271,18 @@ Explicar ondas cerebrales
 \subsection{Cantidad de canales}
 
 \subsection{Uso del gel conductor}
+que es
+por que la necesitamos
+como lo aplicamos
+
 
 \subsection{Jaula de Faraday}
+Una jaula de Faraday es, esencialmente, una estructura metálica diseñada para proteger su interior de los campos eléctricos estáticos. Su nombre proviene del físico Michael Faraday, quien construyó la primera de estas estructuras en 1836. Las jaulas de Faraday se utilizan para proteger su contenido de descargas eléctricas y del ruido electromagnético, debido a que, en su interior, el campo eléctrico es nulo. Su principio de funcionamiento se basa en las propiedades de un conductor en equilibrio electrostático, lo que impide que cualquier carga eléctrica atraviese la estructura. Por esta razón, se emplean para proteger dispositivos sensibles a las cargas eléctricas. Este fenómeno es conocido como apantallamiento eléctrico.
+
+\subsubsection{¿Por qué utilizamos una Jaula de Faraday?}
+Dado que trabajamos con señales altamente susceptibles al ruido debido a su frecuencia y voltaje, como es el caso de las señales captadas por el EEG, es fundamental mantenerlas lo más aisladas posible de interferencias externas. Además, contamos con una fuente importante de ruido electromagnético: el motor. Por esta razón, es esencial posicionar los componentes lo más alejados posible entre sí y utilizar una Jaula de Faraday en la sección destinada a la recepción y procesamiento de las señales.
+
+La implementación de este elemento se realiza mediante una caja metálica que será ubicada en la parte superior trasera de la silla de ruedas, es decir, en la zona de apoyo de la espalda, para mantenerla lo más distante posible de los motores.
 
 \subsection{Utilización de offsets}
 
@@ -280,6 +293,33 @@ Explicar ondas cerebrales
 \subsection{Sistema de control}
 
 \subsection{Puentes H}
+Un Puente H es un circuito utilizado para invertir el sentido de giro de un motor y para separar su etapa de potencia con la de control. Su nombre viene de la forma gráfica que tiene el circuito. Se construye con 4 interruptores, pueden ser mecánicos o transistores. En la siguiente imágen se puede ver la forma de un puente H.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Images//puente h/H_bridge.svg.png}
+    \caption{Puente H Genérico por medio de llaves mecánicas}
+\end{figure}
+
+En este ejemplo, cuando la llave S1 y S4 se cierran, correrá corriente por esta rama, haciendo que el motor funcione y tenga un sentido de giro. Cuando la llave S2 y S3 se cierran, correrá corriente por esta rama también, pero con sentido de giro invertido. En este circuito, S1 y S2 nunca pueden estar cerradas al mismo tiempo, porque esto generaría un corto circuito, lo mismo con las llaves S3 y S4.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.70\linewidth]{Images//puente h/H_bridge_operating.svg.png}
+    \caption{Puente H Operando}
+\end{figure}
+
+Un puente H de potencia es un tipo de circuito en el que la etapa de potencia, que incluye el motor, los transistores y está conectada a altas tensiones y corrientes, se encuentra separada de la etapa de control, la cual generalmente opera con voltajes más bajos. Esta separación se realiza para proteger la etapa de control de las altas tensiones, que podrían dañar o quemar sus circuitos. Podemos utilizar nuestro puente H como ejemplo para ilustrar este concepto:
+
+ \begin{figure}[H]
+     \centering
+     \includegraphics[width=0.85\linewidth]{Images//puente h/WhatsApp Image 2024-08-28 at 9.05.56 AM.jpeg}
+     \caption{Nuestro Puente H de potencia}
+     \label{fig:enter-label}
+ \end{figure}
+
+En nuestro puente H, hemos separado las ramas del motor de las de control, ya que el motor opera con 24V DC y tiene una corriente eficaz de 5A. Para controlar el motor de manera eficiente, hemos optado por un diseño que incluye cuatro transistores MOSFET de potencia, los cuales pueden soportar picos de hasta 74A y 82A, garantizando que puedan manejar la corriente del motor de manera continua. Además, los transistores son controlados mediante señales PWM, las cuales atraviesan un optoacoplador para minimizar el riesgo de que la corriente del motor regrese a la placa de control y cause daños. De ésta manera, podemos controlar el giro del motor de manera segura y regulada.
+
 
 \subsection{Sistema de recepción de señales}
 
