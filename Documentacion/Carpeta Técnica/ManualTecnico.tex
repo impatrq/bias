@@ -203,14 +203,14 @@ Gracias al mismo proyecto realizado por este usuario, pudimos desarrollar nuestr
 
 
 \begin{center}
-    \includegraphics[width=1\textwidth]{Images/Imagenes Latex/filtroeegderyan.png}\\
+    \includegraphics[width=1\textwidth]{Images/Imagenes/filtroeegderyan.png}\\
     
 Por otro lado nos dio una primera vista de la localización de los botones EEG como irían colocados en la cabeza
 
 \end{center}
 
 \begin{center}
-    \includegraphics[width=1\textwidth]{Images/Imagenes Latex/localizacionelectrodoseeg.png}\\
+    \includegraphics[width=1\textwidth]{Images/Imagenes/localizacionelectrodoseeg.png}\\
 
 \end{center}
 
@@ -221,7 +221,7 @@ Así mismo para el estudio del aérea de medicina y saber como el cerebro humano
 En nuestra búsqueda de conexiones para un microcontrolador y formas de desarrollar nuestro propio proyecto, descubrimos un sitio web llamado OpenBCI, una compañía especializada en la creación de dispositivos que integran tecnología con la interfaz del cuerpo humano. Esta empresa ha desarrollado un encefalógrafo casero, proporcionando dimensiones y parámetros estructurales que nos permitieron diseñar nuestra propia vincha/casco. Este dispositivo incorpora electrodos EEG, adaptados a la cabeza del usuario, como parte fundamental de nuestro proyecto "BIAS".
 
 \begin{center}
-    \includegraphics[width=1\textwidth]{Images/Imagenes Latex/vinchamarkiv.png}\\
+    \includegraphics[width=1\textwidth]{Images/Imagenes/vinchamarkiv.png}\\
 \end{center}
 
 Además, al ser una compañía especializada en la creación de módulos de microcontroladores, nos proporcionaron orientación en cuanto a cómo realizar las conexiones entre la Raspberry Pi 4 que utilizamos y el sistema de filtrado EEG.
@@ -241,13 +241,13 @@ En los siguientes textos se adjuntan enlaces para ver la página oficial de Open
 \centering
 
 \begin{subfigure}[b]{0.45\linewidth}
-\includegraphics[width=\linewidth]{Images/Imagenes Latex/esquematicodeganglion.png}
+\includegraphics[width=\linewidth]{Images/Imagenes/esquematicodeganglion.png}
 \caption{Diseño Esquemático}
 \label{fig:westminster_lateral}
 \end{subfigure}
 
 \begin{subfigure}[b]{0.45\linewidth}
-\includegraphics[width=\linewidth]{Images/Imagenes Latex/pcbdeganglion.png}
+\includegraphics[width=\linewidth]{Images/Imagenes/pcbdeganglion.png}
 \caption{DIseño PCB}
 \label{fig:westminster_aerea}
 
@@ -257,9 +257,9 @@ En los siguientes textos se adjuntan enlaces para ver la página oficial de Open
 \end{figure}
 
 \begin{center}
-    \includegraphics[width=1\textwidth]{Images/Imagenes Latex/pcbdeganglion.png}\\
+    \includegraphics[width=1\textwidth]{Images/Imagenes/pcbdeganglion.png}\\
 
-    \includegraphics[width=1\textwidth]{Images/Imagenes Latex/esquematicodeganglion.png}\\
+    \includegraphics[width=1\textwidth]{Images/Imagenes/esquematicodeganglion.png}\\
 \end {center}
 
 \section{Desarrollo Teórico}
@@ -271,6 +271,17 @@ En este capítulo se describirán y desarrollarán todos los aspectos teóricos 
 
 \subsection{Comunicación UART}
 
+El UART (Universal Asynchronous Receiver-Transmitter) es un periférico de hardware utilizado para la comunicación serie. Su principal función es permitir la transmisión y recepción de datos de manera asíncrona, lo que implica que no requiere de una señal de clock compartida entre el transmisor y el receptor. A continuación, se destacan las características principales de este tipo de comunicación:
+
+\begin{itemize}
+    \item Comunicación serie: Los datos se transmiten de forma secuencial, bit a bit, a través de una línea de transmisión (TX) y se reciben mediante una línea de recepción (RX).
+    \item Asincronía: Al no utilizar una señal de clock constante, ambos dispositivos deben estar configurados con la misma velocidad de transmisión (tasa de baudios) para asegurar la correcta recepción de los datos.
+    \item Formato de datos: Cada paquete de datos transmitido generalmente incluye un bit de inicio (indicando el comienzo de la transmisión), entre 5 y 9 bits de datos, un bit opcional de paridad (para detección de errores), y uno o dos bits de parada.
+    \item Velocidad de transmisión: La velocidad de transmisión de la información, conocida como tasa de baudios, se refiere al número de bits transmitidos por segundo.
+\end{itemize}
+
+La implementación de la comunicación UART en nuestro proyecto se utiliza para la recepción y procesamiento de señales. Específicamente, en la RP2040 Zero, enviamos las lecturas de los cuatro canales del ADC (Conversor Analógico-Digital) en formato JSON durante un período de tiempo definido y con una frecuencia de muestreo específica a la Raspberry Pi 4.
+
 \subsection{Gráfico de Fourier}
 que es
 por que la necesitamos
@@ -281,11 +292,11 @@ Explicar ondas cerebrales
 
 \subsection{Cantidad de canales}
 
-\subsection{Uso del gel conductor}
-que es
-por que la necesitamos
-como lo aplicamos
+\subsection{Gel conductor}
+El gel conductor neutro empleado en los electroencefalogramas (EEG) es una sustancia formulada para optimizar la conductividad eléctrica entre los electrodos y el cuero cabelludo del paciente. Su principal objetivo es minimizar la resistencia entre los electrodos y la piel, garantizando una transmisión eficiente y sin interferencias de las señales eléctricas cerebrales hacia los electrodos. 
 
+\subsubsection{Cómo aplicar el gel conductor}
+En los electrodos de copa dorada, el procedimiento consiste únicamente en rellenar la cavidad de la copa con el gel conductor, posteriormente colocarlo sobre una zona del cuero cabelludo previamente limpiada con algodón, mantenerlo en posición durante unos segundos y eliminar cualquier exceso de gel, en caso de haberlo, con un pequeño trozo de papel. Utilizamos este gel en el proyecto con el fin de obtener la mejor calidad posible en las señales, además de generar un leve efecto de succión que contribuye a mantener los electrodos firmemente adheridos.
 
 \subsection{Jaula de Faraday}
 Una jaula de Faraday es, esencialmente, una estructura metálica diseñada para proteger su interior de los campos eléctricos estáticos. Su nombre proviene del físico Michael Faraday, quien construyó la primera de estas estructuras en 1836. Las jaulas de Faraday se utilizan para proteger su contenido de descargas eléctricas y del ruido electromagnético, debido a que, en su interior, el campo eléctrico es nulo. Su principio de funcionamiento se basa en las propiedades de un conductor en equilibrio electrostático, lo que impide que cualquier carga eléctrica atraviese la estructura. Por esta razón, se emplean para proteger dispositivos sensibles a las cargas eléctricas. Este fenómeno es conocido como apantallamiento eléctrico.
@@ -308,7 +319,7 @@ Un Puente H es un circuito utilizado para invertir el sentido de giro de un moto
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{Images//puente h/H_bridge.svg.png}
+    \includegraphics[width=0.5\linewidth]{Images/PuenteH/H_bridge.svg.png}
     \caption{Puente H Genérico por medio de llaves mecánicas}
 \end{figure}
 
@@ -316,20 +327,21 @@ En este ejemplo, cuando la llave S1 y S4 se cierran, correrá corriente por esta
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.70\linewidth]{Images//puente h/H_bridge_operating.svg.png}
+    \includegraphics[width=0.70\linewidth]{Images/PuenteH/H_bridge_operating.svg.png}
     \caption{Puente H Operando}
 \end{figure}
 
+\subsubsection{Puente H de potencia}
 Un puente H de potencia es un tipo de circuito en el que la etapa de potencia, que incluye el motor, los transistores y está conectada a altas tensiones y corrientes, se encuentra separada de la etapa de control, la cual generalmente opera con voltajes más bajos. Esta separación se realiza para proteger la etapa de control de las altas tensiones, que podrían dañar o quemar sus circuitos. Podemos utilizar nuestro puente H como ejemplo para ilustrar este concepto:
 
  \begin{figure}[H]
      \centering
-     \includegraphics[width=0.85\linewidth]{Images//puente h/WhatsApp Image 2024-08-28 at 9.05.56 AM.jpeg}
+     \includegraphics[width=0.85\linewidth]{Images/PuenteH/WhatsApp Image 2024-08-28 at 9.05.56 AM.jpeg}
      \caption{Nuestro Puente H de potencia}
      \label{fig:enter-label}
  \end{figure}
 
-En nuestro puente H, hemos separado las ramas del motor de las de control, ya que el motor opera con 24V DC y tiene una corriente eficaz de 5A. Para controlar el motor de manera eficiente, hemos optado por un diseño que incluye cuatro transistores MOSFET de potencia, los cuales pueden soportar picos de hasta 74A y 82A, garantizando que puedan manejar la corriente del motor de manera continua. Además, los transistores son controlados mediante señales PWM, las cuales atraviesan un optoacoplador para minimizar el riesgo de que la corriente del motor regrese a la placa de control y cause daños. De ésta manera, podemos controlar el giro del motor de manera segura y regulada.
+En nuestro puente H, hemos separado las ramas del motor de las de control, ya que el motor opera con 24V DC y tiene una corriente eficaz de 3,5A. Para controlar el motor de manera eficiente, hemos optado por un diseño que incluye cuatro transistores MOSFET de potencia, los cuales pueden soportar picos de hasta 74A y 82A, garantizando que puedan manejar la corriente del motor de manera continua. Además, los transistores son controlados mediante señales PWM, las cuales atraviesan un optoacoplador para minimizar el riesgo de que la corriente del motor regrese a la placa de control y cause daños. De ésta manera, podemos controlar el giro del motor de manera segura y regulada.
 
 
 \subsection{Sistema de recepción de señales}
@@ -389,33 +401,49 @@ En este capítulo se incluirán imágenes de los esquemas de los circuitos, junt
 
 
 \subsubsection{Esquemáticos de los filtros}
-
-
-\subsubsection{Esquemáticos de los Puentes H}
-
 \begin{figure}[H]
     \centering
-     \includegraphics[width=1\textwidth]{Images//puente h/WhatsApp Image 2024-08-28 at 9.05.56 AM.jpeg}
+    \includegraphics[width=0.5\linewidth]{Images/Filtros/filtroseeg.png}
+    \caption{Esquemáticos de los filtros del EEG}
+\end{figure}[]
+
+\subsubsection{Esquemáticos del sistema de control}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Images/SistemaControl/sistemadecontrol.png}
+    \caption{Esquemáticos del sistema de control}
+\end{figure}[]
+
+\subsubsection{Esquemáticos del sistema Offset}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Images/SistemaOffset/sistemaoffset.png}
+    \caption{Esquemático del sistema de Offset}
+\end{figure}
+
+\subsubsection{Esquemáticos de los Puentes H}
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=1\textwidth]{Images/PuenteH/WhatsApp Image 2024-08-28 at 9.05.56 AM.jpeg}
     \caption{Puente H (Un Motor)}
 \end{figure}
 
 \subsubsection{Esquemático del sistema de emergencia}
-
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{Images/sistema de emergencia/sistemergencia.png}
+    \includegraphics[width=1\textwidth]{Images/SistemaEmergencia/sistemergencia.png}
     \caption{Esquemático del sistema de emegencia}
 
 
     \begin{subfigure}[t]{0.5\textwidth}
         \centering
-        \includegraphics[width=0.75\textwidth]{Images/sistema de emergencia/sistemergenciapcb.png}
+        \includegraphics[width=0.75\textwidth]{Images/SistemaEmergencia/sistemergenciapcb.png}
         \caption{PCB Del sistema de emergencia}
     \end{subfigure}%
     ~ 
     \begin{subfigure}[t]{0.5\textwidth}
         \centering
-        \includegraphics[width=0.75\textwidth]{Images/sistema de emergencia/sistemergencia3d.png}
+        \includegraphics[width=0.75\textwidth]{Images/SistemaEmergencia/sistemergencia3d.png}
         \caption{Modelo 3D Del sistema de emergencia}
     \end{subfigure}
 
