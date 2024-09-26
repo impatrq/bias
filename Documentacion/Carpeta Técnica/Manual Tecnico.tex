@@ -31,6 +31,17 @@
     showtabs=false,
     tabsize=2
 }
+
+\lstdefinelanguage{CSS}{
+  keywords={color,background-image:,margin,padding,font,weight,display,position,top,left,right,bottom,list,style,border,size,white,space,min,width, transition:, transform:, transition-property, transition-duration, transition-timing-function},	
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  alsoletter={:},
+  alsodigit={-}
+}
 \lstset{style=mystyle}
 \date{} 
 
@@ -324,6 +335,24 @@ En nuestro puente H, hemos separado las ramas del motor de las de control, ya qu
 \subsection{Sistema de recepción de señales}
 
 \subsection{Control por PWM}
+La modulación por ancho de pulso (PWM, por sus siglas en inglés Pulse Width Modulation) es una técnica empleada para regular la cantidad de energía suministrada a una carga, como un motor o un LED, mediante la variación del ciclo de trabajo de una señal pulsante. En lugar de modificar el voltaje de forma continua, PWM ajusta el tiempo durante el cual la señal permanece en estado alto (encendida) y bajo (apagada) dentro de un período fijo. Esto depende de los siguientes parámetros:
+
+
+Frecuencia: Se refiere a la cantidad de ciclos de encendido y apagado que ocurren en un segundo, y se mide en Hertz (Hz).
+
+
+Ciclo de trabajo: Es el porcentaje de tiempo que la señal se mantiene en estado alto durante un ciclo. Por ejemplo:
+
+Un ciclo de trabajo del 0\% implica que la señal está siempre apagada.
+
+Un ciclo de trabajo del 50\% significa que la señal está encendida la mitad del tiempo y apagada la otra mitad.
+
+Un ciclo de trabajo del 100\% indica que la señal permanece siempre encendida.
+
+
+En nuestro proyecto, aplicamos la técnica de PWM en el control de los motores. Dado que utilizamos dos motores, si estos operaran a su máxima potencia, la silla de ruedas se desplazaría a una velocidad excesiva. Por esta razón, empleamos un ciclo de trabajo del 25\% para limitar la velocidad de avance.
+
+
 
 \section{Desarrollo Tecnico}
 En este capítulo se proporcionará una descripción detallada sobre el funcionamiento de los distintos circuitos que conforman el dispositivo, así como su interacción en conjunto para cumplir con los objetivos del proyecto. Se explicará de manera clara y concisa cómo se utiliza el dispositivo, incluyendo instrucciones específicas para su correcto manejo y operatividad.
@@ -558,30 +587,35 @@ A partir de esta página, obtuvimos los primeros circuitos necesarios para el EE
 \subsection{Códigos principales}
 
 \subsubsection{bias.py}
+\lstinputlisting[language=python]{Codigos/CodigosPrincipales/bias.py}
 
 \subsubsection{app.py}
 
 \subsection{Inteligencia artificial}
 
-\subsubsection{bias_ai.py}
+\subsubsection{bias\_ai.py}
 
 \subsection{Filtrado y procesamiento de señales}
 
-\subsubsection{bias_dsp.py}
+\subsubsection{bias\_dsp.py}
 
-\subsubsection{bias_graphing.py} 
+\subsubsection{bias\_graphing.py} 
+\lstinputlisting[language=python]{Codigos/Filtrado/bias_graphing.py}
 
 \subsection{Motores}
 
-\subsubsection{bias_motors.py}
+\subsubsection{bias\_motors.py}
+\lstinputlisting[language=python]{Codigos/Motores/bias_motors.py}
 
 \subsection{Recepción de señales}
 
-\subsubsection{bias_reception.py}
+\subsubsection{bias\_reception.py}
+\lstinputlisting[language=python]{Codigos/Recepcion/bias_reception.py}
+
 
 \subsubsection{CMakeLists.txt}
 
-\subsubsection{pico_sdk_import.cmake}
+\subsubsection{pico\_sdk\_import.cmake}
 
 \subsubsection{reception.c}
 
@@ -601,13 +635,13 @@ Aquí se adjuntan los códigos de la página web:
     Index.css
 \end{center}
 
-\lstinputlisting[language=css]{pagina web/index.css}
+\lstinputlisting[language=CSS]{PaginaWeb/index.css}
 
 \begin{center}
     Index.html
 \end{center}
 
-\lstinputlisting[language=html]{pagina web/index.html}
+\lstinputlisting[language=html]{PaginaWeb/index.html}
 
 
 
