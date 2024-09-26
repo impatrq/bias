@@ -7,8 +7,7 @@
 #include "hardware/adc.h"
 
 #define UART_ID uart0
-//#define BAUDRATE 115200
-#define BAUDRATE 9600
+#define BAUDRATE 115200
 #define NUMBER_OF_CHANNELS 4
 #define NUMBER_OF_TOTAL_SAMPLES 1000
 #define ADC_DELAY_US -2000

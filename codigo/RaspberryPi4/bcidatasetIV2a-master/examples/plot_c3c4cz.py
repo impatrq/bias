@@ -64,7 +64,7 @@ class MotorImageryDataset:
         return trials_c, classes_c
 
 
-datasetA1 = MotorImageryDataset('../A01T.npz')
+datasetA1 = MotorImageryDataset("../A01T.npz")
 trials, classes = datasetA1.get_trials_from_channels([7, 9, 11])
 
 
@@ -79,3 +79,23 @@ plt.imshow(trials[2])
 plt.title('C4', size=22)
 
 plt.show()
+
+'''
+# Function to plot the trial data with x-axis (time reference)
+def plot_trial(trial_data, title):
+    plt.clear_figure()
+    time_axis = range(len(trial_data[0]))  # X-axis based on the number of samples
+    plt.plot(time_axis, trial_data[0])  # Plot with time on the x-axis
+    plt.title(title)
+    plt.show()
+
+# Plot C3
+plot_trial(trials[0], "C3")
+
+# Plot Cz
+plot_trial(trials[1], "Cz")
+
+# Plot C4
+plot_trial(trials[2], "C4")
+
+'''

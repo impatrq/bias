@@ -166,14 +166,6 @@ class AIBias:
                 # Frequency Domain Features (Power Spectral Density)
                 freqs, psd = welch(signal_wave, fs=self._fs)  # Assuming fs = 500 Hz
 
-                '''
-                # Band Power for specific frequency bands (e.g., alpha, beta, theta)
-                alpha_power = np.sum(psd[(freqs >= 8) & (freqs <= 13)])
-                beta_power = np.sum(psd[(freqs >= 13) & (freqs <= 30)])
-                theta_power = np.sum(psd[(freqs >= 4) & (freqs <= 8)])
-                delta_power = np.sum(psd[(freqs >= 0.5) & (freqs <= 4)])
-                gamma_power = np.sum(psd[(freqs >= 30) & (freqs <= 100)])
-                '''
                 # Band Power
                 band_power = np.sum(psd)  # Total power within this band
 
@@ -185,8 +177,6 @@ class AIBias:
                 # Entropy
                 signal_entropy = entropy(np.histogram(signal_wave, bins=10)[0])
                 list_of_features = [mean, variance, skewness, kurt, energy, band_power, wavelet_energy, signal_entropy]
-                #list_of_features = [mean, variance, skewness, kurt, energy, alpha_power, beta_power, theta_power, 
-                #                    delta_power, gamma_power, wavelet_energy, signal_entropy]
 
                 # Append all features together
                 channel_features.extend(list_of_features)

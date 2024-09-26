@@ -31,11 +31,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
  13 .comment      00000049  00000000  00000000  0000d548  2**0
                   CONTENTS, READONLY
- 14 .debug_info   0002ce95  00000000  00000000  0000d591  2**0
+ 14 .debug_info   0002ce96  00000000  00000000  0000d591  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_abbrev 000076bf  00000000  00000000  0003a426  2**0
+ 15 .debug_abbrev 000076bf  00000000  00000000  0003a427  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_loc    00021b7a  00000000  00000000  00041ae5  2**0
+ 16 .debug_loc    00021b7a  00000000  00000000  00041ae6  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_aranges 000016c8  00000000  00000000  00063660  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -405,9 +405,9 @@ Disassembly of section .text:
 100003ac:	b570      	push	{r4, r5, r6, lr}
 100003ae:	0006      	movs	r6, r0
 100003b0:	000d      	movs	r5, r1
-100003b2:	2196      	movs	r1, #150	; 0x96
+100003b2:	21e1      	movs	r1, #225	; 0xe1
 100003b4:	4c0b      	ldr	r4, [pc, #44]	; (100003e4 <init_uart+0x38>)
-100003b6:	0189      	lsls	r1, r1, #6
+100003b6:	0249      	lsls	r1, r1, #9
 100003b8:	0020      	movs	r0, r4
 100003ba:	f001 ff61 	bl	10002280 <uart_init>
 100003be:	2102      	movs	r1, #2
