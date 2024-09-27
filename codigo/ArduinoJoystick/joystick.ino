@@ -20,7 +20,7 @@ void loop() {
   
   String command = getJoystickDirection(xValue, yValue);
 
-  if (command != "STAY") {
+  if (command != "stay") {
     Wire.beginTransmission(8);  
     Wire.write(command.c_str());
     Wire.endTransmission();  
@@ -34,13 +34,13 @@ void loop() {
 String getJoystickDirection(int x, int y) {
   // Determinar dirección basándose en los valores leídos
   if (x < 512 - threshold) {
-    return "LEFT";  // Izquierda
+    return "left";  // Izquierda
   } else if (x > 512 + threshold) {
-    return "RIGHT";  // Derecha
+    return "right";  // Derecha
   } else if (y < 512 - threshold) {
-    return "FORWARD";  // Adelante
+    return "forward";  // Adelante
   } else if (y > 512 + threshold) {
-    return "BACKWARD";  // Atrás
+    return "backwards";  // Atrás
   }
-  return "STAY";  // Quieto
+  return "stay";  // Quieto
 }
