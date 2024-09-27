@@ -11,7 +11,6 @@ def main():
     number_of_channels = 4
     # Receive data
     biasReception = ReceptionBias()
-    signals = {}
     signals = biasReception.get_real_data(channels=number_of_channels, n=n)
 
     # Graph signals

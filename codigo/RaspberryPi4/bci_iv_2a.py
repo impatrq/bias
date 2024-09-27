@@ -7,6 +7,7 @@ from sklearn.decomposition import PCA
 from scipy.signal import welch, cwt, morlet
 from scipy.stats import skew, kurtosis, entropy
 import numpy as np
+from bias_dsp import ProcessingBias
 import random
 import time
 
@@ -128,26 +129,39 @@ class AIBias:
         return predicted_command
 
 def load_and_train_from_bci_dataset():
+    # Initialize the ProcessingBias object
+    fs = 250  # Sampling frequency from the dataset
+    n = 1000  # Number of samples
+    processing_bias = ProcessingBias(n=n, fs=fs)
+
     # Load BCI dataset
-    datasetA1 = MotorImageryDataset("A01T.npz")
+    datasetA1 = MotorImageryDataset("bcidatasetIV2a/A01T.npz")
     trials, classes = datasetA1.get_trials_from_channels([7, 9, 11])  # Example: C3, Cz, C4
 
-    # Flatten the trials for each channel and convert classes into the desired format
-    X, y = [], []
+    # Initialize X and y as empty lists
+    X = []
+    y = []
+    
     command_map = {"left": "left", "right": "right", "foot": "forward", "tongue": "backwards"}
 
-    ai_bias = AIBias(n=1000, fs=250, channels=3, commands=["left", "right", "forward", "backwards", "stop", "rest"])
+    # Initialize the AI model
+    ai_bias = AIBias(n=n, fs=fs, channels=3, commands=["left", "right", "forward", "backwards", "stop", "rest"])
 
     for i in range(len(trials)):
         trial_data = trials[i]
         class_label = classes[i][0]  # Assuming the first label for simplicity
+
         if class_label in command_map:
-            # Process the EEG data and extract features
-            eeg_data = {
-                ch: {wave: trial_data for wave in ["alpha", "beta", "gamma", "delta", "theta"]}
-                for ch in range(3)  # Assuming 3 channels
-            }
-            features = ai_bias.extract_features(eeg_data)
+            # Create a dictionary to hold the EEG signals for each channel
+            eeg_signals = {ch: trial_data[ch] for ch in range(3)}  # Assuming 3 channels: C3, Cz, C4
+
+            # Process the raw EEG signals using ProcessingBias to extract frequency bands
+            _, processed_signals = processing_bias.process_signals(eeg_signals)
+
+            # Extract features from the processed signals (frequency bands)
+            features = ai_bias.extract_features(processed_signals)
+
+            # Append the extracted features and the corresponding command label
             X.append(features)
             y.append(ai_bias._label_map[command_map[class_label]])
 

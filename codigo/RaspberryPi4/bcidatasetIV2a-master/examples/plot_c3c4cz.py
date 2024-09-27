@@ -67,7 +67,7 @@ class MotorImageryDataset:
 datasetA1 = MotorImageryDataset("../A01T.npz")
 trials, classes = datasetA1.get_trials_from_channels([7, 9, 11])
 
-
+'''
 plt.subplot(3, 1, 1)
 plt.imshow(trials[0])
 plt.title('C3', size=22)
@@ -97,5 +97,3 @@ plot_trial(trials[1], "Cz")
 
 # Plot C4
 plot_trial(trials[2], "C4")
-
-'''
