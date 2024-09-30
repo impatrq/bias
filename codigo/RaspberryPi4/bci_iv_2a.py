@@ -60,6 +60,7 @@ class AIBias:
         self._number_of_channels = channels
         self._features_length = len(["mean", "variance", "skewness", "kurt", "energy", "band_power", "wavelet_energy", "entropy"])
         self._number_of_waves_per_channel = len(["alpha", "beta", "gamma", "delta", "theta"])
+        self._num_features_per_channel = self._features_length * self._num_features_per_channel
         self._commands = commands
         self._model = self.build_model(output_dimension=len(self._commands))
         self._is_trained = False
@@ -110,7 +111,8 @@ class AIBias:
         features = np.abs(np.array(features))
         features = self._scaler.fit_transform(features)
         num_features_per_channel = features.shape[1]
-        features = features.reshape((self._number_of_channels, num_features_per_channel, 1))
+        assert(self._num_features_per_channel == num_features_per_channel)
+        features = features.reshape((self._number_of_channels, self._num_features_per_channel))
         return features
 
     def train_model(self, X, y):
@@ -122,7 +124,7 @@ class AIBias:
         if not self._is_trained:
             raise Exception("Model has not been trained yet.")
         features = self.extract_features(eeg_data)
-        features = features.reshape(1, self._number_of_channels, -1)
+        features = features.reshape(1, self._number_of_channels, self._num_features_per_channel)
         prediction = self._model.predict(features)
         predicted_label_index = np.argmax(prediction, axis=1)[0]
         predicted_command = self._reverse_label_map[predicted_label_index]
@@ -164,7 +166,7 @@ def load_and_train_from_bci_dataset():
             features = ai_bias.extract_features(processed_signals)
 
             # Append the extracted features and the corresponding command label
-            X.append(features)
+            X.extend(features)
             y.append(ai_bias._label_map[command_map[class_label]])
 
     # Convert lists to arrays for training

@@ -59,6 +59,7 @@ class AIBias:
         self._features_length = len(["mean", "variance", "skewness", "kurt", "energy",
                                  "band_power", "wavelet_energy", "entropy"])
         self._number_of_waves_per_channel = len(["alpha", "beta", "gamma", "delta", "theta"])
+        self._num_features_per_channel = self._features_length * self._number_of_waves_per_channel
         self._commands = commands
         self._model = self.build_model(output_dimension=len(self._commands))
         self._is_trained = False
@@ -193,9 +194,9 @@ class AIBias:
         # Adjust reshaping based on actual size
         # Get the total number of features per channel
         num_features_per_channel = features.shape[1]
-
+        assert(self._num_features_per_channel == num_features_per_channel)
         # Reshape based on the number of samples, channels, and features
-        expected_shape = (self._number_of_channels, num_features_per_channel, 1)
+        expected_shape = (self._number_of_channels, self._num_features_per_channel)
         features = features.reshape(expected_shape)
         return features
 
@@ -213,7 +214,7 @@ class AIBias:
         features = self.extract_features(eeg_data)
         
         # Ensure the features have the correct shape (1, number_of_channels, number_of_features)
-        features = features.reshape(1, self._number_of_channels, -1)
+        features = features.reshape(1, self._number_of_channels, self._num_features_per_channel)
         
         # Make prediction
         prediction = self._model.predict(features)
