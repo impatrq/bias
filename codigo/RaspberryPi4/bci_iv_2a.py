@@ -131,7 +131,7 @@ class AIBias:
 def load_and_train_from_bci_dataset():
     # Initialize the ProcessingBias object
     fs = 250  # Sampling frequency from the dataset
-    n = 1000  # Number of samples
+    n = 1875  # Number of samples
     processing_bias = ProcessingBias(n=n, fs=fs)
 
     # Load BCI dataset
@@ -144,8 +144,10 @@ def load_and_train_from_bci_dataset():
     
     command_map = {"left": "left", "right": "right", "foot": "forward", "tongue": "backwards"}
 
+    num_of_channels = 3
+
     # Initialize the AI model
-    ai_bias = AIBias(n=n, fs=fs, channels=3, commands=["left", "right", "forward", "backwards", "stop", "rest"])
+    ai_bias = AIBias(n=n, fs=fs, channels=num_of_channels, commands=["left", "right", "forward", "backwards", "stop", "rest"])
 
     for i in range(len(trials)):
         trial_data = trials[i]
@@ -153,7 +155,7 @@ def load_and_train_from_bci_dataset():
 
         if class_label in command_map:
             # Create a dictionary to hold the EEG signals for each channel
-            eeg_signals = {ch: trial_data[ch] for ch in range(3)}  # Assuming 3 channels: C3, Cz, C4
+            eeg_signals = {ch: trial_data[ch] for ch in range(num_of_channels)}  # Assuming 3 channels: C3, Cz, C4
 
             # Process the raw EEG signals using ProcessingBias to extract frequency bands
             _, processed_signals = processing_bias.process_signals(eeg_signals)
