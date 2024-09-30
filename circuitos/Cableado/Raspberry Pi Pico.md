@@ -1,2 +1,0 @@
-Entrada:
-[[Sistema de Offset]]
