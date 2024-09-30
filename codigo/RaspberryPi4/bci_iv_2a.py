@@ -60,7 +60,7 @@ class AIBias:
         self._number_of_channels = channels
         self._features_length = len(["mean", "variance", "skewness", "kurt", "energy", "band_power", "wavelet_energy", "entropy"])
         self._number_of_waves_per_channel = len(["alpha", "beta", "gamma", "delta", "theta"])
-        self._num_features_per_channel = self._features_length * self._num_features_per_channel
+        self._num_features_per_channel = self._features_length * self._number_of_waves_per_channel
         self._commands = commands
         self._model = self.build_model(output_dimension=len(self._commands))
         self._is_trained = False
@@ -74,7 +74,7 @@ class AIBias:
 
     def build_model(self, output_dimension):
         model = Sequential([
-            InputLayer(shape=(self._number_of_channels, self._features_length * self._number_of_waves_per_channel)),
+            InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),
             Conv1D(filters=64, kernel_size=3, activation='relu'),
             MaxPooling1D(pool_size=2),
             Dropout(0.5),
@@ -137,7 +137,7 @@ def load_and_train_from_bci_dataset():
     processing_bias = ProcessingBias(n=n, fs=fs)
 
     # Load BCI dataset
-    datasetA1 = MotorImageryDataset("bcidatasetIV2a/A01T.npz")
+    datasetA1 = MotorImageryDataset("bcidatasetIV2a-master/A01T.npz")
     trials, classes = datasetA1.get_trials_from_channels([7, 9, 11])  # Example: C3, Cz, C4
 
     # Initialize X and y as empty lists
@@ -166,7 +166,7 @@ def load_and_train_from_bci_dataset():
             features = ai_bias.extract_features(processed_signals)
 
             # Append the extracted features and the corresponding command label
-            X.extend(features)
+            X.append(features)
             y.append(ai_bias._label_map[command_map[class_label]])
 
     # Convert lists to arrays for training

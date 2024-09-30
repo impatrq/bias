@@ -130,7 +130,7 @@ class AIBias:
 
     def build_model(self, output_dimension):
         model = Sequential([
-            InputLayer(shape=(self._number_of_channels, self._features_length * self._number_of_waves_per_channel)),  # Adjusted input shape to match the feature count
+            InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),  # Adjusted input shape to match the feature count
             Conv1D(filters=64, kernel_size=3, activation='relu'),
             #BatchNormalization(),
             MaxPooling1D(pool_size=2),
