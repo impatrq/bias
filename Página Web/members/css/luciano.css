@@ -1,0 +1,25 @@
+body{
+    background-image: linear-gradient(to right, #0f3443 0%,#154a8f  100%);
+}
+h1 {
+    font-weight: 200;
+    color: white;
+}
+
+h2 {
+    font-weight: 200;
+}
+
+.parallax-container {
+    height: 200px;
+}
+
+#nav {
+    bottom: 24px;
+    right: 24px;
+}
+@media screen and (max-width: 600px) {
+   body {
+       margin-bottom: 96px;
+   }
+}
