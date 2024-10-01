@@ -59,6 +59,7 @@ class AIBias:
         self._features_length = len(["mean", "variance", "skewness", "kurt", "energy",
                                  "band_power", "wavelet_energy", "entropy"])
         self._number_of_waves_per_channel = len(["alpha", "beta", "gamma", "delta", "theta"])
+        self._num_features_per_channel = self._features_length * self._number_of_waves_per_channel
         self._commands = commands
         self._model = self.build_model(output_dimension=len(self._commands))
         self._is_trained = False
@@ -129,7 +130,7 @@ class AIBias:
 
     def build_model(self, output_dimension):
         model = Sequential([
-            InputLayer(shape=(self._number_of_channels, self._features_length * self._number_of_waves_per_channel)),  # Adjusted input shape to match the feature count
+            InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),  # Adjusted input shape to match the feature count
             Conv1D(filters=64, kernel_size=3, activation='relu'),
             #BatchNormalization(),
             MaxPooling1D(pool_size=2),
@@ -166,14 +167,6 @@ class AIBias:
                 # Frequency Domain Features (Power Spectral Density)
                 freqs, psd = welch(signal_wave, fs=self._fs)  # Assuming fs = 500 Hz
 
-                '''
-                # Band Power for specific frequency bands (e.g., alpha, beta, theta)
-                alpha_power = np.sum(psd[(freqs >= 8) & (freqs <= 13)])
-                beta_power = np.sum(psd[(freqs >= 13) & (freqs <= 30)])
-                theta_power = np.sum(psd[(freqs >= 4) & (freqs <= 8)])
-                delta_power = np.sum(psd[(freqs >= 0.5) & (freqs <= 4)])
-                gamma_power = np.sum(psd[(freqs >= 30) & (freqs <= 100)])
-                '''
                 # Band Power
                 band_power = np.sum(psd)  # Total power within this band
 
@@ -185,8 +178,6 @@ class AIBias:
                 # Entropy
                 signal_entropy = entropy(np.histogram(signal_wave, bins=10)[0])
                 list_of_features = [mean, variance, skewness, kurt, energy, band_power, wavelet_energy, signal_entropy]
-                #list_of_features = [mean, variance, skewness, kurt, energy, alpha_power, beta_power, theta_power, 
-                #                    delta_power, gamma_power, wavelet_energy, signal_entropy]
 
                 # Append all features together
                 channel_features.extend(list_of_features)
@@ -203,9 +194,9 @@ class AIBias:
         # Adjust reshaping based on actual size
         # Get the total number of features per channel
         num_features_per_channel = features.shape[1]
-
+        assert(self._num_features_per_channel == num_features_per_channel)
         # Reshape based on the number of samples, channels, and features
-        expected_shape = (self._number_of_channels, num_features_per_channel, 1)
+        expected_shape = (self._number_of_channels, self._num_features_per_channel)
         features = features.reshape(expected_shape)
         return features
 
@@ -223,7 +214,7 @@ class AIBias:
         features = self.extract_features(eeg_data)
         
         # Ensure the features have the correct shape (1, number_of_channels, number_of_features)
-        features = features.reshape(1, self._number_of_channels, -1)
+        features = features.reshape(1, self._number_of_channels, self._num_features_per_channel)
         
         # Make prediction
         prediction = self._model.predict(features)
