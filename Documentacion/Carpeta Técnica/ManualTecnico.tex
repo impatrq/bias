@@ -475,6 +475,25 @@ En un sistema de EEG, después de amplificar las señales captadas por los elect
 
 \subsubsection{Funcionamiento del Puente H}
 
+El circuito utiliza dos señales PWM (PWM1 y PWM2) para controlar los transistores MOSFET en configuración de puente H, lo que permite invertir la polaridad del voltaje aplicado al motor, controlando así la dirección de rotación. 
+
+La velocidad del motor puede controlarse ajustando el ciclo de trabajo (duty cycle) de las señales PWM, que modulan la cantidad de energía entregada al motor.
+
+Este circuito es ideal para aplicaciones donde se requiere un control preciso de dirección y velocidad de motores DC.
+
+\subsubsection{Descripción de los Componentes:}
+
+\begin{enumerate}
+    \item U1 y U2 (PC817 - Optoacopladores): Aíslan eléctricamente el circuito de control (de baja tensión) del circuito de potencia (de alta tensión). Esto protege al microcontrolador de posibles picos de voltaje y ruidos eléctricos provenientes del circuito de potencia.
+    \item Cada optoacoplador tiene un LED interno que, al ser activado por una señal PWM, enciende un fototransistor interno, permitiendo que la señal de control pase al lado de potencia.
+    \item Q1 y Q3 (IRF4905 - MOSFET canal P): Actúan como interruptores en la parte superior del puente H. Controlan la alimentación positiva hacia el motor. Estos MOSFET se activan cuando la señal PWM1 o PWM2 está en bajo (0V) y se desactivan cuando está en alto (señal de 5V), debido a la naturaleza de los MOSFET de canal P.
+    \item Q2 y Q4 (IRF2805 - MOSFET canal N): Actúan como interruptores en la parte inferior del puente H. Conectan el motor a tierra cuando están activados. Estos MOSFET se activan cuando la señal PWM1 o PWM2 está en alto (5V) y se desactivan cuando está en bajo (0V).
+    \item R1 y R2 (Resistencias de 180 ohms): Limitan la corriente de entrada hacia los LEDs internos de los optoacopladores (U1 y U2) para protegerlos de daños.
+    \item R3 y R4 (Resistencias de 1k ohms): Están conectadas en serie con los MOSFET de canal P (Q1 y Q3). Limitan la corriente de la compuerta y aseguran un apagado rápido del MOSFET al detenerse la señal.
+    \item J1 y J2 (Conectores de entrada PWM): Reciben las señales PWM de control provenientes de un microcontrolador o una fuente de señal PWM.
+    \item J3 y J4 (Conectores de alimentación): Proveen la alimentación al circuito, uno con 24V para el motor y otro con 15V para los circuitos de control.
+    \item SW1 (Interruptor):  utilizado para habilitar o deshabilitar el circuito completo, conectando o desconectando GND.
+\end{enumerate}
 
 
 \subsubsection{Funcionamiento del Sistema de Emergencia}
