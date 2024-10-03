@@ -102,7 +102,7 @@ Como estudiantes de séptimo año, buscamos desarrollar un proyecto con el fin d
 El objetivo de este proyecto es desarrollar una silla de ruedas motorizada que pueda ser controlada por la actividad cerebral del usuario. Esto beneficiaría a las personas con discapacidades motoras severas para lograr independencia y movilidad, mejorando su calidad de vida y participación en la sociedad. De esta manera, estas personas las cuales no pueden caminar o tienen movilidad reducida, pueden gozar de la utilización de una silla de ruedas controlada por señales cerebrales sin la utilización de ambas manos y meramente por sus pensamientos, dándole libertad y autonomía al usuario.
 
 \section{¿Quiénes somos?}
-Somos el grupo BIAS (Brain Intelligence Artificial System), conformado por seis estudiantes de la especialidad de Aviónica del séptimo año, segunda división, comisión " C ", de la Escuela Técnica N° 7 IMPA "Taller Regional Quilmes". Nuestro equipo se encuentra comprometido en el desarrollo de un módulo adaptable para sillas de ruedas, para así poder brindarles mas independencia y movilidad.
+Somos el grupo BIAS (Brain Intelligence Artificial System), conformado por seis estudiantes de la especialidad de Aviónica del séptimo año, segunda división, comisión C, de la Escuela Técnica N° 7 IMPA "Taller Regional Quilmes". Nuestro equipo se encuentra comprometido en el desarrollo de un módulo adaptable para sillas de ruedas, para así poder brindarles mas independencia y movilidad.
 \subsection{Contactos}
 
 En este apartado se detallarán los contactos a los integrantes del proyecto, adjuntando enlaces a sus redes:
@@ -275,6 +275,49 @@ En este capítulo se describirán y desarrollarán todos los aspectos teóricos 
 \subsection{Distinción de alimentaciones}
 
 \subsection{Sistema 10-20}
+
+El sistema 10-20 es un método internacionalmente estandarizado para la colocación de electrodos en el cuero cabelludo durante un electroencefalograma (EEG). Este sistema asegura que los electrodos se coloquen de manera uniforme y precisa en relación con los puntos anatómicos del cráneo, permitiendo una medición consistente y reproducible de la actividad eléctrica cerebral.
+
+El nombre "10-20" proviene de las distancias porcentuales entre los electrodos: Los electrodos se colocan en posiciones que están al 10 o al 20 de la distancia total entre puntos anatómicos clave del cráneo.
+Puntos anatómicos clave de referencia:
+\begin{itemize}
+    \item Nasion: El punto entre la frente y la nariz.
+    \item Inion: El punto más prominente en la parte posterior de la cabeza.
+    \item Puntos preauriculares: Justo por encima de los oídos, a cada lado de la cabeza.
+\end{itemize}
+Las posiciones de los electrodos se distribuyen sobre la cabeza tomando como referencia estos puntos para cubrir todo el cuero cabelludo de forma equidistante.
+\subsubsection{¿Para qué sirve?}
+El sistema 10-20 se utiliza para garantizar una colocación precisa y consistente de los electrodos en los estudios de EEG. Algunos de sus beneficios incluyen:
+Estandarización global: Permite que los estudios de EEG sean comparables en diferentes laboratorios y entre diferentes pacientes.
+Cobertura completa del cerebro: El sistema asegura que se cubran adecuadamente diferentes áreas del cerebro (frontal, parietal, occipital, temporal).
+Detección de anomalías: Facilita la identificación de regiones del cerebro donde pueden estar ocurriendo fenómenos anormales, como descargas epilépticas, actividad lenta anormal o asimetrías en las ondas cerebrales.
+¿Cómo se aplica?
+En un estudio de EEG, se colocan electrodos en el cuero cabelludo siguiendo estas posiciones predeterminadas en el sistema 10-20:
+\begin{enumerate}
+    \item Puntos y nomenclatura: Cada posición de electrodo tiene una nomenclatura que se utiliza para identificar las regiones del cerebro de las que se está registrando la actividad.
+\end{enumerate}
+\begin{itemize}
+    \item F: Frontal (F3, F4, Fz, etc.)
+    \item C: Central (C3, C4, Cz, etc.)
+    \item P: Parietal (P3, P4, Pz, etc.)
+    \item O: Occipital (O1, O2)
+    \item T: Temporal (T3, T4, etc.)
+    \item Los números impares (1, 3, 5, 7) se asignan al hemisferio izquierdo, mientras que los números pares (2, 4, 6, 8) se asignan al hemisferio derecho. La letra "z" indica posiciones centrales (a lo largo de la línea media de la cabeza).
+\end{itemize}
+
+\subsubsection{Pasos para aplicar el sistema 10-20:}
+\begin{enumerate}
+    \item Medición del cráneo: Se mide la distancia desde el nasion al inion y desde un punto preauricular al otro. Luego, se calculan los puntos intermedios en un 10 o 20 de esas distancias para determinar las ubicaciones exactas de los electrodos.
+    \item Colocación de los electrodos: Se colocan electrodos en los puntos marcados, asegurando una cobertura uniforme de la cabeza. Esto puede hacerse usando una gorra de EEG con posiciones ya marcadas o mediante la medición manual.
+    \item Registro de la actividad: Una vez colocados los electrodos, se inicia el registro de la actividad cerebral. Los electrodos miden las diferencias de potencial eléctrico entre las regiones del cerebro cubiertas por los electrodos.
+\end{enumerate}
+\subsubsection{Aplicaciones del sistema 10-20:}
+\begin{itemize}
+    \item Diagnóstico clínico: El sistema se usa comúnmente en estudios de EEG para diagnosticar condiciones neurológicas como la epilepsia, trastornos del sueño, y daño cerebral.
+    \item Investigación: En estudios de neurociencia, el sistema 10-20 facilita la comparación de la actividad cerebral entre sujetos, ya que la ubicación de los electrodos está estandarizada.
+    \item Interfaces cerebro-computadora (BCI): En proyectos de BCI, se utiliza el sistema 10-20 para colocar electrodos en áreas específicas del cerebro que controlan movimientos o funciones específicas.
+\end{itemize}
+
 
 \subsection{Comunicación UART}
 
