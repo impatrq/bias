@@ -452,12 +452,29 @@ Estas ondas cerebrales están asociadas con diferentes estados mentales y activi
 
 \subsubsection{Funcionamiento de los filtros HardWare}
 
+En un sistema de EEG, después de amplificar las señales captadas por los electrodos, se utilizan varios filtros para limpiar y mejorar la calidad de las señales antes de procesarlas o analizarlas. Estos filtros tienen un propósito importante: eliminar el ruido y enfocarse en las señales cerebrales relevantes. 
 
+\subsubsection{Filtro Notch de 50 Hz}
+\begin{itemize}
+    \item Propósito: Atenuación del ruido inducido por la red eléctrica de 50 Hz, común en muchos sistemas de distribución de energía.
+    \item Funcionamiento: El filtro Notch es un filtro de rechazo de banda estrecha, diseñado para eliminar una frecuencia específica (en este caso, 50 Hz) sin afectar significativamente las componentes de frecuencia cercanas o las señales EEG de interés. Las señales de EEG, que suelen estar en el rango de 0,5 a 40 Hz, pueden contaminarse por la interferencia de la red, por lo que este filtro resulta esencial para su eliminación sin alterar la información relevante.
+\end{itemize}
+\subsubsection{Filtro pasa bajos de 100 Hz}
+\begin{itemize}
+    \item Propósito: Reducción de las componentes de alta frecuencia que no son relevantes para el análisis EEG.
+    \item Funcionamiento: Este filtro pasa bajos permite el paso de frecuencias inferiores a 100 Hz, atenuando aquellas que exceden este umbral. Las señales cerebrales de interés generalmente se sitúan por debajo de los 40 Hz, aunque algunas pueden extenderse hasta 100 Hz. Este filtro elimina frecuencias más altas, que usualmente corresponden a interferencias electromagnéticas, ruido de dispositivos electrónicos o artefactos musculares (EMG).
+\end{itemize}
+\subsubsection{Filtro pasa altos de 0,5 Hz}
+\begin{itemize}
+    \item Propósito: Eliminación de las componentes de muy baja frecuencia, incluyendo artefactos de corriente continua (DC) y ruido de baja frecuencia no relacionado con la actividad cerebral.
+    \item Funcionamiento: El filtro pasa altos atenúa las señales con frecuencias por debajo de 0,5 Hz, permitiendo únicamente el paso de frecuencias superiores. La señal EEG relevante generalmente comienza en torno a los 0,5 Hz, mientras que frecuencias menores suelen estar asociadas a artefactos como el desplazamiento de los electrodos, fluctuaciones en la impedancia de los mismos, o interferencias lentas que no contienen información útil sobre la actividad cerebral.
+\end{itemize}
 
 \subsubsection{Funcionamiento de los filtros digitales}
 
 
 \subsubsection{Funcionamiento del Puente H}
+
 
 
 \subsubsection{Funcionamiento del Sistema de Emergencia}
