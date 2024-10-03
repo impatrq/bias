@@ -1,12 +1,19 @@
 \documentclass{article} 
-\usepackage[utf8]{inputenc} 
+\UseRawInputEncoding
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{selinput}
 \usepackage[spanish]{babel}
+\usepackage{hyphenat}
 \usepackage{graphicx} 
 \usepackage{subcaption}
 \usepackage{hyperref}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{float}
+\SelectInputMappings{%
+  eacute={é},
+}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -48,7 +55,7 @@
 \begin{document} 
 
 \begin{center}
-    \includegraphics[width=1\textwidth]{Images/Imagenes Latex/logo/LogoBIASbn.png}\\ 
+    \includegraphics[width=1\textwidth]{Images/Imagenes/logo/LogoBIASbn.png}\\ 
 \end{center}
     
 \title{BIAS} 
@@ -72,7 +79,7 @@
 
 \section{Introducción}
 
-BIAS es un módulo aplicable a una silla de ruedas que permite el control mental, permitiendo a los usuarios dirigirla mediante el sus pensamientos, eliminando la necesidad de controles físicos tradicionales y optimizando la experiencia de movilidad. Este proyecto representa un avance significativo en el campo de la movilidad asistida, con el objetivo de mejorar la independencia y la calidad de vida de las personas con movilidad reducida.
+BIAS es un módulo aplicable a una silla de ruedas que permite a los usuarios dirigirla mediante el sus pensamientos, eliminando la necesidad de controles físicos tradicionales y optimizando la experiencia de movilidad. Este proyecto representa un avance significativo en el campo de la movilidad asistida, con el objetivo de mejorar la independencia y la calidad de vida de las personas con movilidad reducida.
 
 Este sistema se basa en la avanzada tecnología de interfaz cerebro-computadora (BCI), la cual captura las señales neuronales del usuario y las traduce en comandos precisos para maniobrar la silla de ruedas sin esfuerzo. Además, el diseño modular y adaptable del sistema permite su integración en diversos modelos de sillas de ruedas y su personalización según las necesidades específicas de cada usuario. 
 
@@ -248,7 +255,7 @@ En los siguientes textos se adjuntan enlaces para ver la página oficial de Open
 
 \begin{subfigure}[b]{0.45\linewidth}
 \includegraphics[width=\linewidth]{Images/Imagenes/pcbdeganglion.png}
-\caption{DIseño PCB}
+\caption{Diseño PCB}
 \label{fig:westminster_aerea}
 
 \end{subfigure}
@@ -366,12 +373,12 @@ En nuestro proyecto, aplicamos la técnica de PWM en el control de los motores. 
 
 
 
-\section{Desarrollo Tecnico}
+\section{Desarrollo Técnico}
 En este capítulo se proporcionará una descripción detallada sobre el funcionamiento de los distintos circuitos que conforman el dispositivo, así como su interacción en conjunto para cumplir con los objetivos del proyecto. Se explicará de manera clara y concisa cómo se utiliza el dispositivo, incluyendo instrucciones específicas para su correcto manejo y operatividad.
 
 Además, se incluirán datos técnicos relevantes, tales como especificaciones de los componentes, características del diseño, y cualquier otro detalle que sea esencial para la comprensión del sistema. También se abordarán aspectos importantes acerca de las partes constitutivas del dispositivo, su función dentro del esquema general, y las consideraciones necesarias para su mantenimiento y optimización.
 
-\subsection{Descripcion del funcionamiento}
+\subsection{Descripción del funcionamiento}
 El usuario se sienta en la silla de ruedas y se coloca el dispositivo EEG. El EEG capta las señales cerebrales (alfa, beta, gamma, delta y theta) y las somete a un proceso de filtrado por hardware que incluye un filtro notch de 50 Hz, un filtro pasa-bajo de 100 Hz, un filtro pasa-alto de 0,5 Hz y un segundo filtro notch de 50 Hz. Posteriormente, las señales pasan por un circuito de compensación de offset para poder realizar la lectura por parte de la RP2040 Zero ya que la misma no puede leer valores negativos. Esta unidad se encarga de leer los datos mediante cuatro canales de ADC y enviarlos a la Raspberry Pi 4 por protocolo UART, donde se aloja el programa principal para el funcionamiento de la silla de ruedas.
 
 Entre estos códigos se encuentran el control de motores, los filtros digitales, el procesamiento de señales y la inteligencia artificial (IA). Una vez las señales llegan a la Raspberry Pi 4, se filtran digitalmente para eliminar el ruido y mejorar la calidad de los datos. Tras el filtrado, las señales se envían a la IA, que tiene la función de reconocer los patrones cerebrales y determinar la dirección en la que el usuario desea moverse. Una vez el patrón ha sido identificado, se envía una señal a los motores para dirigir la silla hacia la dirección deseada (adelante, atrás, izquierda o derecha).
@@ -382,8 +389,26 @@ El sistema de emergencia utiliza sensores de ultrasonido para detectar la presen
 
 \subsubsection{Funcionamiento del EEG}
 
+El sistema de control de nuestra silla de ruedas se basa en el reconocimiento de señales cerebrales, lo que requiere un dispositivo especializado para captarlas: el electroencefalograma (EEG). Hemos desarrollado un EEG en forma de una cofia equipada con electrodos, los cuales se colocan siguiendo el protocolo conocido como “Sistema 10-20”. Este sistema estándar de ubicación define puntos específicos en el cuero cabelludo donde se deben colocar los electrodos para obtener lecturas óptimas de la actividad cerebral.
+
+Los electrodos actúan como sensores pasivos que detectan las ondas cerebrales producidas por la actividad eléctrica del cerebro. Estas ondas se manifiestan como pequeñas fluctuaciones en el voltaje, que son captadas por los electrodos cuando se colocan sobre la superficie del cuero cabelludo del usuario. Es importante destacar que estos electrodos no penetran en el cráneo ni interactúan directamente con las neuronas. En cambio, registran los potenciales eléctricos generados por la actividad cerebral subyacente que se propagan hasta la superficie del cuero cabelludo.
+
+Debido a que las señales captadas por los electrodos son de muy baja amplitud, requieren ser amplificadas antes de su procesamiento. Este paso no solo amplifica la señal cerebral, sino también el ruido presente en el entorno o generado por el propio cuerpo. Para abordar este problema, se realiza un proceso de filtrado que elimina el ruido y permite aislar las frecuencias relevantes de las ondas cerebrales.
+
+Las frecuencias de las ondas cerebrales detectadas son las siguientes:
+
+\begin{itemize}
+    \item Ondas alfa: 8-12 Hz
+    \item Ondas beta: 12-30 Hz
+    \item Ondas gamma: 30-100 Hz
+    \item Ondas delta: 0,5-4 Hz
+    \item Ondas theta: 4-8 Hz
+\end{itemize}
+
+Estas ondas cerebrales están asociadas con diferentes estados mentales y actividades cerebrales, por ejemplo, las ondas alfa se observan comúnmente en estados de relajación, mientras que las ondas beta se relacionan con un estado de alerta y concentración. Las ondas gamma, por otro lado, están vinculadas a procesos cognitivos de mayor complejidad, como la percepción y la conciencia. Las ondas delta y theta se asocian con fases profundas del sueño y la meditación.
 
 \subsubsection{Funcionamiento de los filtros HardWare}
+
 
 
 \subsubsection{Funcionamiento de los filtros digitales}
@@ -400,21 +425,21 @@ El sistema de emergencia utiliza sensores de ultrasonido para detectar la presen
 En este capítulo se incluirán imágenes de los esquemas de los circuitos, junto con su representación gráfica en formato virtual de los circuitos impresos, así como fotografías de los circuitos completos una vez finalizados.
 
 
-\subsubsection{Esquemáticos de los filtros}
+\subsubsection{Esquemático de los filtros}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{Images/Filtros/filtroseeg.png}
-    \caption{Esquemáticos de los filtros del EEG}
-\end{figure}[]
+    \includegraphics[width=1\linewidth]{Images/Filtros/filtroseeg.png}
+    \caption{Esquemático de los filtros del EEG}
+\end{figure}
 
-\subsubsection{Esquemáticos del sistema de control}
+\subsubsection{Esquemático del sistema de control}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{Images/SistemaControl/sistemadecontrol.png}
+    \includegraphics[width=1\linewidth]{Images/SistemaControl/sistemadecontrol.png}
     \caption{Esquemáticos del sistema de control}
-\end{figure}[]
+\end{figure}
 
-\subsubsection{Esquemáticos del sistema Offset}
+\subsubsection{Esquemático del sistema Offset}
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{Images/SistemaOffset/sistemaoffset.png}
@@ -437,13 +462,13 @@ En este capítulo se incluirán imágenes de los esquemas de los circuitos, junt
 
     \begin{subfigure}[t]{0.5\textwidth}
         \centering
-        \includegraphics[width=0.75\textwidth]{Images/SistemaEmergencia/sistemergenciapcb.png}
+        \includegraphics[width=.5\textwidth]{Images/SistemaEmergencia/sistemergenciapcb.png}
         \caption{PCB Del sistema de emergencia}
     \end{subfigure}%
     ~ 
     \begin{subfigure}[t]{0.5\textwidth}
         \centering
-        \includegraphics[width=0.75\textwidth]{Images/SistemaEmergencia/sistemergencia3d.png}
+        \includegraphics[width=0.5\textwidth]{Images/SistemaEmergencia/sistemergencia3d.png}
         \caption{Modelo 3D Del sistema de emergencia}
     \end{subfigure}
 
@@ -462,17 +487,17 @@ Los programas desarrollados para el proyecto, tales como los filtros digitales, 
     \item TL084 (x4)
     \item AD620 (x8)
     \item Capacitores 100nF (x48)
-    \item Resistencias 100Ω (x4)
-    \item Resistencias 120Ω (x16)
-    \item Resistencias 560Ω (x8) 
-    \item Resistencias 820Ω (x16)
-    \item Resistencias 1,5kΩ (x8)
-    \item Resistencias 4,7kΩ (x16)
-    \item Resistencias 12kΩ (x8)
-    \item Resistencias 15kΩ (x8)
-    \item Resistencias 27kΩ (x16)
-    \item Resistencias 470kΩ (x8)
-    \item Resistencias 2,7MΩ (x8)
+    \item Resistencias 100\omega (x4)
+    \item Resistencias 120\ (x16)
+    \item Resistencias 560\Ω (x8) 
+    \item Resistencias 820\Ω (x16)
+    \item Resistencias 1,5k\Ω (x8)
+    \item Resistencias 4,7k\Ω (x16)
+    \item Resistencias 12k\Ω (x8)
+    \item Resistencias 15k\Ω (x8)
+    \item Resistencias 27k\Ω (x16)
+    \item Resistencias 470k\Ω (x8)
+    \item Resistencias 2,7M\Ω (x8)
     \item Electrodos (x9)
 \end{enumerate}
 
@@ -483,9 +508,9 @@ Los programas desarrollados para el proyecto, tales como los filtros digitales, 
     \item Jumpers (x2)
     \item Diodos Zenner 3,3V (x4)
     \item Capacitores 100nF (x4)
-    \item Resistencias 220Ω (x4)
-    \item Resistencias 50kΩ (x8)
-    \item Resistencias 100kΩ (x8)
+    \item Resistencias 220\Ω (x4)
+    \item Resistencias 50k\Ω (x8)
+    \item Resistencias 100k\Ω (x8)
 \end{enumerate}
 
 \subsubsection{Sistema de Emergencia}
@@ -493,8 +518,8 @@ Los programas desarrollados para el proyecto, tales como los filtros digitales, 
     \item Transistor BC546 (x1)
     \item Buzzer 5V (x1)
     \item LEDs Rojos (x4)
-    \item Resistencias 220Ω (x4)
-    \item Resistencia 4,7kΩ (x1)
+    \item Resistencias 220\Ω (x4)
+    \item Resistencia 4,7k\Ω (x1)
 \end{enumerate}
 
 \subsubsection{Puentes H}
@@ -503,19 +528,19 @@ Los programas desarrollados para el proyecto, tales como los filtros digitales, 
     \item Transistores IRF2805 (x4)
     \item Optoacopladores PC817 (x4)
     \item Motores 24V 575W (x2)
-    \item Resistencias 100Ω (x4)
-    \item Resistencias 180Ω (x4)
-    \item Resistrencias 1kΩ (x4)
-    \item Resistencias 4,7kΩ (x4)
+    \item Resistencias 100\Ω (x4)
+    \item Resistencias 180\Ω (x4)
+    \item Resistrencias 1k\Ω (x4)
+    \item Resistencias 4,7k\Ω (x4)
 \end{enumerate}
 
 \subsubsection{Placa reguladora de tensión}
 \begin{enumerate}
     \item LM7815 (x1)
-    \item Capacitor 100μF (x1)
-    \item Capacitor 330μF (x1)
-    \item Capacitor 470μF 35V (x1)
-    \item Capacitor 470μF 25V (x1)
+    \item Capacitor 100\μF (x1)
+    \item Capacitor 330\μF (x1)
+    \item Capacitor 470\μF 35V (x1)
+    \item Capacitor 470\μF 25V (x1)
 \end{enumerate}
 
 \section{Conclusiones}
@@ -594,13 +619,13 @@ Sergio Medina: Nos brindó su experiencia en la presentación y comercializació
 Carlos Bianco: Su apoyo fue esencial en las pruebas y acondicionamiento de los motores, proporcionándonos herramientas y baterías para dichas pruebas, además de colaborar en la búsqueda de materiales.
 
 
-Daniel Espósito: Nos proporcionó motores y materiales, además de enseñarnos a construir los puentes H para los motores, facilitando su creación y optimización.
+Daniel Espósito: Nos proporcionó motores y materiales, además de enseñarnos a construir los puentes H para los motores y nos ayudó a solucionar problemas con las pistas de los circuitos para las altas corrientes.
 
 
-Federico Solomiewicz: Su colaboración fue invaluable en el desarrollo de los filtros, proporcionándonos herramientas para el proyecto y estando siempre disponible para resolver cualquier duda que surgiera.
+Federico Solomiewicz: Colaboró principalmente en el desarrollo de los filtros, proporcionándonos herramientas para el proyecto y estando siempre disponible para resolver cualquier duda que surgiera.
 
 
-Juan Carlos Ruiz: Su colaboración fue esencial en las pruebas de los motores para la silla de ruedas, adempas de ayudarnos principalmente en la creación de los puentes H para los motores y sus circuitos impresos.
+Juan Carlos Ruiz: Su colaboración fue esencial en las pruebas de los motores para la silla de ruedas, además de ayudarnos principalmente en la creación de los puentes H para los motores y sus circuitos impresos.
 
 
 
