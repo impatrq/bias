@@ -274,6 +274,33 @@ En este capítulo se describirán y desarrollarán todos los aspectos teóricos 
 
 \subsection{Distinción de alimentaciones}
 
+\subsection{¿Que es un electroencefalograma?}
+
+Un electroencefalograma (EEG) es una prueba médica que registra la actividad eléctrica del cerebro. Esta actividad se mide a través de electrodos colocados en el cuero cabelludo, que detectan las señales eléctricas generadas por las neuronas mientras se comunican entre sí. Estas señales eléctricas se representan como ondas cerebrales en una gráfica que muestra diferentes frecuencias y patrones.
+
+El EEG se utiliza comúnmente para:
+\begin{itemize}
+    \item \textbf{Diagnóstico de trastornos neurológicos:} Como la epilepsia, convulsiones, trastornos del sueño, encefalopatías o daño cerebral.
+    \item \textbf{Monitoreo del estado cerebral:} En procedimientos quirúrgicos, cuidados intensivos o investigaciones sobre coma y muerte cerebral.
+    \item \textbf{Investigación neurológica y cognitiva:} Para estudiar la actividad cerebral en respuesta a estímulos externos, emociones o en procesos de toma de decisiones.
+    \item \textbf{Interfaz cerebro-computadora (BCI):} Donde se usa para traducir la actividad cerebral en comandos para controlar dispositivos externos, como en tu proyecto de silla de ruedas controlada por EEG.
+\end{itemize}
+Las ondas cerebrales se clasifican en varios tipos según su frecuencia: delta, theta, alpha, beta, y gamma, cada una asociada a diferentes estados de conciencia y actividades cerebrales.
+
+Principalmente, a nosotros nos interesa el "Monitoreo del estado cerebral".
+
+\subsection{¿Que es un EEG?}
+
+Un electroencefalógrafo es un dispositivo médico que se utiliza para registrar y medir la actividad eléctrica del cerebro. Su función principal es captar las señales eléctricas generadas por las neuronas cerebrales y transformarlas en gráficos de ondas cerebrales, que se pueden analizar para evaluar la función cerebral.
+\subsubsection{Componentes que tiene un EEG:}
+\begin{itemize}
+    \item \textbf{Electrodos:} Pequeños sensores que se colocan en el cuero cabelludo para captar los cambios de voltaje producidos por la actividad cerebral.
+    \item \textbf{Amplificador:} Como las señales eléctricas del cerebro son muy débiles, el electroencefalógrafo incluye amplificadores que aumentan la señal para que sea lo suficientemente fuerte como para ser registrada.
+    \item \textbf{Conversor analógico-digital:} Convierte las señales eléctricas captadas en un formato digital para su procesamiento por computadora.
+    \item \textbf{Software de procesamiento:} El dispositivo utiliza un software que transforma las señales en gráficos de ondas cerebrales que se presentan en tiempo real en una pantalla o se registran para análisis posterior.
+    \item \textbf{Pantalla/Gráficos:} El electroencefalógrafo muestra las señales eléctricas en forma de ondas, conocidas como ondas cerebrales (Delta, Theta, Alpha, Beta, Gamma), lo que permite a los médicos interpretar la actividad cerebral.
+\end{itemize}
+
 \subsection{Sistema 10-20}
 
 El sistema 10-20 es un método internacionalmente estandarizado para la colocación de electrodos en el cuero cabelludo durante un electroencefalograma (EEG). Este sistema asegura que los electrodos se coloquen de manera uniforme y precisa en relación con los puntos anatómicos del cráneo, permitiendo una medición consistente y reproducible de la actividad eléctrica cerebral.
@@ -341,6 +368,48 @@ como lo aplicamos
 Explicar ondas cerebrales
 
 \subsection{Filtros digitales}
+
+Un filtro digital es una herramienta utilizada en el procesamiento de señales para modificar o mejorar ciertos aspectos de una señal digital, eliminando o atenuando componentes no deseados, como ruido, o destacando componentes útiles. Los filtros digitales operan sobre señales discretizadas (muestreadas) y utilizan algoritmos matemáticos para realizar diversas transformaciones.
+
+Existen diferentes tipos de filtros digitales, según su función:
+\begin{itemize}
+    \item \textbf{Filtro pasa bajas:} Permite el paso de frecuencias bajas y atenúa las frecuencias altas.
+    \item \textbf{Filtro pasa altas:} Permite el paso de frecuencias altas y atenúa las bajas.
+    \item \textbf{Filtro pasa banda:} Permite el paso de un rango específico de frecuencias.
+    \item \textbf{Filtro elimina banda (Notch):} Atenúa un rango específico de frecuencias, como en el caso de eliminar interferencias a 50-60 Hz.
+\end{itemize}
+Los filtros digitales pueden ser FIR (Finite Impulse Response) o IIR (Infinite Impulse Response):
+\begin{itemize}
+    \item Los filtros FIR tienen una respuesta finita y son más estables, pero pueden necesitar más recursos de procesamiento.
+    \item Los filtros IIR tienen una respuesta infinita y suelen ser más eficientes en términos de recursos, pero pueden ser menos estables si no se diseñan correctamente.
+\end{itemize}
+Los filtros digitales son ampliamente usados en aplicaciones como procesamiento de audio, señales biológicas (como EEG), imágenes y telecomunicaciones.
+\subsubsection{¿Para que los necesitamos si ya tenemos por Hardware?}
+La combinación de filtros físicos (implementados en hardware) con filtros digitales (implementados en software) presenta una serie de ventajas significativas, incluso si ya se han instalado filtros físicos en el sistema. Aunque los filtros basados en hardware permiten un filtrado efectivo de las señales EEG, los filtros digitales proporcionan una flexibilidad y capacidades adicionales que no siempre son posibles de lograr mediante hardware exclusivamente. A continuación, se detallan las razones por las cuales puede ser beneficioso incorporar filtros digitales a la salida de los filtros físicos:
+\begin{enumerate}
+    \item \textbf{Ajuste Preciso y Mayor Flexibilidad}
+    
+    Los filtros de hardware están limitados a sus parámetros iniciales, ya que una vez construidos con componentes específicos (como resistencias, condensadores, etc.), sus características clave, tales como la frecuencia de corte y el ancho de banda, son difíciles de modificar. En contraste, los filtros digitales permiten ajustar fácilmente parámetros como la frecuencia de corte o la configuración de filtrado sin necesidad de realizar cambios físicos. Esto resulta especialmente útil cuando, tras el análisis de la señal, es necesario ajustar el rango de paso de un filtro o eliminar una frecuencia no contemplada inicialmente. Además, los filtros digitales permiten realizar modificaciones rápidas y sin intervención física, optimizando la eficiencia del proceso.
+    \item \textbf{Compensación de las Limitaciones Intrínsecas del Hardware}
+    
+    Los filtros físicos, aunque efectivos, no son perfectos. Su desempeño puede verse afectado por tolerancias en los componentes o por factores ambientales, como la temperatura y el envejecimiento de los mismos. Los filtros digitales, por su parte, pueden corregir o complementar las imperfecciones de los filtros de hardware. Por ejemplo, si un filtro físico no consigue eliminar completamente el ruido de 50 Hz o presenta desviaciones mínimas en las frecuencias de corte, un filtro digital puede ajustarse con precisión para corregir estas deficiencias, mejorando así la calidad general del filtrado.
+    \item \textbf{Filtrado Adaptativo en Tiempo Real}
+    
+    Los filtros físicos son estáticos, lo que significa que su comportamiento es constante y no varía según las condiciones de la señal. En cambio, un filtro digital ofrece la posibilidad de implementar técnicas de filtrado adaptativo, es decir, que el filtro ajuste sus características en función de las condiciones cambiantes de la señal. Esto es especialmente beneficioso en entornos donde las condiciones son variables, como cuando la interferencia de 50 Hz no está presente de manera constante. Un filtro digital adaptativo puede activarse solo cuando detecta interferencias, optimizando el procesamiento de la señal en tiempo real. De esta manera, el sistema EEG se ajusta de manera dinámica, lo que puede incrementar la fiabilidad del procesamiento.
+    \item \textbf{Procesamiento Avanzado y Filtrado de Alta Precisión}
+    
+    La complejidad de los filtros físicos está limitada por los componentes que los conforman. Sin embargo, en el ámbito digital es posible implementar filtros de mayor complejidad y orden, permitiendo un filtrado más preciso y específico. Los filtros digitales de mayor orden ofrecen transiciones más nítidas entre las bandas de paso y de rechazo. Por ejemplo, con un filtro digital, es posible eliminar una banda estrecha de ruido sin afectar las frecuencias adyacentes de interés, algo difícil de lograr mediante componentes físicos convencionales.
+    \item \textbf{Filtrado en Múltiples Etapas}
+    
+    El uso de filtrado digital permite procesar la señal en diferentes etapas, lo que resulta en un análisis más profundo y detallado de las señales EEG. Tras el paso por los filtros físicos, se pueden aplicar diferentes tipos de filtros digitales para aislar aspectos específicos de la señal que no fueron manejados por el filtrado físico. Por ejemplo, se pueden implementar filtros pasa banda específicos para resaltar ciertas bandas de ondas cerebrales, como las ondas alpha o beta, o utilizar técnicas avanzadas como el Análisis de Componentes Independientes (ICA) para separar señales superpuestas o interferencias no deseadas. El uso de filtros adaptativos también permite ajustar continuamente la respuesta del sistema, optimizando el rendimiento del procesamiento de señales.
+    \item \textbf{Posprocesamiento y Análisis Selectivo}
+    
+    El filtrado digital permite realizar un análisis detallado de las señales EEG en una etapa posterior, ya sea sobre los datos almacenados o sobre la señal adquirida en tiempo real. Este posprocesamiento es fundamental para detectar patrones específicos o eliminar artefactos que no fueron suficientemente atenuados en la etapa inicial de filtrado físico. Por ejemplo, los artefactos relacionados con el movimiento o las señales de baja frecuencia, como la respiración, pueden requerir un ajuste adicional después de la adquisición de la señal. Además, un análisis más exhaustivo en tiempo real puede detectar elementos que los filtros de hardware no lograron capturar completamente.
+    \item \textbf{Redundancia y Seguridad}
+    
+    Incorporar tanto filtros físicos como digitales en un sistema de procesamiento de señales EEG añade una capa extra de seguridad. Si un filtro físico falla o no cumple completamente su función, el filtro digital actúa como un sistema de respaldo, asegurando que el ruido y las interferencias no afecten el análisis de la señal. Esta redundancia es clave en entornos críticos donde se necesita garantizar la integridad y pureza de los datos EEG para obtener resultados confiables y precisos.
+\end{enumerate}
+
 
 \subsection{Cantidad de canales}
 
@@ -466,6 +535,16 @@ En un sistema de EEG, después de amplificar las señales captadas por los elect
 
 \subsection{Funcionamiento de los filtros digitales}
 
+Una vez que las ondas cerebrales son captadas y sometidas a un proceso inicial de filtrado, son transferidas a una Raspberry Pi 4. En este dispositivo se ejecuta un programa, desarrollado íntegramente por nuestro equipo, que continúa con el procesamiento y refinamiento de la señal. El motivo por el cual se aplica un filtrado adicional es que, luego de la etapa de filtrado inicial, la señal pasa por un segundo amplificador. Este amplificador, además de amplificar las señales cerebrales de interés, también amplifica el ruido residual presente en las mismas. Para contrarrestar este efecto, empleamos filtros digitales implementados por software, los cuales ofrecen una mayor precisión y control en la eliminación de interferencias no deseadas.
+
+Dentro del programa, se han implementado los siguientes filtros:
+\begin{itemize}
+    \item \textbf{Filtro Notch de 50 Hz:} Este filtro está diseñado para eliminar las interferencias generadas por la red eléctrica, las cuales operan a una frecuencia de 50 Hz. Dado que estas interferencias pueden superponerse con la señal cerebral y distorsionar su interpretación, su eliminación es esencial para obtener un registro más fiel de la actividad cerebral.
+    \item \textbf{Filtro Pasa-Bajo de 100 Hz:} El objetivo de este filtro es retener las frecuencias cerebrales más relevantes, es decir, aquellas que se encuentran por debajo de los 100 Hz, mientras que elimina el ruido de alta frecuencia, que suele ser resultado de interferencias externas o artefactos no relacionados con la actividad cerebral. Este rango incluye frecuencias relacionadas con ritmos cerebrales importantes como las ondas alfa, beta, y gamma.
+    \item \textbf{Filtro Pasa-Alto de 0,5 Hz:} Este filtro se encarga de remover las señales de baja frecuencia que no aportan información útil sobre la actividad cerebral, como los artefactos causados por movimientos lentos o variaciones de corriente. Solo se permite el paso de las frecuencias EEG relevantes, garantizando que las señales reflejen con mayor precisión la actividad neural de interés.
+\end{itemize}
+
+Es importante señalar que el uso de estos filtros garantiza que la señal procesada esté lo más limpia posible de interferencias y artefactos, mejorando la precisión del sistema para detectar y procesar patrones cerebrales. La implementación de filtros mediante software, además, permite ajustar dinámicamente las configuraciones según las necesidades específicas del sistema y del entorno operativo, optimizando así el rendimiento de la silla de ruedas controlada por señales cerebrales.
 
 \subsection{Funcionamiento del Puente H}
 
@@ -560,8 +639,8 @@ Los programas desarrollados para el proyecto, tales como los filtros digitales, 
     \item TL084 (x4)
     \item AD620 (x8)
     \item Capacitores 100nF (x48)
-    \item Resistencias 100\omega (x4)
-    \item Resistencias 120\ (x16)
+    \item Resistencias 100\Ω (x4)
+    \item Resistencias 120\Ω (x16)
     \item Resistencias 560\Ω (x8) 
     \item Resistencias 820\Ω (x16)
     \item Resistencias 1,5k\Ω (x8)
