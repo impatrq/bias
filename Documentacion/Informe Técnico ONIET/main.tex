@@ -77,6 +77,27 @@ La inversión en tiempo y recursos adicionales permitirá perfeccionar sus carac
 
 En caso de que el desarrollo del proyecto no se complete en su totalidad, este podrá ser aprovechado por la institución educativa, permitiendo que otros grupos de estudiantes continúen su avance. De esta manera, el proyecto no solo servirá como un recurso valioso para futuras generaciones, sino que también fomentará la colaboración y el aprendizaje continuo dentro de la comunidad académica, garantizando su evolución y finalización.
 
+El presente proyecto tiene como objetivo generar un impacto significativo en la sociedad, fomentando el desarrollo de tecnologías basadas en el control mediante señales cerebrales. Este enfoque tiene el potencial de ampliar las opciones tecnológicas disponibles para personas con limitaciones físicas severas, que les impiden operar dispositivos de manera manual. Con la implementación de este tipo de sistemas, se busca facilitar la creación de soluciones tecnológicas accesibles y eficientes, que permitan a los usuarios controlar una amplia gama de dispositivos mediante interfaces cerebro-computadora (BCI), mejorando así su autonomía y calidad de vida.
+
+\section{Descripción física del proyecto}
+En el estado actual del proyecto, el asiento y el motor de la silla de ruedas se encuentran separados. El asiento, fabricado en madera, tiene dimensiones de 65 cm de altura, 40 cm de ancho y 40 cm de profundidad. Por su parte, el motor tiene unas dimensiones de 40 cm de altura, 95 cm de longitud y 70 cm de ancho. Estas especificaciones corresponden a la etapa preliminar del diseño, donde se busca optimizar la integración estructural y funcional de ambos componentes, asegurando tanto la estabilidad del conjunto como su eficiencia operativa.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Imagenes//Estructura/1000048917.jpg}
+    \caption{Asiento de la silla de ruedas}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Imagenes//Estructura/1000049796.jpg}
+    \caption{Motor de la silla de ruedas}
+\end{figure}
+
+\section{Investigaciones realizadas}
+
+Para concretar la idea principal del proyecto y dar inicio a su desarrollo, se realizaron investigaciones exhaustivas en diversas áreas. Estas incluyeron el análisis de proyectos similares, como el de la silla de ruedas controlada por la mente conocida como Milo, así como estudios más específicos sobre componentes técnicos clave, tales como el puente H de potencia, los filtros, y el sistema de compensación de offset. También se llevó a cabo una investigación detallada sobre dispositivos EEG, como el NeuroSky, que inicialmente fue utilizado pero posteriormente descartado. Además, se profundizó en el estudio de las señales cerebrales y los métodos para su medición. Como parte del proceso, nos contactamos con diversas fundaciones y expertos en el área, con el objetivo de obtener información adicional y recibir apoyo en la implementación del proyecto.
+
 \section{Descripción del funcionamiento}
 El usuario se sienta en la silla de ruedas y se coloca el dispositivo EEG. El EEG capta las señales cerebrales y las somete a un proceso de filtrado por hardware de varias etapas. Luego, las envía a un circuito de compensación de Offset, para que la RP2040 Zero pueda leerlas. Estos datos, se los envía a la Raspberry Pi 4, en donde está el programa principal de la silla de ruedas.
 
@@ -267,35 +288,35 @@ La velocidad del motor puede controlarse ajustando el ciclo de trabajo (duty cyc
 En este capítulo se incluirán imágenes de los esquemas de los circuitos, junto con su representación gráfica en formato virtual de los circuitos impresos, así como fotografías de los circuitos completos una vez finalizados.
 
 
-\subsubsection{Esquemático de los filtros}
+\subsection{Esquemático de los filtros}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{Imagenes/Filtros/filtroseeg.png}
     \caption{Esquemático de los filtros del EEG}
 \end{figure}
 
-\subsubsection{Esquemático del sistema de control}
+\subsection{Esquemático del sistema de control}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{Imagenes/SistemaControl/sistemadecontrol.png}
     \caption{Esquemáticos del sistema de control}
 \end{figure}
 
-\subsubsection{Esquemático del sistema Offset}
+\subsection{Esquemático del sistema Offset}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{Imagenes/SistemaOffset/sistemaoffset.png}
     \caption{Esquemático del sistema de Offset}
 \end{figure}
 
-\subsubsection{Esquemáticos de los Puentes H}
+\subsection{Esquemáticos de los Puentes H}
 \begin{figure}[H]
     \centering
      \includegraphics[width=1\textwidth]{Imagenes/PuenteH/WhatsApp Image 2024-08-28 at 9.05.56 AM.jpeg}
     \caption{Puente H (Un Motor)}
 \end{figure}
 
-\subsubsection{Esquemático del sistema de emergencia}
+\subsection{Esquemático del sistema de emergencia}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{Imagenes/SistemaEmergencia/sistemergencia.png}
