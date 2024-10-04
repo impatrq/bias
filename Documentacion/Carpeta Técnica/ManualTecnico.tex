@@ -468,6 +468,16 @@ El grafico de Fourier es una herramienta que sirve para analizar señales en el 
     \end{itemize}
 \end{enumerate}
 
+\subsubsection{¿En que lo aplicamos?}
+
+Se emplea el Análisis de Fourier para identificar el espectro de frecuencias de las señales cerebrales, permitiendo la diferenciación de las ondas alpha, beta, gamma, delta y theta. Posteriormente, se aplica la Transformada Inversa de Fourier para reconstruir las señales en el dominio temporal, recuperando su forma original.
+
+Una vez que las señales han sido diferenciadas por bandas de frecuencia, el algoritmo de machine learning procede a extraer las características (features) de cada tipo de onda a partir de una representación en el dominio de la frecuencia y del tiempo. Estas características son utilizadas para realizar la predicción del movimiento deseado en la silla de ruedas.
+
+\subsubsection{¿Que es una feature?}
+
+Una feature es una propiedad medible o una característica distintiva de un fenómeno. En el contexto de este proyecto, las features se refieren a las propiedades específicas de cada señal cerebral, clasificadas por tipo de onda (alpha, beta, gamma, delta y theta). Estas propiedades son extraídas para capturar la información relevante que permitirá al sistema de aprendizaje automático identificar patrones en las señales y realizar predicciones relacionadas con el control de la silla de ruedas.
+
 \subsection{Filtros digitales}
 
 Un filtro digital es una herramienta utilizada en el procesamiento de señales para modificar o mejorar ciertos aspectos de una señal digital, eliminando o atenuando componentes no deseados, como ruido, o destacando componentes útiles. Los filtros digitales operan sobre señales discretizadas (muestreadas) y utilizan algoritmos matemáticos para realizar diversas transformaciones.
@@ -532,8 +542,24 @@ Dado que trabajamos con señales altamente susceptibles al ruido debido a su fre
 
 La implementación de este elemento se realiza mediante una caja metálica que será ubicada en la parte superior trasera de la silla de ruedas, es decir, en la zona de apoyo de la espalda, para mantenerla lo más distante posible de los motores.
 
-\subsection{Utilización de Offsets}
-En la sección de procesamiento y recepción, utilizamos 
+
+\subsection{¿Qué es un circuito de Offset?}
+
+Un circuito de offset se utiliza para agregar un voltaje constante a una señal, desplazando su nivel de referencia sin cambiar la forma de la señal. Este tipo de circuito es común en sistemas de procesamiento de señales, donde se requiere ajustar el punto de referencia de una señal para que coincida con el rango de entrada de otro dispositivo o componente.
+
+Ejemplo de Funcionamiento:
+
+Una señal de entrada, como una señal de corriente alterna (AC), puede presentar un rango de voltaje que oscila entre valores positivos y negativos, por ejemplo, una onda senoidal entre -5V y 5V.
+
+Si se desea desplazar esta señal para que su rango esté comprendido entre 0V y 10V, se debe aplicar un voltaje de offset de 5V.
+
+El circuito de offset sumará este valor constante de 5V a la señal, desplazando el rango completo de la misma hacia valores positivos, sin alterar su forma original.
+
+\subsubsection{Utilización de Offsets}
+
+En la sección de procesamiento y recepción, se implementó un circuito de offset para adaptar las señales, ya que la RP2040 Zero no es capaz de procesar señales con componentes negativos. Este ajuste permite una correcta recepción y, en consecuencia, un procesamiento completo de las señales.
+
+
 
 \subsection{Sistema de emergencia}
 
