@@ -134,7 +134,7 @@ class AIBias:
             InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),  # Adjusted input shape to match the feature count
             Conv1D(filters=64, kernel_size=3, activation='relu'),
             #BatchNormalization(),
-            MaxPooling1D(pool_size=2),
+            MaxPooling1D(pool_size=1),
             Dropout(0.5),
             Flatten(),
             Dense(100, activation='relu'), #, kernel_regularizer=l2(0.01)),

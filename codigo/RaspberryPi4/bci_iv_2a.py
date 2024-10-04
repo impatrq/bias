@@ -76,7 +76,7 @@ class AIBias:
         model = Sequential([
             InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),
             Conv1D(filters=64, kernel_size=3, activation='relu'),
-            MaxPooling1D(pool_size=2),
+            MaxPooling1D(pool_size=1),
             Dropout(0.5),
             Flatten(),
             Dense(100, activation='relu'),
@@ -90,7 +90,6 @@ class AIBias:
 
     def extract_features(self, eeg_data):
         features = []
-        assert(len(signals_per_channel) == self._number_of_waves_per_channel)
         for ch, signals_per_channel in eeg_data.items():
             channel_features = []
             for band_name, signal_wave in signals_per_channel.items():
@@ -137,12 +136,14 @@ def load_and_train_from_bci_dataset():
     n = 1875  # Number of samples
     processing_bias = ProcessingBias(n=n, fs=fs)
     bias_filter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
+    save_path = "bciiv2a"
+    saved_dataset_path = None
 
     # Load BCI dataset
     datasetA1 = MotorImageryDataset("bcidatasetIV2a-master/A01T.npz")
     trials, classes = datasetA1.get_trials_from_channels([7, 9, 11])  # Example: C3, Cz, C4
 
-    # Initialize X and y as empty lists
+    # Initialize X and y as empty lists|
     X = []
     y = []
     
@@ -151,15 +152,15 @@ def load_and_train_from_bci_dataset():
     num_of_channels = 3
 
     # Initialize the AI model
-    ai_bias = AIBias(n=n, fs=fs, channels=num_of_channels, commands=["left", "right", "forward", "backwards", "stop", "rest"])
+    ai_bias = AIBias(n=n, fs=fs, channels=num_of_channels, commands=["left", "right", "forward", "backwards"]) # , "stop", "rest"])
 
     # Invert the dimensions of trials and classes using zip
     inverted_trials = list(map(list, zip(*trials)))
     inverted_classes = list(map(list, zip(*classes)))
-
-    for trial in range(len(inverted_trials)):
-        for label in inverted_classes[trial]:
-            if label in command_map:
+    if saved_dataset_path is None:
+        for trial in range(len(inverted_trials)):
+            label = inverted_classes[trial][0]
+            if label in command_map.keys():
                 # Create a dictionary to hold the EEG signals for each channel
                 eeg_signals = {f"ch{ch}": inverted_trials[trial][ch] for ch in range(num_of_channels)}  # Assuming 3 channels: C3, Cz, C4
 
@@ -173,6 +174,15 @@ def load_and_train_from_bci_dataset():
                 # Append the extracted features and the corresponding command label
                 X.append(features)
                 y.append(ai_bias._label_map[command_map[label]])
+
+        if save_path:
+            # Save the dataset as a compressed NumPy file
+            np.savez_compressed(f"{save_path}.npz", X=X, y=y)
+            print(f"Dataset saved to {save_path}.npz")
+
+    else:
+        data = np.load(f"{saved_dataset_path}.npz")
+        X, y = data['X'], data['y']
 
     # Convert lists to arrays for training
     X = np.array(X)
