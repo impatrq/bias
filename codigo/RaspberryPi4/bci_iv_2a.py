@@ -7,7 +7,7 @@ from sklearn.decomposition import PCA
 from scipy.signal import welch, cwt, morlet
 from scipy.stats import skew, kurtosis, entropy
 import numpy as np
-from bias_dsp import ProcessingBias
+from bias_dsp import ProcessingBias, FilterBias
 import random
 import time
 
@@ -90,6 +90,7 @@ class AIBias:
 
     def extract_features(self, eeg_data):
         features = []
+        assert(len(signals_per_channel) == self._number_of_waves_per_channel)
         for ch, signals_per_channel in eeg_data.items():
             channel_features = []
             for band_name, signal_wave in signals_per_channel.items():
@@ -135,6 +136,7 @@ def load_and_train_from_bci_dataset():
     fs = 250  # Sampling frequency from the dataset
     n = 1875  # Number of samples
     processing_bias = ProcessingBias(n=n, fs=fs)
+    bias_filter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
 
     # Load BCI dataset
     datasetA1 = MotorImageryDataset("bcidatasetIV2a-master/A01T.npz")
@@ -151,23 +153,26 @@ def load_and_train_from_bci_dataset():
     # Initialize the AI model
     ai_bias = AIBias(n=n, fs=fs, channels=num_of_channels, commands=["left", "right", "forward", "backwards", "stop", "rest"])
 
-    for i in range(len(trials)):
-        trial_data = trials[i]
-        class_label = classes[i][0]  # Assuming the first label for simplicity
+    # Invert the dimensions of trials and classes using zip
+    inverted_trials = list(map(list, zip(*trials)))
+    inverted_classes = list(map(list, zip(*classes)))
 
-        if class_label in command_map:
-            # Create a dictionary to hold the EEG signals for each channel
-            eeg_signals = {ch: trial_data[ch] for ch in range(num_of_channels)}  # Assuming 3 channels: C3, Cz, C4
+    for trial in range(len(inverted_trials)):
+        for label in inverted_classes[trial]:
+            if label in command_map:
+                # Create a dictionary to hold the EEG signals for each channel
+                eeg_signals = {f"ch{ch}": inverted_trials[trial][ch] for ch in range(num_of_channels)}  # Assuming 3 channels: C3, Cz, C4
 
-            # Process the raw EEG signals using ProcessingBias to extract frequency bands
-            _, processed_signals = processing_bias.process_signals(eeg_signals)
+                filtered_data = bias_filter.filter_signals(eeg_signals)
+                # Process the raw EEG signals using ProcessingBias to extract frequency bands
+                _, processed_signals = processing_bias.process_signals(filtered_data)
 
-            # Extract features from the processed signals (frequency bands)
-            features = ai_bias.extract_features(processed_signals)
+                # Extract features from the processed signals (frequency bands)
+                features = ai_bias.extract_features(processed_signals)
 
-            # Append the extracted features and the corresponding command label
-            X.append(features)
-            y.append(ai_bias._label_map[command_map[class_label]])
+                # Append the extracted features and the corresponding command label
+                X.append(features)
+                y.append(ai_bias._label_map[command_map[label]])
 
     # Convert lists to arrays for training
     X = np.array(X)
