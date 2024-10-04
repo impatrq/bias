@@ -11,6 +11,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{float}
+\usepackage[a4paper, total={6in, 9in}]{geometry}
 \begin{document}
 \date{} 
 
@@ -25,13 +26,18 @@
 \textbf{Integrantes del Proyecto:} 
 
 \begin{itemize}
-    \item Adell, Nicolas Fabian
-    \item De Blasi, Luca
-    \item Diaz Melion, Danilo Sebastian
-    \item Gil Soria, Ian Lucas
-    \item Montenegro, Luciano Nahuel
-    \item Sojka, Santiago Alejandro
+    \item Adell, Nicolas Fabian (DNI 47020472)
+    \item De Blasi, Luca (DNI 47382528)
+    \item Diaz Melion, Danilo Sebastian (DNI 47307165)
+    \item Gil Soria, Ian Lucas (DNI 47337154)
+    \item Montenegro, Luciano Nahuel (DNI 47256543)
+    \item Sojka, Santiago Alejandro (DNI 47306441)
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Imagenes//BIAS/bias.png}
+\end{figure}
 
 \tableofcontents 
 
@@ -47,7 +53,11 @@ Para su funcionamiento, BIAS emplea una Inteligencia Artificial desarrollada por
 El equipo BIAS (Brain Intelligence Artificial System) está conformado por seis integrantes, todos estudiantes de la Escuela Técnica N° 7 "IMPA" de Quilmes. Actualmente, nos encontramos cursando el séptimo y último año de la educación secundaria, en la especialidad de Aviónica, más específicamente a la segunda división, comisión "C".
 
 
-Dedicamos aproximadamente 30 horas semanales al desarrollo del proyecto, en el marco de la asignatura denominada "Profesionalizantes", donde destinamos todo el tiempo a esta actividad. En dicha materia, tenemos a cargo a tres profesores, quienes son:
+\subsection{Metodología de Trabajo}
+
+La metodología aplicada en este proyecto se basa en la organización del equipo en dos grupos especializados. El primer grupo se encarga del desarrollo de los programas, siendo ejemplos de esto los filtros virtuales, programas de recepción y procesado, mientras que el segundo se dedica a la implementación de los motores, sistemas de emergencia y filtros. Esta división del trabajo permite una utilización más eficiente del tiempo, al abordar simultáneamente diversas áreas del proyecto, lo que resulta en un avance más significativo en periodos de tiempo más reducidos.
+
+Dedicamos aproximadamente 30 horas semanales, durante 28 semanas, al desarrollo del proyecto desde principios de marzo, en el contexto de la asignatura "Prácticas Profesionalizantes". Durante este período, todo el tiempo asignado a dicha materia se ha destinado exclusivamente a la planificación, investigación y ejecución de las diferentes etapas del proyecto. En dicha materia, tenemos a cargo a tres profesores, quienes son:
 
 \begin{itemize}
     \item Fabrizio Carlassara
@@ -55,9 +65,6 @@ Dedicamos aproximadamente 30 horas semanales al desarrollo del proyecto, en el m
     \item Carlos Bianco
 \end{itemize}
 
-\subsection{Metodología de Trabajo}
-
-La metodología aplicada en este proyecto se basa en la organización del equipo en dos grupos especializados. El primer grupo se encarga del desarrollo de los programas, siendo ejemplos de esto los filtros virtuales, programas de recepción y procesado, mientras que el segundo se dedica a la implementación de los motores, sistemas de emergencia y filtros. Esta división del trabajo permite una utilización más eficiente del tiempo, al abordar simultáneamente diversas áreas del proyecto, lo que resulta en un avance más significativo en periodos de tiempo más reducidos.
 
 \section{¿Por qué hacemos este proyecto?}
 
@@ -67,7 +74,7 @@ Como estudiantes de séptimo año, nuestro objetivo es desarrollar un proyecto q
 Este proyecto está dirigido a personas con movilidad reducida, especialmente aquellos pacientes que presentan una parálisis completa desde el cuello hacia abajo. Entre los principales beneficiarios se encuentran personas que padecen esclerosis lateral amiotrófica (ELA), cuadriplejia, esclerosis múltiple, o aquellos que han sufrido la amputación de extremidades. Dado que el control de la silla de ruedas se realiza a través de señales cerebrales, el alcance del proyecto puede extenderse a una amplia variedad de pacientes con limitaciones motrices de este tipo.
 
 
-Estamos convencidos de que este proyecto tiene el potencial de transformar la vida de personas con movilidad reducida, permitiéndoles gestionar su propio movimiento y mejorando sustancialmente su calidad de vida.
+Estamos convencidos de que este proyecto tiene el potencial de transformar la vida de personas con movilidad reducida, permitiéndoles gestionar su propio movimiento y mejorando sustancialmente su calidad de vida, y puede llegar a tener un alcance incluso mundial si es comercializado correctamente.
 
 \section{¿Por qué es innovador este proyecto?}
 
@@ -149,7 +156,6 @@ Puntos anatómicos clave de referencia:
 
 Las posiciones de los electrodos se distribuyen sobre la cabeza tomando como referencia estos puntos para cubrir todo el cuero cabelludo de forma equidistante.
 
-\newpage
 
 En la siguiente imágen se puede visualizar de mejor manera la posición de los electrodos:
 
@@ -282,7 +288,6 @@ La velocidad del motor puede controlarse ajustando el ciclo de trabajo (duty cyc
 
 \end{enumerate}
 
-\newpage
 
 \section{Circuitos usados}
 En este capítulo se incluirán imágenes de los esquemas de los circuitos, junto con su representación gráfica en formato virtual de los circuitos impresos, así como fotografías de los circuitos completos una vez finalizados.
@@ -291,14 +296,14 @@ En este capítulo se incluirán imágenes de los esquemas de los circuitos, junt
 \subsection{Esquemático de los filtros}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{Imagenes/Filtros/filtroseeg.png}
+    \includegraphics[width=0.9\linewidth]{Imagenes/Filtros/filtroseeg.png}
     \caption{Esquemático de los filtros del EEG}
 \end{figure}
 
 \subsection{Esquemático del sistema de control}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{Imagenes/SistemaControl/sistemadecontrol.png}
+    \includegraphics[width=0.8\linewidth]{Imagenes/SistemaControl/sistemadecontrol.png}
     \caption{Esquemáticos del sistema de control}
 \end{figure}
 
