@@ -11,6 +11,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{float}
+\usepackage[a4paper, total={6in, 9in}]{geometry}
 \SelectInputMappings{%
   eacute={é},
 }
@@ -248,9 +249,9 @@ En los siguientes textos se adjuntan enlaces para ver la página oficial de Open
 \centering
 
 \begin{subfigure}[b]{0.45\linewidth}
-\includegraphics[width=\linewidth]{Images/Imagenes/esquematicodeganglion.png}
-\caption{Diseño Esquemático}
-\label{fig:westminster_lateral}
+    \includegraphics[width=\linewidth]{Images/Imagenes/esquematicodeganglion.png}
+    \caption{Diseño Esquemático}
+    \label{fig:westminster_lateral}
 \end{subfigure}
 
 \begin{subfigure}[b]{0.45\linewidth}
@@ -264,10 +265,13 @@ En los siguientes textos se adjuntan enlaces para ver la página oficial de Open
 \end{figure}
 
 \begin{center}
-    \includegraphics[width=1\textwidth]{Images/Imagenes/pcbdeganglion.png}\\
+    \includegraphics[width=0.5\textwidth]{Images/Imagenes/pcbdeganglion.png}\\
 
     \includegraphics[width=1\textwidth]{Images/Imagenes/esquematicodeganglion.png}\\
 \end {center}
+
+\subsubsection{Autodesk Instructables}
+A partir de esta página, obtuvimos los primeros circuitos necesarios para el EEG, lo que nos permitió avanzar de manera significativa en el desarrollo del proyecto. Esta fuente de información fue fundamental para sentar las bases técnicas y nos brindó las herramientas necesarias para continuar con el diseño y la implementación del sistema.
 
 \section{Desarrollo Teórico}
 En este capítulo se describirán y desarrollarán todos los aspectos teóricos relacionados, justificando la elección de los componentes utilizados. Se abordarán teorías como la Jaula de Faraday y el sistema 10-20, además de ofrecer una explicación detallada sobre los tipos de señales empleadas, entre otros temas relevantes.
@@ -288,8 +292,6 @@ El EEG se utiliza comúnmente para:
 \end{itemize}
 
 Las ondas cerebrales se clasifican en varios tipos según su frecuencia: delta, theta, alpha, beta, y gamma, cada una asociada a diferentes estados de conciencia y actividades cerebrales.
-
-Principalmente, a nosotros nos interesa el "Monitoreo del estado cerebral".
 
 \subsection{¿Que es un EEG?}
 
@@ -566,6 +568,8 @@ En la sección de procesamiento y recepción, se implementó un circuito de offs
 La silla de ruedas está equipada con un sistema de emergencia basado en tecnología de ultrasonido, que se encuentra instalado en las direcciones principales del dispositivo. Este sistema tiene como propósito prevenir colisiones con objetos o cualquier tipo de obstáculo, protegiendo tanto al usuario como a la integridad de la silla. Cuando los sensores de ultrasonido detectan la presencia de un obstáculo cercano, se activa un indicador visual mediante un LED en la dirección del objeto, acompañado de una señal acústica generada por un buzzer. Simultáneamente, el sistema detiene el movimiento de la silla de ruedas de manera automática y procede a un tiempo de espera de unos segundos para evaluar si es seguro continuar el desplazamiento.
 
 \subsection{Tipos de alimentaciones}
+El proyecto tiene distintas tensiones de alimetación, pero la mayoría viene de la batería de 24V. La Raspberry Pi 4 se alimenta con 5V, por lo que debe pasar por un circuito regulador de tensiones conformado por un L7815 y luego por un L7805 L7805.
+
 
 \subsection{Sistema de control}
 
@@ -720,35 +724,35 @@ Este circuito es ideal para aplicaciones donde se requiere un control preciso de
 En este capítulo se incluirán imágenes de los esquemas de los circuitos, junto con su representación gráfica en formato virtual de los circuitos impresos, así como fotografías de los circuitos completos una vez finalizados.
 
 
-\subsubsection{Esquemático de los filtros}
+\subssection{Esquemático de los filtros}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{Images/Filtros/filtroseeg.png}
     \caption{Esquemático de los filtros del EEG}
 \end{figure}
 
-\subsubsection{Esquemático del sistema de control}
+\subsection{Esquemático del sistema de control}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{Images/SistemaControl/sistemadecontrol.png}
     \caption{Esquemáticos del sistema de control}
 \end{figure}
 
-\subsubsection{Esquemático del sistema Offset}
+\subsection{Esquemático del sistema Offset}
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{Images/SistemaOffset/sistemaoffset.png}
     \caption{Esquemático del sistema de Offset}
 \end{figure}
 
-\subsubsection{Esquemáticos de los Puentes H}
+\subsection{Esquemáticos de los Puentes H}
 \begin{figure}[H]
     \centering
      \includegraphics[width=1\textwidth]{Images/PuenteH/WhatsApp Image 2024-08-28 at 9.05.56 AM.jpeg}
     \caption{Puente H (Un Motor)}
 \end{figure}
 
-\subsubsection{Esquemático del sistema de emergencia}
+\subsection{Esquemático del sistema de emergencia}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{Images/SistemaEmergencia/sistemergencia.png}
@@ -904,31 +908,83 @@ Para el desarrollo del proyecto, hemos requerido hacer uso de los siguientes por
 \subsubsection{Agradecimientos}
 
 Queremos expresar nuestro más profundo agradecimiento a los profesores que nos han brindado su invaluable apoyo en la realización de este proyecto:
-
-
-Fabrizio Carlassara: Su asistencia fue crucial en la programación de la mayor parte del proyecto, así como en la creación de circuitos y esquemáticos, la búsqueda de materiales y el desarrollo de los filtros necesarios.
-
-
-Sergio Medina: Nos brindó su experiencia en la presentación y comercialización del proyecto, además de colaborar en la programación, la búsqueda de materiales y la planificación de los puentes H.
-
-
-Carlos Bianco: Su apoyo fue esencial en las pruebas y acondicionamiento de los motores, proporcionándonos herramientas y baterías para dichas pruebas, además de colaborar en la búsqueda de materiales.
-
-
-Daniel Espósito: Nos proporcionó motores y materiales, además de enseñarnos a construir los puentes H para los motores y nos ayudó a solucionar problemas con las pistas de los circuitos para las altas corrientes.
-
-
-Federico Solomiewicz: Colaboró principalmente en el desarrollo de los filtros, proporcionándonos herramientas para el proyecto y estando siempre disponible para resolver cualquier duda que surgiera.
-
-
-Juan Carlos Ruiz: Su colaboración fue esencial en las pruebas de los motores para la silla de ruedas, además de ayudarnos principalmente en la creación de los puentes H para los motores y sus circuitos impresos.
+\begin{itemize}
+    \item Fabrizio Carlassara: Su asistencia fue crucial en la programación de la mayor parte del proyecto, así como en la creación de circuitos y esquemáticos, la búsqueda de materiales y el desarrollo de los filtros necesarios.
+    \item Sergio Medina: Nos brindó su experiencia en la presentación y comercialización del proyecto, además de colaborar en la programación, la búsqueda de materiales y la planificación de los puentes H.
+    \item Carlos Bianco: Su apoyo fue esencial en las pruebas y acondicionamiento de los motores, proporcionándonos herramientas y baterías para dichas pruebas, además de colaborar en la búsqueda de materiales.
+    \item Daniel Espósito: Nos proporcionó motores y materiales, además de enseñarnos a construir los puentes H para los motores y nos ayudó a solucionar problemas con las pistas de los circuitos para las altas corrientes.
+    \item Federico Solomiewicz: Colaboró principalmente en el desarrollo de los filtros, proporcionándonos herramientas para el proyecto y estando siempre disponible para resolver cualquier duda que surgiera.
+    \item Juan Carlos Ruiz: Su colaboración fue esencial en las pruebas de los motores para la silla de ruedas, además de ayudarnos principalmente en la creación de los puentes H para los motores y sus circuitos impresos.
+    \item Ana (Neurologa):
+\end{itemize}
 
 
 
 \section{Referencias}
 En este apartado se presentarán de manera detallada las referencias consultadas al inicio del proyecto, las cuales fueron fundamentales para la conceptualización y desarrollo de la idea final. Estas fuentes proporcionaron el marco teórico y práctico necesario para orientar la dirección del trabajo, influyendo en las decisiones tomadas durante el proceso de diseño y ejecución.
-\subsubsection{Autodesk Instructables}
-A partir de esta página, obtuvimos los primeros circuitos necesarios para el EEG, lo que nos permitió avanzar de manera significativa en el desarrollo del proyecto. Esta fuente de información fue fundamental para sentar las bases técnicas y nos brindó las herramientas necesarias para continuar con el diseño y la implementación del sistema.
+
+\subsection{Brain Computer Interface}
+
+La primera referencia utilizada en este proyecto es un informe técnico titulado "Brain Computer Interface", escrito por María Madrid Sobrino, el cual aborda el desarrollo de una interfaz cerebro-computadora (BCI) basada en señales EEG, específicamente empleando potenciales evocados visuales de estado estacionario (SSVEP).
+
+Este documento resultó fundamental para nuestra investigación, ya que abarca los siguientes aspectos relevantes:
+
+\begin{itemize}
+    \item Introducción a las interfaces cerebro-computadora (BCI): Una interfaz cerebro-computadora (BCI) es un sistema que permite a los usuarios comunicar sus intenciones al entorno externo sin necesidad de utilizar mecanismos fisiológicos naturales, como los nervios periféricos o los músculos. Estas interfaces están diseñadas principalmente para mejorar la comunicación de personas con discapacidades severas, aunque también tienen aplicaciones en la rehabilitación neurológica, en la industria de los videojuegos, entre otros.
+    El informe distingue entre dos tipos de BCI: los invasivos, en los cuales los electrodos se implantan directamente en el cerebro, y los no invasivos, donde los electrodos se colocan en la superficie del cráneo. Los BCIs no invasivos, basados en la electroencefalografía (EEG), son los más ampliamente utilizados debido a su practicidad y menor riesgo.
+
+    \item BCI basado en SSVEP: El informe describe un sistema BCI basado en SSVEP (Potenciales Evocados Visuales de Estado Estacionario), que utiliza la respuesta cerebral a estímulos visuales repetitivos. Cuando un estímulo visual parpadea a una frecuencia constante, el cerebro genera señales EEG a la misma frecuencia del estímulo.
+    Se destaca la alta efectividad de estos sistemas, que presentan una elevada relación señal-ruido y requieren poco entrenamiento por parte del usuario. Sin embargo, se señala que algunos estímulos visuales pueden provocar fatiga o, en ciertos casos, ataques epilépticos.
+\end{itemize}
+
+La referencia detalla el uso de la plataforma BCI2000 para la adquisición de datos, procesamiento de señales y presentación de estímulos. El sistema fue desarrollado empleando C++ y Matlab, lo que permitió la integración de un módulo de procesamiento de señales en Matlab.
+El sistema desarrollado incluye una aplicación que presenta 16 opciones visuales organizadas en cuatro grupos, permitiendo al usuario seleccionar una imagen específica enfocando su atención en ella.
+El método de clasificación empleado se basa en la frecuencia de los estímulos visuales, y la integración con BCI2000 facilita la ejecución de un sistema de lazo cerrado, donde las señales cerebrales controlan directamente el proceso de selección de imágenes.
+
+Esta referencia fue clave para establecer las bases teóricas y técnicas necesarias para la implementación de un sistema de control basado en señales cerebrales, aplicable a nuestro proyecto de silla de ruedas.
+
+\subsection{Artificial Intelligence for Real-Time Decoding of Motor Commands from ECoG of Disabled Subjects for Chronic Brain-Computer Interfacing}
+
+
+La segunda referencia utilizada corresponde a la tesis doctoral titulada "Artificial Intelligence for Real-Time Decoding of Motor Commands from ECoG of Disabled Subjects for Chronic Brain-Computer Interfacing", presentada por Maciej Sliwowski en la Université Grenoble Alpes en 2022.
+
+Esta tesis aborda el uso de inteligencia artificial (IA) para la decodificación en tiempo real de comandos motores a partir de señales de electrocorticografía (ECoG) en sujetos con discapacidades motoras. El objetivo principal es mejorar la comunicación y el control mediante interfaces cerebro-computadora (BCI). Los sistemas BCI ofrecen una herramienta de asistencia crucial para pacientes con tetraplejia, proporcionando un medio de interacción directa entre el cerebro y el entorno, compensando la pérdida de funciones motoras.
+
+El enfoque principal del trabajo se centra en los BCI basados en ECoG, que presentan un equilibrio óptimo entre los sistemas intracorticales, más invasivos, y los métodos no invasivos, como el EEG, que suelen ser menos precisos. La tesis estudia específicamente la decodificación de movimientos continuos de traslación de la mano en un paciente tetrapléjico, logrando avances importantes en la interpretación de las señales cerebrales para aplicaciones prácticas en la rehabilitación motora.
+
+Este trabajo es relevante para nuestro proyecto ya que aborda la integración de IA en la interpretación de señales neuronales, lo que resulta fundamental para desarrollar sistemas de control eficientes en tiempo real, como es el caso de nuestra silla de ruedas controlada por la mente. Además, su enfoque en la ECoG aporta perspectivas valiosas para mejorar la precisión y la respuesta del sistema BCI en sujetos con discapacidades motoras severas.
+
+\subsection{Controlled Wheelchair Based on Brain Computer Interface using Neurosky Mindwave Mobile 2}
+
+El artículo presenta el desarrollo de una silla de ruedas controlada mediante una interfaz cerebro-computadora (BCI) utilizando el dispositivo Neurosky Mindwave Mobile 2 para la adquisición de señales EEG. El propósito de este sistema es mejorar la movilidad y la calidad de vida de pacientes post-ictus, permitiéndoles controlar la silla de ruedas a través de sus ondas cerebrales.
+
+Este artículo resultó valioso para nuestras primeras pruebas, dado que inicialmente contábamos con un dispositivo Neurosky Mindwave Mobile 2. Sin embargo, debido a limitaciones en la programación y procesamiento de señales, decidimos descartar esta opción y desarrollar nuestro propio sistema EEG.
+
+El sistema BCI permite a los usuarios controlar dispositivos mediante señales cerebrales, las cuales son registradas utilizando electroencefalografía (EEG). El Neurosky Mindwave Mobile 2 es un dispositivo portátil de bajo costo diseñado para registrar dichas señales EEG. En el contexto de este proyecto, las señales cerebrales se utilizan para controlar una silla de ruedas eléctrica, que originalmente funcionaba a través de un joystick.
+
+El módulo de control del joystick fue reemplazado por un controlador basado en microcontroladores, que procesa las señales cerebrales capturadas y las clasifica utilizando un software desarrollado en Matlab. Este proceso permite que las señales EEG controlen el motor de la silla de ruedas en tiempo real.
+
+En la metodología utilizada se emplea el método de motor imagery, el cual consiste en registrar y analizar las ondas cerebrales asociadas a la imaginación de movimientos motores, tales como caminar o mover las manos. Las señales capturadas por el dispositivo Neurosky se procesan en Matlab y se clasifican en cinco clases de movimiento: avanzar, retroceder, girar a la derecha, girar a la izquierda y una posición neutral.
+
+El sistema incorpora la funcionalidad eSense, una característica del dispositivo que mide los niveles de atención y meditación del usuario, contribuyendo a la precisión del control basado en señales cerebrales.
+
+\subsection{Brain–computer interface for electric wheelchair
+based on alpha waves of EEG signal}
+
+El presente estudio aborda el desarrollo de una interfaz cerebro-computadora (Brain-Computer Interface, BCI) destinada al control de una silla de ruedas eléctrica mediante la detección y análisis de ondas alfa generadas por el cerebro, capturadas a través de un electroencefalograma (EEG). El principal objetivo de este sistema es proporcionar asistencia a personas que padecen enfermedades neurológicas graves que afectan severamente su capacidad de movilidad. La solución propuesta destaca por su simplicidad operativa, dado que emplea un número reducido de electrodos y no requiere un extenso período de entrenamiento para los usuarios.
+
+Este estudio fue utilizado como referencia en el desarrollo de nuestro propio proyecto, el cual comparte un enfoque similar en la implementación de un sistema BCI para el control de una silla de ruedas. A partir de la revisión detallada de sus métodos y resultados, adaptamos y optimizamos el diseño de nuestros propios circuitos.
+
+\subsection{A Neural Network Based Brain–Computer Interface for Classification of Movement Related EEG}
+
+La tesis elaborada por Pontus Forslund y presentada en Linköping en diciembre de 2003, trata sobre el diseño de una interfaz cerebro-computadora (BCI) basada en electroencefalografía (EEG), enfocada en la clasificación de movimientos de la mano en dos dimensiones. El objetivo de dicho proyecto es desarrollar un sistema de comunicación intuitivo para individuos con discapacidades motoras graves.
+
+En este estudio, se registraron señales EEG de un sujeto mientras operaba un joystick en cuatro direcciones. Las señales capturadas fueron procesadas mediante un modelo autorregresivo para extraer características relevantes, que luego fueron empleadas como entradas para una red neuronal artificial, diseñada para clasificar la dirección de los movimientos.
+
+Este estudio ha sido utilizado como referencia para nuestro proyecto, específicamente en lo que respecta al reconocimiento de señales EEG y su asignación a los comandos de control del movimiento de la silla de ruedas controlada mediante señales cerebrales.
+
+
+
 
 
 \section{Lista de códigos}
