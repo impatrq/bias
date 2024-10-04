@@ -39,7 +39,7 @@ def main():
             if save_new_dataset == "y":
                 save_path = input("Write the path where you want to save the dataset: ")
         biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
-                                 samples_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
+                                 trials_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
     # Generate synthetic data
     signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
     #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
@@ -74,7 +74,7 @@ class AIBias:
     def ai_is_trained(self):
         return self._is_trained
     
-    def collect_and_train(self, reception_instance, filter_instance, processing_instance, samples_per_command, 
+    def collect_and_train(self, reception_instance, filter_instance, processing_instance, trials_per_command, 
                           save_path=None, saved_dataset_path=None, real_data=True):
         """
         Collects EEG data, extracts features, and trains the model.
@@ -83,14 +83,14 @@ class AIBias:
         y = []
 
         if saved_dataset_path is None:
-            for command in self._commands:
-                for sample in range(samples_per_command):
+            for trial in range(trials_per_command):
+                for command in self._commands:
                     # Get real data or generate synthetic data
                     if real_data:
-                        print(f"Think about {command}. Sample: {sample}")
+                        print(f"Think about {command}. Trial: {trial}")
                         signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
                     else:
-                        print(f"Sample: {sample}")
+                        print(f"Trial: {trial}")
                         signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs, command=command)
                     
                     filtered_data = filter_instance.filter_signals(signals)
@@ -98,6 +98,7 @@ class AIBias:
 
                     # Extract features and append to X
                     features = self.extract_features(eeg_signals)
+                    
                     X.append(features)
                     y.append(self._label_map[command])
 
