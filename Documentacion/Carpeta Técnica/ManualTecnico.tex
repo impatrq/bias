@@ -529,6 +529,20 @@ La combinación de filtros físicos (implementados en hardware) con filtros digi
 
 
 \subsection{Cantidad de canales}
+Para el control del movimiento, se emplean cinco canales, correspondiendo cada uno a una dirección de desplazamiento específica. Cada canal está asignado a la medición de diferentes tipos de señales cerebrales, las cuales se detallan a continuación:
+
+\begin{itemize}
+    \item Ondas alfa: 8-12 Hz
+    \item Ondas beta: 12-30 Hz
+    \item Ondas gamma: 30-100 Hz
+    \item Ondas delta: 0,5-4 Hz
+    \item Ondas theta: 4-8 Hz
+\end{itemize}
+
+El sistema permite controlar cuatro movimientos principales: izquierda, derecha, adelante y atrás. Sin embargo, se requiere un canal adicional para mantener la silla de ruedas en estado de reposo. Por este motivo, es necesario utilizar una placa de filtrado independiente para cada uno de los tipos de señales, ya que estas presentan diferentes rangos de frecuencia.
+
+El uso de estos filtros permite separar de manera efectiva las señales cerebrales del ruido presente en el entorno. Esto garantiza que las señales capturadas sean lo suficientemente limpias y precisas para su procesamiento por la Raspberry Pi 4. El diseño del sistema de filtrado incluye tanto filtros de paso bajo como de paso alto, optimizados para cada banda de frecuencia, lo que mejora la fiabilidad del control basado en las ondas cerebrales.
+
 
 \subsection{Gel conductor}
 El gel conductor neutro empleado en los electroencefalogramas (EEG) es una sustancia formulada para optimizar la conductividad eléctrica entre los electrodos y el cuero cabelludo del paciente. Su principal objetivo es minimizar la resistencia entre los electrodos y la piel, garantizando una transmisión eficiente y sin interferencias de las señales eléctricas cerebrales hacia los electrodos. 
@@ -549,7 +563,7 @@ La implementación de este elemento se realiza mediante una caja metálica que s
 
 Un circuito de offset se utiliza para agregar un voltaje constante a una señal, desplazando su nivel de referencia sin cambiar la forma de la señal. Este tipo de circuito es común en sistemas de procesamiento de señales, donde se requiere ajustar el punto de referencia de una señal para que coincida con el rango de entrada de otro dispositivo o componente.
 
-Ejemplo de Funcionamiento:
+\textbf{Ejemplo de Funcionamiento}:
 
 Una señal de entrada, como una señal de corriente alterna (AC), puede presentar un rango de voltaje que oscila entre valores positivos y negativos, por ejemplo, una onda senoidal entre -5V y 5V.
 
@@ -568,8 +582,10 @@ En la sección de procesamiento y recepción, se implementó un circuito de offs
 La silla de ruedas está equipada con un sistema de emergencia basado en tecnología de ultrasonido, que se encuentra instalado en las direcciones principales del dispositivo. Este sistema tiene como propósito prevenir colisiones con objetos o cualquier tipo de obstáculo, protegiendo tanto al usuario como a la integridad de la silla. Cuando los sensores de ultrasonido detectan la presencia de un obstáculo cercano, se activa un indicador visual mediante un LED en la dirección del objeto, acompañado de una señal acústica generada por un buzzer. Simultáneamente, el sistema detiene el movimiento de la silla de ruedas de manera automática y procede a un tiempo de espera de unos segundos para evaluar si es seguro continuar el desplazamiento.
 
 \subsection{Tipos de alimentaciones}
-El proyecto tiene distintas tensiones de alimetación, pero la mayoría viene de la batería de 24V. La Raspberry Pi 4 se alimenta con 5V, por lo que debe pasar por un circuito regulador de tensiones conformado por un L7815 y luego por un L7805 L7805.
 
+El proyecto opera con diferentes niveles de tensión de alimentación, siendo las principales fuentes de energía una batería de 24V y unas baterías recargables de 9V. La Raspberry Pi 4 requiere una alimentación de 5V, por lo cual se emplea un circuito regulador de tensión compuesto por un L7815 para reducir la tensión a 15V y, posteriormente, un L7805 para regularla a 5V.
+
+El sistema de filtrado del EEG y la placa del sistema de Offset se alimentan mediante baterías recargables de 9V. En cuanto a la tarjeta RP2040 Zero, utilizada en el sistema Offset, esta recibe energía a través de un regulador de 5V derivado de las baterías de 9V. Los dispositivos del sistema de emergencia, como el buzzer y los sensores ultrasónicos, se alimentan a 5V a través de un pin de la Raspberry Pi 4 y del resto del sistema de control. Finalmente, los LED del sistema de emergencia son alimentados mediante los pines GPIO, los cuales proporcionan una salida de 3,3V.
 
 \subsection{Sistema de control}
 
@@ -724,7 +740,7 @@ Este circuito es ideal para aplicaciones donde se requiere un control preciso de
 En este capítulo se incluirán imágenes de los esquemas de los circuitos, junto con su representación gráfica en formato virtual de los circuitos impresos, así como fotografías de los circuitos completos una vez finalizados.
 
 
-\subssection{Esquemático de los filtros}
+\subsection{Esquemático de los filtros}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{Images/Filtros/filtroseeg.png}
