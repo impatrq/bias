@@ -162,7 +162,7 @@ def load_and_train_from_bci_dataset():
             label = inverted_classes[trial][0]
             if label in command_map.keys():
                 # Create a dictionary to hold the EEG signals for each channel
-                eeg_signals = {f"ch{ch}": inverted_trials[trial][ch] for ch in range(num_of_channels)}  # Assuming 3 channels: C3, Cz, C4
+                eeg_signals = {f"ch{ch}": inverted_trials[trial][ch].tolist() for ch in range(num_of_channels)}  # Assuming 3 channels: C3, Cz, C4
 
                 filtered_data = bias_filter.filter_signals(eeg_signals)
                 # Process the raw EEG signals using ProcessingBias to extract frequency bands
@@ -195,6 +195,15 @@ def load_and_train_from_bci_dataset():
     # Train the model
     ai_bias.train_model(X, y)
     print("Training complete.")
+
+    print(f"eeg_signal: {eeg_signal_to_save}")
+    filtered_data_to_save = bias_filter.filter_signals(eeg_signal_to_save)
+    # Process the raw EEG signals using ProcessingBias to extract frequency bands
+    _, processed_signals_to_save = processing_bias.process_signals(filtered_data_to_save)
+    predicted_command = ai_bias.predict_command(processed_signals_to_save)
+    print(f"predicted: {predicted_command}")
+    print(f"label_to_save: {label_to_save}")
+
 
 if __name__ == "__main__":
     load_and_train_from_bci_dataset()
