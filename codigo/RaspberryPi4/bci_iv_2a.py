@@ -78,6 +78,7 @@ class MotorImageryDataset:
             trials_c.append(tt)
             classes_c.append(c)
         return trials_c, classes_c
+
 class AIBias:
     def __init__(self, n, fs, channels, commands):
         self._n = n
@@ -399,25 +400,23 @@ class AIBias:
         return predicted_command
 
     def see_spectogram():
-    bands = {
-        'Delta': (0.5, 4),
-        'Theta': (4, 8),
-        'Alpha': (8, 12),
-        'Beta': (12, 30),
-        'Gamma': (30, 64)
-    }
+        bands = {
+            'Delta': (0.5, 4),
+            'Theta': (4, 8),
+            'Alpha': (8, 12),
+            'Beta': (12, 30),
+            'Gamma': (30, 64)
+        }
 
-    bandas_antes = { 'Delta': [], 'Theta': [], 'Alpha': [], 'Beta': [], 'Gamma': [] }
-    bandas_durante = { 'Delta': [], 'Theta': [], 'Alpha': [], 'Beta': [], 'Gamma': [] }
-    bandas_despues = { 'Delta': [], 'Theta': [], 'Alpha': [], 'Beta': [], 'Gamma': [] }
+        bandas_antes = { 'Delta': [], 'Theta': [], 'Alpha': [], 'Beta': [], 'Gamma': [] }
+        bandas_durante = { 'Delta': [], 'Theta': [], 'Alpha': [], 'Beta': [], 'Gamma': [] }
+        bandas_despues = { 'Delta': [], 'Theta': [], 'Alpha': [], 'Beta': [], 'Gamma': [] }
 
 
-    lista_senales = [
-        señales_filtradas03, señales_filtradas04, señales_filtradas15,
-        señales_filtradas16, señales_filtradas18, señales_filtradas21, señales_filtradas26
-    ]
-
-    
+        lista_senales = [
+            señales_filtradas03, señales_filtradas04, señales_filtradas15,
+            señales_filtradas16, señales_filtradas18, señales_filtradas21, señales_filtradas26
+        ]
 
     def compute_spectrogram(signal, fs, window, noverlap, nfft):
         f, t, Sxx = spectrogram(signal, fs, window=window, noverlap=noverlap, nfft=nfft)
@@ -438,28 +437,6 @@ class AIBias:
             spectrograms[band].extend(band_power_sum) 
         
         return spectrograms
-
-    def calcular_umbrales(bandas):
-
-        delta = [float(min(bandas['Delta'])), float(max(bandas['Delta']))]
-        theta = [float(min(bandas['Theta'])), float(max(bandas['Theta']))]
-        alpha = [float(min(bandas['Alpha'])), float(max(bandas['Alpha']))]
-        beta = [float(min(bandas['Beta'])), float(max(bandas['Beta']))]
-        gamma = [float(min(bandas['Gamma'])), float(max(bandas['Gamma']))]
-            
-        umbrales = {'Delta': delta, 'Theta': theta, 'Alpha': alpha, 'Beta': beta, 'Gamma':gamma}
-
-        return umbrales
-    
-    def see_umbrales(bandas_antes, bandas_durante, bandas_despues):
-        # Calcular los umbrales
-        umbrales_bandas_antes = calcular_umbrales(bandas_antes)
-        umbrales_bandas_durante = calcular_umbrales(bandas_durante)
-        umbrales_bandas_despues = calcular_umbrales(bandas_despues)
-
-        print(umbrales_bandas_antes)
-        print(umbrales_bandas_durante)
-        print(umbrales_bandas_despues)
 
 def load_and_train_from_bci_dataset():
     # Initialize the ProcessingBias object
