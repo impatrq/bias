@@ -4,6 +4,7 @@ from tensorflow.keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.svm import SVC
 from scipy.signal import welch, cwt, morlet
 from scipy.stats import skew, kurtosis, entropy
 import numpy as np
@@ -15,7 +16,7 @@ import random
 import time
 
 def main():
-    n = 1875
+    n = 750
     fs = 250
     online = True
     number_of_channels = 4
@@ -27,6 +28,7 @@ def main():
     if train.lower() == "y":
         saved_dataset_path = None
         save_path = None
+    
         loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
         if loading_dataset.lower() == "y":
             saved_dataset_path = input("Write the name of the file where dataset was saved: ")
@@ -36,7 +38,7 @@ def main():
                 save_path = input("Write the path where you want to save the dataset: ")
         biasAI.collect_and_train_from_bci_dataset(filter_instance=biasFilter, processing_instance=biasProcessing, save_path=save_path, 
                                                   saved_dataset_path=saved_dataset_path)
-    biasAI.make_predictions(filter_instance=biasFilter, processing_instance=biasProcessing)
+    #biasAI.make_predictions(filter_instance=biasFilter, processing_instance=biasProcessing)
 
 # Import MotorImageryDataset class from your dataset code.
 class MotorImageryDataset:
@@ -105,8 +107,8 @@ class AIBias:
             Conv1D(filters=64, kernel_size=3, activation='relu'),
             MaxPooling1D(pool_size=2),
             Dropout(0.5),
-            #Flatten(),
-            LSTM(50, return_sequences=False),
+            Flatten(),
+            #LSTM(50, return_sequences=False),
             Dense(100, activation='relu'),
             Dropout(0.5),
             Dense(50, activation='relu'),
@@ -146,7 +148,7 @@ class AIBias:
     def train_model(self, X, y):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self._model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
-        self.model_evaluation()
+        self.model_evaluation(X_test, y_test)
         self._is_trained = True
 
     def predict_command(self, eeg_data):
@@ -158,20 +160,58 @@ class AIBias:
         predicted_label_index = np.argmax(prediction, axis=1)[0]
         predicted_command = self._reverse_label_map[predicted_label_index]
         return predicted_command
-    
+
     def load_datasets(self, file_names):
         all_trials = []
         all_classes = []
         for file_name in file_names:
             dataset = MotorImageryDataset(file_name)
             trials, classes = dataset.get_trials_from_channels([0, 7, 9, 11])
-            all_trials.extend(trials)
-            all_classes.extend(classes)
+            # Invert the dimensions of trials and classes using zip
+            inverted_trials = list(map(list, zip(*trials)))
+            inverted_classes = list(map(list, zip(*classes)))
+            print(f"trial length: {len(inverted_trials)}")
+            all_trials.extend(inverted_trials)
+            all_classes.extend(inverted_classes)
+        print(f"trials length: {len(all_trials)}")
 
-        # Invert the dimensions of trials and classes using zip
-        inverted_trials = list(map(list, zip(*all_trials)))
-        inverted_classes = list(map(list, zip(*all_classes)))
-        return inverted_trials, inverted_classes
+        return all_trials, all_classes
+
+    def rendimiento_modelo_svm(self, X_train, y_train):
+        modelo = SVC(kernel='rbf', C=10, gamma='scale')
+
+        modelo.fit(X_train, y_train)
+
+        y_pred_test = modelo.predict(X_test)
+        accuracy_test = accuracy_score(y_test, y_pred_test)
+        precision_test = precision_score(y_test, y_pred_test)
+
+        y_pred_train = modelo.predict(X_train)
+        accuracy_train = accuracy_score(y_train, y_pred_train)
+        precision_train = precision_score(y_train, y_pred_train)
+
+        accuracy = accuracy_score(y_test, y_pred_test)
+        print(f"Accuracy del modelo: {accuracy * 100:.2f}%")
+        precision = precision_score(y_test, y_pred_test)
+        print(f"Precisión del modelo: {precision * 100:.2f}%")
+
+        print(f"Accuracy del modelo en entrenamiento: {accuracy_train * 100:.2f}%")
+        print(f"Accuracy del modelo en prueba: {accuracy_test * 100:.2f}%")
+        print(f"Precisión del modelo en entrenamiento: {precision_train * 100:.2f}%")
+        print(f"Precisión del modelo en prueba: {precision_test * 100:.2f}%")
+
+        conf_matrix = confusion_matrix(y_test, y_pred_test)
+        TN = conf_matrix[0, 0]
+        FP = conf_matrix[0, 1]
+        FN = conf_matrix[1, 0]
+        TP = conf_matrix[1, 1]
+        TPR = TP / (TP + FN)
+        TNR = TN / (TN + FP)
+
+        print(f"TPR (True Positive Rate - Sensibilidad): {TPR:.2f}")
+        print(f"TNR (True Negative Rate - Especificidad): {TNR:.2f}")
+        print("Matriz de confusión:")
+        print(conf_matrix)
 
     def make_predictions(self, filter_instance, processing_instance):
         file_list = [f"bcidatasetIV2a-master/A09T.npz"]
@@ -182,7 +222,7 @@ class AIBias:
             print(f"Label: {label}")
             if label in self._command_map.keys():
                 # Create a dictionary to hold the EEG signals for each channel
-                eeg_signals = {f"ch{ch}": trials[num_trial][ch].tolist() for ch in range(self._number_of_channels)}  # Assuming 3 channels: C3, Cz, C4
+                eeg_signals = {f"ch{ch}": trials[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 3 channels: C3, Cz, C4
 
                 filtered_data = filter_instance.filter_signals(eeg_signals)
                 # Process the raw EEG signals using ProcessingBias to extract frequency bands
@@ -210,7 +250,6 @@ class AIBias:
         despues_total = []
 
         print(f"len matrix: {len(matrix)}, {len(matrix[0])}, {len(matrix[0][0])}")
-        #matrix = matrix.tolist()
 
         for trial in range(len(matrix)):
             matriz_trial = matrix[trial]
@@ -218,7 +257,7 @@ class AIBias:
             despues_channel = []
             durante_channel = []
 
-            for ch in range(4):
+            for ch in range(self._number_of_channels):
                 antes_motor_imagery = matriz_trial[ch][(inicio -  3) * fs : inicio * fs].tolist()
                 durante_motor_imagery = matriz_trial[ch][inicio * fs : fin * fs].tolist()
                 despues_motor_imagery = matriz_trial[ch][fin * fs : (fin + 2) * fs].tolist()
@@ -259,7 +298,6 @@ class AIBias:
         # Get model predictions on the test set
         y_pred = self._model.predict(X_test)
         y_pred_classes = np.argmax(y_pred, axis=1)  # Convert one-hot encoding to class labels
-
         # Confusion matrix
         cm = confusion_matrix(np.argmax(y_test, axis=1), y_pred_classes)
 
@@ -281,7 +319,7 @@ class AIBias:
                 label = classes[num_trial][0]
                 if label in self._command_map.keys():
                     # Create a dictionary to hold the EEG signals for each channel
-                    eeg_signals = {f"ch{ch}": antes_total[num_trial][ch].tolist() for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4
+                    eeg_signals = {f"ch{ch}": antes_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4
 
                     filtered_data = filter_instance.filter_signals(eeg_signals)
                     # Process the raw EEG signals using ProcessingBias to extract frequency bands
@@ -312,8 +350,8 @@ class AIBias:
         y = lb.fit_transform(y)
 
         # Train the model
-        self.train_model(X, y)
-
+        #self.train_model(X, y)
+        self.rendimiento_modelo_svm(X, y)
         print("Training complete.")
 
 if __name__ == "__main__":
