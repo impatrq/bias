@@ -3,7 +3,6 @@ import time
 import numpy as np
 import json
 from bias_graphing import GraphingBias
-from signals import random_signal
 
 def main():
     # Set constants
@@ -12,7 +11,6 @@ def main():
     number_of_channels = 4
     # Receive data
     biasReception = ReceptionBias()
-    signals = {}
     signals = biasReception.get_real_data(channels=number_of_channels, n=n)
 
     # Graph signals
@@ -66,12 +64,6 @@ class ReceptionBias:
             signals[f'ch{ch}'] = signals[f'ch{ch}'][:n]
 
         return signals
-
-    '''
-    def combine_signals(self, signals):
-        combined_signal = np.mean([signals[f'ch{ch}'] for ch in range(len(signals))], axis=0)
-        return combined_signal
-    '''
 
     # Initialize serial communication
     def init_serial(self, port, baudrate, timeout):

@@ -39,7 +39,7 @@ def main():
             if save_new_dataset == "y":
                 save_path = input("Write the path where you want to save the dataset: ")
         biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
-                                 samples_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
+                                 trials_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
     # Generate synthetic data
     signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
     #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
@@ -59,6 +59,7 @@ class AIBias:
         self._features_length = len(["mean", "variance", "skewness", "kurt", "energy",
                                  "band_power", "wavelet_energy", "entropy"])
         self._number_of_waves_per_channel = len(["alpha", "beta", "gamma", "delta", "theta"])
+        self._num_features_per_channel = self._features_length * self._number_of_waves_per_channel
         self._commands = commands
         self._model = self.build_model(output_dimension=len(self._commands))
         self._is_trained = False
@@ -73,7 +74,7 @@ class AIBias:
     def ai_is_trained(self):
         return self._is_trained
     
-    def collect_and_train(self, reception_instance, filter_instance, processing_instance, samples_per_command, 
+    def collect_and_train(self, reception_instance, filter_instance, processing_instance, trials_per_command, 
                           save_path=None, saved_dataset_path=None, real_data=True):
         """
         Collects EEG data, extracts features, and trains the model.
@@ -82,14 +83,14 @@ class AIBias:
         y = []
 
         if saved_dataset_path is None:
-            for command in self._commands:
-                for sample in range(samples_per_command):
+            for trial in range(trials_per_command):
+                for command in self._commands:
                     # Get real data or generate synthetic data
                     if real_data:
-                        print(f"Think about {command}. Sample: {sample}")
+                        print(f"Think about {command}. Trial: {trial}")
                         signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
                     else:
-                        print(f"Sample: {sample}")
+                        print(f"Trial: {trial}")
                         signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs, command=command)
                     
                     filtered_data = filter_instance.filter_signals(signals)
@@ -97,6 +98,7 @@ class AIBias:
 
                     # Extract features and append to X
                     features = self.extract_features(eeg_signals)
+                    
                     X.append(features)
                     y.append(self._label_map[command])
 
@@ -129,10 +131,10 @@ class AIBias:
 
     def build_model(self, output_dimension):
         model = Sequential([
-            InputLayer(shape=(self._number_of_channels, self._features_length * self._number_of_waves_per_channel)),  # Adjusted input shape to match the feature count
+            InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),  # Adjusted input shape to match the feature count
             Conv1D(filters=64, kernel_size=3, activation='relu'),
             #BatchNormalization(),
-            MaxPooling1D(pool_size=2),
+            MaxPooling1D(pool_size=1),
             Dropout(0.5),
             Flatten(),
             Dense(100, activation='relu'), #, kernel_regularizer=l2(0.01)),
@@ -166,14 +168,6 @@ class AIBias:
                 # Frequency Domain Features (Power Spectral Density)
                 freqs, psd = welch(signal_wave, fs=self._fs)  # Assuming fs = 500 Hz
 
-                '''
-                # Band Power for specific frequency bands (e.g., alpha, beta, theta)
-                alpha_power = np.sum(psd[(freqs >= 8) & (freqs <= 13)])
-                beta_power = np.sum(psd[(freqs >= 13) & (freqs <= 30)])
-                theta_power = np.sum(psd[(freqs >= 4) & (freqs <= 8)])
-                delta_power = np.sum(psd[(freqs >= 0.5) & (freqs <= 4)])
-                gamma_power = np.sum(psd[(freqs >= 30) & (freqs <= 100)])
-                '''
                 # Band Power
                 band_power = np.sum(psd)  # Total power within this band
 
@@ -185,8 +179,6 @@ class AIBias:
                 # Entropy
                 signal_entropy = entropy(np.histogram(signal_wave, bins=10)[0])
                 list_of_features = [mean, variance, skewness, kurt, energy, band_power, wavelet_energy, signal_entropy]
-                #list_of_features = [mean, variance, skewness, kurt, energy, alpha_power, beta_power, theta_power, 
-                #                    delta_power, gamma_power, wavelet_energy, signal_entropy]
 
                 # Append all features together
                 channel_features.extend(list_of_features)
@@ -203,9 +195,9 @@ class AIBias:
         # Adjust reshaping based on actual size
         # Get the total number of features per channel
         num_features_per_channel = features.shape[1]
-
+        assert(self._num_features_per_channel == num_features_per_channel)
         # Reshape based on the number of samples, channels, and features
-        expected_shape = (self._number_of_channels, num_features_per_channel, 1)
+        expected_shape = (self._number_of_channels, self._num_features_per_channel)
         features = features.reshape(expected_shape)
         return features
 
@@ -223,7 +215,7 @@ class AIBias:
         features = self.extract_features(eeg_data)
         
         # Ensure the features have the correct shape (1, number_of_channels, number_of_features)
-        features = features.reshape(1, self._number_of_channels, -1)
+        features = features.reshape(1, self._number_of_channels, self._num_features_per_channel)
         
         # Make prediction
         prediction = self._model.predict(features)
