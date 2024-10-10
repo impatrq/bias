@@ -6,6 +6,7 @@ from scipy.signal import butter, filtfilt, firwin, lfilter, iirfilter
 import threading  # Import threading
 from bias_reception import ReceptionBias
 from bias_graphing import GraphingBias
+from bias_dsp import ProcessingBias, FilterBias
 from signals import random_signal
 
 def main():
