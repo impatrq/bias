@@ -200,8 +200,6 @@ La metodología aplicada en este proyecto se basa en la organización del equipo
 \subsection{Historia del Arte}
 En este capitulo se repasa todos los conceptos previamente vistos mediante los cuales pudimos empezar a conceptualizar la idea del proyecto.
 
-
-
 \subsubsection{Neuralink}
 Uno de los casos que nos permitió aproximarnos a la conceptualización del proyecto fue el chip cerebral estilo implante de Neuralink, denominado Telepathy. Este dispositivo, desarrollado por la compañía de Elon Musk, tiene como objetivo facilitar la vida de las personas mediante la optimización de herramientas y su adaptación al cuerpo humano a través del implante. El chip crea una conexión entre el ser humano y dispositivos electrónicos, permitiendo, por ejemplo, controlar una puerta con traba eléctrica, desbloquear un teléfono móvil, e incluso monitorear el estado de ánimo de las personas.
 
@@ -228,10 +226,9 @@ Gracias al mismo proyecto realizado por este usuario, pudimos desarrollar nuestr
 
 \begin{center}
     \includegraphics[width=1\textwidth]{Images/Imagenes/filtroeegderyan.png}\\
-    
-Por otro lado nos dio una primera vista de la localización de los botones EEG como irían colocados en la cabeza
-
 \end{center}
+
+Por otro lado nos dio una primera vista de la localización de los botones EEG como irían colocados en la cabeza:
 
 \begin{center}
     \includegraphics[width=0.85\textwidth]{Images/Imagenes/localizacionelectrodoseeg.png}\\
@@ -294,6 +291,16 @@ En este capítulo se describirán y desarrollarán todos los aspectos teóricos 
 
 \subsection{Distinción de alimentaciones}
 
+En la etapa de recepción de señales provenientes de los electrodos, se empleará una fuente de alimentación compuesta por baterías de 9 voltios. La elección de este tipo de alimentación responde a la necesidad de limitar la corriente en caso de que ocurra algún problema en el circuito, previniendo así posibles daños a los componentes electrónicos. Esta misma fuente de alimentación será utilizada para suministrar energía a la placa de offset, asegurando que todos los subsistemas relacionados con la recepción de señales operen bajo condiciones controladas y seguras.
+
+Para la alimentación del microcontrolador RP2040 Zero, se utilizará un regulador de 5 voltios que se encargará de convertir el voltaje de 9 voltios a un nivel más adecuado de 5 voltios, garantizando el correcto funcionamiento del dispositivo. La estabilidad en el suministro de voltaje es crucial en este tipo de sistemas, ya que cualquier fluctuación podría interferir con el procesamiento de las señales cerebrales y comprometer la precisión del sistema de control. Además, las distintas fuentes de alimentación están equipadas con condensadores conectados entre el terminal positivo y GND (tierra), con el objetivo de reducir las fluctuaciones en la tensión y minimizar la introducción de ruido en las señales. El ruido eléctrico, especialmente en sistemas de control y medición sensibles, puede degradar significativamente el rendimiento y la fiabilidad de los datos procesados.
+
+El sistema de control de la silla de ruedas se alimentará mediante una batería de 24 voltios, la cual también suministrará energía al puente H y a los motores responsables del movimiento. Para garantizar la separación adecuada entre las distintas partes del sistema, se utilizará una masa adicional junto con un optoacoplador, que permitirá aislar eléctricamente la etapa de control de la etapa de potencia. Este desacoplamiento es esencial para evitar interferencias entre las señales de control y las corrientes más elevadas que circulan en el circuito de potencia.
+
+Dentro del sistema de control, la Raspberry Pi 4 será alimentada mediante un regulador de 15 voltios, seguido de un segundo regulador que reducirá la tensión a 5 voltios. Este enfoque escalonado para la regulación del voltaje permite una mayor estabilidad en el suministro de energía, mejorando la eficiencia del sistema. De igual manera, se emplearán condensadores conectados en paralelo para reducir las posibles fluctuaciones de tensión y evitar la introducción de ruido, asegurando que la Raspberry Pi 4 funcione de manera óptima. La reducción del ruido es particularmente importante en sistemas basados en señales cerebrales, donde incluso pequeñas perturbaciones pueden alterar los resultados del procesamiento de señales EEG.
+
+Finalmente, el puente H recibirá la alimentación directamente de la batería de 24 voltios. Para mantener una separación adecuada entre la etapa de control y la etapa de alimentación de los motores, se integrará otro optoacoplador, que garantizará que ambas secciones del circuito permanezcan eléctricamente aisladas. Sin embargo, aunque las masas de ambos sistemas no están directamente vinculadas en la placa, comparten el mismo punto de conexión en el borne de la batería de 24 voltios. Este diseño asegura que las distintas partes del sistema mantengan un nivel adecuado de aislamiento, mientras que las conexiones necesarias para la correcta operación del circuito se mantienen intactas.
+
 \subsection{¿Que es un electroencefalograma?}
 
 Un electroencefalograma (EEG) es una prueba médica que registra la actividad eléctrica del cerebro. Esta actividad se mide a través de electrodos colocados en el cuero cabelludo, que detectan las señales eléctricas generadas por las neuronas mientras se comunican entre sí. Estas señales eléctricas se representan como ondas cerebrales en una gráfica que muestra diferentes frecuencias y patrones.
@@ -308,6 +315,13 @@ El EEG se utiliza comúnmente para:
 \end{itemize}
 
 Las ondas cerebrales se clasifican en varios tipos según su frecuencia: delta, theta, alpha, beta, y gamma, cada una asociada a diferentes estados de conciencia y actividades cerebrales.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Images//EEG/EEG-waves.png}
+    \caption{Imagen ilustrativa de un electroencefalograma}
+    \label{fig:enter-label}
+\end{figure}
 
 \subsection{¿Que es un EEG?}
 Un electroencefalógrafo (EEG) es un dispositivo médico que se utiliza para registrar y medir la actividad eléctrica del cerebro. Su función principal es captar las señales eléctricas generadas por las neuronas y transformarlas en gráficos de ondas cerebrales, que se pueden analizar para evaluar la función cerebral, diagnosticar trastornos neurológicos y estudiar patrones de actividad cerebral. Las aplicaciones de los EEG incluyen investigaciones científicas, monitoreo clínico en neurocirugía, diagnóstico de epilepsia y el desarrollo de interfaces cerebro-computadora (BCI), como el control de dispositivos a través de señales cerebrales.
@@ -368,6 +382,13 @@ Puntos anatómicos clave de referencia:
 \end{itemize}
 
 Las posiciones de los electrodos se distribuyen sobre la cabeza tomando como referencia estos puntos para cubrir todo el cuero cabelludo de forma equidistante.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\linewidth]{Images//Sistema_10-20/Sist-10-20.png}
+    \caption{Puntos de medicion de Ondas Cerebrales}
+    \label{fig:enter-label}
+\end{figure}
 
 \subsubsection{¿Para qué sirve?}
 El sistema 10-20 se utiliza para garantizar una colocación precisa y consistente de los electrodos en los estudios de EEG. Algunos de sus beneficios incluyen:
@@ -482,6 +503,20 @@ El UART (Universal Asynchronous Receiver-Transmitter) es un periférico de hardw
 
 La implementación de la comunicación UART en nuestro proyecto se utiliza para la recepción y procesamiento de señales. Específicamente, en la RP2040 Zero, enviamos las lecturas de los cuatro canales del ADC (Conversor Analógico-Digital) en formato JSON durante un período de tiempo definido y con una frecuencia de muestreo específica a la Raspberry Pi 4.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Images//UART/UART_Com.png}
+    \caption{Comuniacion UART}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Images//UART/UART_pulse.png}
+    \caption{Enter Caption}
+    \label{fig:enter-label}
+\end{figure}
+
 \subsection{Gráfico de Fourier}
 El gráfico de Fourier está basado en la Transformada de Fourier (TF), que es una operación matemática que descompone una señal en sus componentes sinusoidales de diferentes frecuencias. Este método es especialmente útil para analizar señales periódicas y no periódicas.
 
@@ -521,6 +556,13 @@ El gráfico de Fourier representa la magnitud o la fase de la transformada de Fo
         \label{eq:1}
     \end{equation}
 \end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Images//PWM/PWM.png}
+    \caption{Enter Caption}
+    \label{fig:enter-label}
+\end{figure}
 
 \subsubsection{¿Para que sirve?}
 El grafico de Fourier es una herramienta que sirve para analizar señales en el dominio de la frecuencia.
@@ -693,7 +735,9 @@ El circuito de offset sumará este valor constante de 5V a la señal, desplazand
 
 \subsubsection{Utilización de Offsets}
 
-En la sección de procesamiento y recepción, se implementó un circuito de offset para adaptar las señales, ya que la RP2040 Zero no es capaz de procesar señales con componentes negativos. Este ajuste permite una correcta recepción y, en consecuencia, un procesamiento completo de las señales.
+En la sección de procesamiento y recepción, se implementó un circuito de offset para adaptar las señales, ya que la RP2040 Zero no es capaz de procesar señales con componentes negativos. Este ajuste permite una correcta recepción y, en consecuencia, un procesamiento completo de las señales. 
+
+Las señales no irán más alla de los 9 Volts y -9 Volts, ya que este es el límite de la alimentación. La amplificación está calculada para que las señales normales cerebrales den un máximo de 3 Volts de amplitud. Por lo tanto, se utilizarán Zeners de 3,3 Volts en la entrada de la RP2040 Zero para evitar que le llegue una sobretensión a un pin de ADC. De esta forma, para cada pin de ADC se le inyecta un offset de 1,65 Volts para que, de esta forma, la lectura sea lo más grande y preciso posible.
 
 
 
@@ -708,6 +752,16 @@ El proyecto opera con diferentes niveles de tensión de alimentación, siendo la
 El sistema de filtrado del EEG y la placa del sistema de Offset se alimentan mediante baterías recargables de 9V. En cuanto a la tarjeta RP2040 Zero, utilizada en el sistema Offset, esta recibe energía a través de un regulador de 5V derivado de las baterías de 9V. Los dispositivos del sistema de emergencia, como el buzzer y los sensores ultrasónicos, se alimentan a 5V a través de un pin de la Raspberry Pi 4 y del resto del sistema de control. Finalmente, los LED del sistema de emergencia son alimentados mediante los pines GPIO, los cuales proporcionan una salida de 3,3V.
 
 \subsection{Sistema de control}
+
+El sistema de control diseñado para este proyecto está compuesto por una Raspberry Pi 4, que tiene la responsabilidad de procesar las señales provenientes de los electrodos del electroencefalograma (EEG). A partir de este procesamiento, la Raspberry Pi 4 será capaz de interpretar las intenciones del usuario y, con base en ellas, determinar los movimientos correspondientes de la silla de ruedas. Este sistema se encuentra altamente integrado con la arquitectura de control, garantizando una respuesta precisa y fluida a las señales cerebrales del usuario.
+
+Para la regulación del movimiento de los motores, se emplea modulación por ancho de pulso (PWM, por sus siglas en inglés), operando a una frecuencia de 50 Hz. La modulación por ancho de pulso es una técnica eficiente que permite controlar la velocidad y dirección de los motores mediante la variación del ciclo de trabajo. En este caso, cuando uno de los canales de PWM presenta un ciclo de trabajo del 25\%, mientras que el otro está en 0\%, se provoca el movimiento del motor en una dirección específica. Por otro lado, cuando ambos canales de PWM se encuentran en un ciclo de trabajo del 0\%, el motor permanece detenido, lo cual corresponde a una condición de reposo.
+
+Es crucial tener en cuenta la existencia de un estado prohibido dentro de este esquema de control. Si ambos canales de PWM se configuran simultáneamente con un ciclo de trabajo del 25\%, se generaría una condición de cortocircuito, que podría dañar el sistema. [El cortocircuito ocurre cuando las señales de los canales se anulan entre sí, generando una sobrecarga en los componentes, lo cual puede comprometer la integridad tanto de los motores como de los circuitos de control.] Este escenario es considerado una condición crítica, y para evitar cualquier eventualidad peligrosa, se implementa un sistema de emergencias que actúa como una salvaguardia para el correcto funcionamiento del sistema.
+
+El sistema de emergencias tiene la capacidad de detener el movimiento de los motores en el caso de que un obstáculo sea detectado en la dirección hacia la cual el usuario intenta moverse. Cuando se identifica tal situación, los motores se detienen inmediatamente, un buzzer emitirá un sonido de advertencia, y el LED correspondiente a la dirección obstruida se encenderá, proporcionando una señal visual clara de la situación. [Este sistema no solo previene accidentes, sino que también mejora la seguridad del usuario al evitar colisiones involuntarias.]
+
+Cada una de las salidas del sistema, ya sea para la señalización PWM, los pines dedicados al buzzer, los sensores ultrasónicos o los LEDs, está directamente asociada a un GPIO (General-Purpose Input/Output) de la Raspberry Pi 4. Esta asociación permite un control preciso y eficiente de todos los componentes periféricos, asegurando que el sistema responda de manera coordinada y fiable a las señales de entrada y a las condiciones de emergencia detectadas.
 
 \subsection{Puentes H}
 Un Puente H es un circuito utilizado para invertir el sentido de giro de un motor y para separar su etapa de potencia con la de control. Su nombre viene de la forma gráfica que tiene el circuito. Se construye con 4 interruptores, pueden ser mecánicos o transistores. En la siguiente imágen se puede ver la forma de un puente H.
@@ -736,10 +790,19 @@ Un puente H de potencia es un tipo de circuito en el que la etapa de potencia, q
      \label{fig:enter-label}
  \end{figure}
 
-En nuestro puente H, hemos separado las ramas del motor de las de control, ya que el motor opera con 24V DC y tiene una corriente eficaz de 3,5A. Para controlar el motor de manera eficiente, hemos optado por un diseño que incluye cuatro transistores MOSFET de potencia, los cuales pueden soportar picos de hasta 74A y 82A, garantizando que puedan manejar la corriente del motor de manera continua. Además, los transistores son controlados mediante señales PWM, las cuales atraviesan un optoacoplador para minimizar el riesgo de que la corriente del motor regrese a la placa de control y cause daños. De ésta manera, podemos controlar el giro del motor de manera segura y regulada.
+En nuestro puente H, hemos separado las ramas del motor de las de control, ya que el motor opera con 24V DC y tiene una corriente eficaz de 3,5A. Para controlar el motor de manera eficiente, hemos optado por un diseño que incluye cuatro transistores MOSFET de potencia, los cuales pueden soportar picos de hasta 74A y 82A, garantizando que puedan manejar la corriente del motor de manera continua. Los MOSFET son IRF2805 (canal N) y IRF4905 (canal P). Además, los transistores son controlados mediante señales PWM, las cuales atraviesan un optoacoplador EL817 para minimizar el riesgo de que la corriente del motor regrese a la placa de control y cause daños. De ésta manera, podemos controlar el giro del motor de manera segura y regulada. 
+
+La lógica de esta circuito se basa en que cuando un MOSFET canal P está saturado, el gate del MOSFET de canal N cruzado se activará. Cuando el MOSFET canal P no está saturado, el MOSFET cruzado canal N no se activará. El circuito cuenta con diodos Zener de 12 Volts para regular la tensión de Gate-Source en cada uno de los transistores, ya que el límite es de 20 Volts.
 
 
-\subsection{Sistema de recepción de señales}
+\subsection{Sistema de recepción de señales por UART}
+El sistema de recepción de señales implementado en este proyecto se fundamenta en la transmisión de datos en formato JSON, el cual es enviado desde el microcontrolador RP2040 Zero hacia la Raspberry Pi 4, utilizando el protocolo de comunicación UART (Universal Asynchronous Receiver-Transmitter). Este esquema de transmisión de datos asíncrono es clave para garantizar la correcta transferencia de la información entre ambos dispositivos, especialmente en sistemas donde la baja latencia y la alta velocidad son factores cruciales.
+
+Cuando la RP2040 Zero actúa como transmisor y envía datos a través del enlace UART, se introduce un optoacoplador de alta velocidad, el modelo 6N137. Este componente tiene como función principal aislar eléctricamente las dos partes del circuito, asegurando que las señales y alimentaciones de los dispositivos conectados permanezcan separadas. Esto no solo mejora la seguridad del sistema, sino que también protege los componentes sensibles de posibles interferencias o fluctuaciones de voltaje que podrían ocasionar fallas operativas o daños permanentes. El uso de optoacopladores es una práctica común en la ingeniería de control y automatización para proteger circuitos en entornos electromagnéticamente ruidosos.
+
+Posteriormente, la señal transmitida es procesada mediante un transistor BJT (Bipolar Junction Transistor) del modelo 2N2222, que invierte la lógica de la señal. Esta operación es fundamental para garantizar que la interpretación de los datos sea precisa en el extremo receptor, adaptando la señal a los requerimientos lógicos de la Raspberry Pi 4.
+
+Es importante destacar la elección de estos componentes electrónicos, especialmente por la alta tasa de transmisión que maneja el sistema UART, la cual opera a una velocidad de 115200 baudios. Esta velocidad de transmisión es adecuada para aplicaciones de tiempo real, donde se requiere una comunicación rápida y eficiente, sin comprometer la integridad de los datos transmitidos. El uso de componentes rápidos y confiables, como el optoacoplador 6N137 y el transistor 2N2222, asegura que el sistema pueda operar de manera estable y eficiente bajo estas condiciones.
 
 \subsection{Control por PWM}
 La modulación por ancho de pulso (PWM, por sus siglas en inglés Pulse Width Modulation) es una técnica empleada para regular la cantidad de energía suministrada a una carga, como un motor o un LED, mediante la variación del ciclo de trabajo de una señal pulsante. En lugar de modificar el voltaje de forma continua, PWM ajusta el tiempo durante el cual la señal permanece en estado alto (encendida) y bajo (apagada) dentro de un período fijo. Esto depende de los siguientes parámetros:
@@ -752,6 +815,13 @@ La modulación por ancho de pulso (PWM, por sus siglas en inglés Pulse Width Mo
     Un ciclo de trabajo del 100\% indica que la señal permanece siempre encendida.
     En nuestro proyecto, aplicamos la técnica de PWM en el control de los motores. Dado que utilizamos dos motores, si estos operaran a su máxima potencia, la silla de ruedas se desplazaría a una velocidad excesiva. Por esta razón, empleamos un ciclo de trabajo del 25\% para limitar la velocidad de avance.
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Images//EEG/EEG-waves.png}
+    \caption{Enter Caption}
+    \label{fig:enter-label}
+\end{figure}
 
 \section{Desarrollo Técnico}
 En este capítulo se proporcionará una descripción detallada sobre el funcionamiento de los distintos circuitos que conforman el dispositivo, así como su interacción en conjunto para cumplir con los objetivos del proyecto. Se explicará de manera clara y concisa cómo se utiliza el dispositivo, incluyendo instrucciones específicas para su correcto manejo y operatividad.
@@ -773,7 +843,7 @@ El sistema de control de nuestra silla de ruedas se basa en el reconocimiento de
 
 Los electrodos actúan como sensores pasivos que detectan las ondas cerebrales producidas por la actividad eléctrica del cerebro. Estas ondas se manifiestan como pequeñas fluctuaciones en el voltaje, que son captadas por los electrodos cuando se colocan sobre la superficie del cuero cabelludo del usuario. Es importante destacar que estos electrodos no penetran en el cráneo ni interactúan directamente con las neuronas. En cambio, registran los potenciales eléctricos generados por la actividad cerebral subyacente que se propagan hasta la superficie del cuero cabelludo.
 
-Debido a que las señales captadas por los electrodos son de muy baja amplitud, requieren ser amplificadas antes de su procesamiento. Este paso no solo amplifica la señal cerebral, sino también el ruido presente en el entorno o generado por el propio cuerpo. Para abordar este problema, se realiza un proceso de filtrado que elimina el ruido y permite aislar las frecuencias relevantes de las ondas cerebrales.
+Debido a que las señales captadas por los electrodos son de muy baja amplitud, requieren ser amplificadas antes de su procesamiento. Este paso no solo amplifica la señal cerebral, sino también el ruido presente en el entorno o generado por el propio cuerpo. Para abordar este problema, se realiza un proceso de filtrado que elimina el ruido y permite aislar las frecuencias relevantes de las ondas cerebrales. Para ello, utilizamos los AD620AN que son amplificadores de instrumento muy sensibles.
 
 Las frecuencias de las ondas cerebrales detectadas son las siguientes:
 
@@ -1129,6 +1199,7 @@ Este estudio ha sido utilizado como referencia para nuestro proyecto, específic
 \lstinputlisting[language=python]{Codigos/CodigosPrincipales/bias.py}
 
 \subsubsection{app.py}
+\lstinputlisting[language=python]{Codigos/CodigosPrincipales/app.py}
 
 \subsection{Inteligencia artificial}
 
