@@ -198,6 +198,58 @@ class AIBias:
             else:
                  print("Label not in command_map")
 
+    def segmentar_seniales(self, matrix, inicio, fin, fs=250):
+
+        # Listas para almacenar los segmentos por canal
+        segmentos_de_seniales = []  # Matriz de todos los bloques de las señales (ANTES, CRISIS, DESPUÉS)
+        segmentos_de_seniales_completa = []  # Señales completas (Antes + Durante + Después)
+
+        # Listas globales para almacenar todos los segmentos concatenados de todos los canales
+        antes_total = []
+        durante_total = []
+        despues_total = []
+
+        print(f"len matrix: {len(matrix)}, {len(matrix[0])}, {len(matrix[0][0])}")
+        #matrix = matrix.tolist()
+
+        for trial in range(len(matrix)):
+            matriz_trial = matrix[trial]
+            antes_channel = []
+            despues_channel = []
+            durante_channel = []
+
+            for ch in range(4):
+                antes_motor_imagery = matriz_trial[ch][(inicio -  3) * fs : inicio * fs].tolist()
+                durante_motor_imagery = matriz_trial[ch][inicio * fs : fin * fs].tolist()
+                despues_motor_imagery = matriz_trial[ch][fin * fs : (fin + 2) * fs].tolist()
+
+                senial = [antes_motor_imagery, durante_motor_imagery, despues_motor_imagery]
+                senial_completa = np.concatenate(senial)
+
+                # Guardar en las listas por canal
+                segmentos_de_seniales.append(senial)
+                segmentos_de_seniales_completa.append(senial_completa)
+
+                # Concatenar los segmentos a las listas globales
+                antes_channel.append(antes_motor_imagery)
+                durante_channel.append(durante_motor_imagery)
+                despues_channel.append(despues_motor_imagery)
+            antes_total.append(antes_channel)
+            durante_total.append(durante_channel)
+            despues_total.append(despues_channel)
+            '''
+            print(f"len antes_total: {len(antes_total)}")
+            print(f"trials: {matrix.shape}")
+            print(f"antes: {antes_total.shape}")
+            print(f"durante: {durante_total.shape}")
+            print(f"despues: {despues_total.shape}")
+            '''
+        n_samples_totales = len(segmentos_de_seniales_completa[0])  # Número total de muestras de la señal completa
+        tiempo_inicial = inicio - 3  # En segundos, desde donde comenzamos el recorte
+        time_total = tiempo_inicial + np.arange(n_samples_totales) / fs  # Vector de tiempo en segundos
+
+        return segmentos_de_seniales, np.array(segmentos_de_seniales_completa), time_total, antes_total, durante_total, despues_total
+
     def model_evaluation(self, X_test, y_test):
         # Evaluate model performance on the test set
         loss, accuracy = self._model.evaluate(X_test, y_test)
@@ -223,11 +275,12 @@ class AIBias:
         if saved_dataset_path is None:
             file_list = [f"bcidatasetIV2a-master/A0{i}T.npz" for i in range(1, 9)]
             trials, classes = self.load_datasets(file_list)
+            seniales, senial_completa, time_total, antes_total, durante_total, despues_total = self.segmentar_seniales(trials, 3, 6)
             for num_trial in range(len(trials)):
                 label = classes[num_trial][0]
                 if label in self._command_map.keys():
                     # Create a dictionary to hold the EEG signals for each channel
-                    eeg_signals = {f"ch{ch}": trials[num_trial][ch].tolist() for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4
+                    eeg_signals = {f"ch{ch}": antes_total[num_trial][ch].tolist() for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4
 
                     filtered_data = filter_instance.filter_signals(eeg_signals)
                     # Process the raw EEG signals using ProcessingBias to extract frequency bands
