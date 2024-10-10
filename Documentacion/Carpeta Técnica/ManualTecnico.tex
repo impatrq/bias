@@ -329,6 +329,32 @@ Un electroencefalógrafo (EEG) es un dispositivo médico que se utiliza para reg
     \item \textbf{Monitoreo intraoperatorio:} Durante cirugías neurológicas, el EEG puede utilizarse para monitorear la actividad cerebral en tiempo real y evitar daños en áreas críticas del cerebro.
 \end{itemize}
 
+\subsection{Cantidad de canales}
+En el diseño de nuestra silla de ruedas controlada mediante señales cerebrales, hemos optado por un sistema de 4 canales con 9 electrodos (4 positivos, 4 negativos y 1 de masa) por varias razones clave, que refuerzan la precisión, la confiabilidad y la calidad de la señal capturada.
+
+\begin{enumerate}
+    \item \textbf{Optimización de la Captura de Señales EEG} 
+    
+    El cerebro humano emite diferentes tipos de ondas cerebrales (alfa, beta, gamma, delta y theta) que se distribuyen de manera no uniforme a lo largo del cuero cabelludo. Al utilizar 4 canales con 4 pares de electrodos (positivos y negativos) podemos capturar señales de distintas áreas cerebrales simultáneamente. Esto nos permite recoger información más completa y representativa de la actividad cerebral relevante para el control de la silla de ruedas.
+    \item \textbf{Mayor Resolución en la Separación de Patrones Cerebrales} 
+    
+    El uso de múltiples electrodos garantiza una mayor resolución espacial en la detección de ondas cerebrales. Al disponer de 4 canales, podemos asociar cada canal a diferentes áreas de interés cerebral (como las regiones motoras o visuales), lo que aumenta la capacidad del sistema de IA para interpretar correctamente los patrones de ondas que se correlacionan con las intenciones de movimiento. Esto es crítico en una interfaz cerebro-computadora (BCI), donde la precisión es esencial para evitar errores en la dirección del movimiento.
+    \item \textbf{Minimización de Ruido y Artefactos} 
+    
+    Cada par de electrodos está configurado en un modo diferencial, lo que nos ayuda a minimizar el ruido de fondo y los artefactos externos, como el ruido eléctrico del entorno o movimientos involuntarios. Los 4 electrodos negativos actúan como referencias de los positivos, de modo que la diferencia de potencial entre ellos permite eliminar parte del ruido que pudiera interferir en la calidad de la señal. Esto mejora considerablemente la relación señal/ruido y asegura una detección más precisa de las señales relevantes.
+    \item \textbf{Uso del Electrodo de Masa para Estabilizar las Mediciones }
+    
+    El electrodo de masa se utiliza para estabilizar el sistema y reducir el ruido eléctrico residual. Este electrodo está conectado a un punto de referencia neutro, lo que permite estabilizar los potenciales medidos en los otros electrodos, asegurando que las fluctuaciones o interferencias no alteren la calidad de las señales EEG. La masa es esencial para la precisión global del sistema, evitando desequilibrios de voltaje que podrían provocar lecturas erróneas.
+    \item \textbf{Equilibrio entre Complejidad y Procesamiento:}
+    
+    Optamos por 4 canales ya que representan un equilibrio adecuado entre complejidad técnica y capacidad de procesamiento. Más canales implicarían una mayor carga computacional para la Raspberry Pi 4, lo que podría requerir un hardware más potente o provocar retrasos en el procesamiento de las señales en tiempo real. Con esta configuración, logramos un sistema eficiente y suficiente para captar las señales necesarias sin comprometer la velocidad de respuesta del sistema de control de la silla.
+    \item \textbf{Compatibilidad con el 'Sistema 10-20'} 
+    
+    La disposición de los electrodos sigue el estándar del 'Sistema 10-20' para garantizar una colocación uniforme y científicamente validada en el cuero cabelludo. Esto nos permite seleccionar puntos específicos que optimicen la captación de señales relevantes para nuestro sistema BCI, alineándonos con prácticas clínicas y de investigación que han demostrado ser efectivas en la medición de la actividad cerebral.
+\end{enumerate}
+
+El uso de estos filtros permite separar de manera efectiva las señales cerebrales del ruido presente en el entorno. Esto garantiza que las señales capturadas sean lo suficientemente limpias y precisas para su procesamiento por la Raspberry Pi 4. El diseño del sistema de filtrado incluye tanto filtros de paso bajo como de paso alto, optimizados para cada banda de frecuencia, lo que mejora la fiabilidad del control basado en las ondas cerebrales.
+
 \subsection{Sistema 10-20}
 
 El sistema 10-20 es un método internacionalmente estandarizado para la colocación de electrodos en el cuero cabelludo durante un electroencefalograma (EEG). Este sistema asegura que los electrodos se coloquen de manera uniforme y precisa en relación con los puntos anatómicos del cráneo, permitiendo una medición consistente y reproducible de la actividad eléctrica cerebral.
@@ -388,6 +414,11 @@ En un estudio de EEG, se colocan electrodos en el cuero cabelludo siguiendo esta
     \item \textbf{Investigación:} En estudios de neurociencia, el sistema 10-20 facilita la comparación de la actividad cerebral entre sujetos, ya que la ubicación de los electrodos está estandarizada.
     \item \textbf{Interfaces cerebro-computadora (BCI):} En proyectos de BCI, se utiliza el sistema 10-20 para colocar electrodos en áreas específicas del cerebro que controlan movimientos o funciones específicas.
 \end{itemize}
+
+\subsubsection{Colocacion de Electrodos}
+Para llevar a cabo el registro de las señales EEG, es necesario disponer adecuadamente los electrodos. En nuestro proyecto, utilizamos un total de 9 electrodos, distribuidos en 4 canales: 4 electrodos positivos, 4 negativos y 1 de masa.
+
+Los puntos de medición seleccionados para la colocación de los electrodos son los siguientes: Fp1, Fp2, F7, F8, T3, T4, O1, O2 y A2. Es importante señalar que los electrodos positivos se colocan en el lado derecho del cuero cabelludo (Fp2, F8, T4 y O2), mientras que los electrodos negativos se ubican en el lado izquierdo (Fp1, F7, T3 y O1). El electrodo de referencia o masa se posiciona en el lóbulo de la oreja, en el punto A2.
 
 \subsection{Raspberry Pi 4}
 La Raspberry Pi 4 es una computadora de bajo costo y tamaño compacto que se utiliza en una gran variedad de aplicaciones, especialmente en proyectos de electrónica, IoT (Internet of Things), y sistemas embebidos. Fue desarrollada por la Fundación Raspberry Pi para fomentar la educación en ciencias de la computación y se ha popularizado en proyectos de prototipado debido a su flexibilidad, potencia, y precio accesible.
@@ -461,8 +492,6 @@ Dada una señal \textit{x(t)} en el dominio del tiempo, la transformada de Fouri
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{Images//Formulas/FormulaFourier.png}
-    \caption{Formula de Transformada de Fourier}
-    \label{fig:enter-label}
 \end{figure}
 
 Donde:
@@ -600,23 +629,6 @@ La combinación de filtros físicos (implementados en hardware) con filtros digi
     Incorporar tanto filtros físicos como digitales en un sistema de procesamiento de señales EEG añade una capa extra de seguridad. Si un filtro físico falla o no cumple completamente su función, el filtro digital actúa como un sistema de respaldo, asegurando que el ruido y las interferencias no afecten el análisis de la señal. Esta redundancia es clave en entornos críticos donde se necesita garantizar la integridad y pureza de los datos EEG para obtener resultados confiables y precisos.
 \end{enumerate}
 
-
-\subsection{Cantidad de canales}
-Para el control del movimiento, se emplean cinco canales, correspondiendo cada uno a una dirección de desplazamiento específica. Cada canal está asignado a la medición de diferentes tipos de señales cerebrales, las cuales se detallan a continuación:
-
-\begin{itemize}
-    \item Ondas alfa: 8-12 Hz
-    \item Ondas beta: 12-30 Hz
-    \item Ondas gamma: 30-100 Hz
-    \item Ondas delta: 0,5-4 Hz
-    \item Ondas theta: 4-8 Hz
-\end{itemize}
-
-El sistema permite controlar cuatro movimientos principales: izquierda, derecha, adelante y atrás. Sin embargo, se requiere un canal adicional para mantener la silla de ruedas en estado de reposo. Por este motivo, es necesario utilizar una placa de filtrado independiente para cada uno de los tipos de señales, ya que estas presentan diferentes rangos de frecuencia.
-
-El uso de estos filtros permite separar de manera efectiva las señales cerebrales del ruido presente en el entorno. Esto garantiza que las señales capturadas sean lo suficientemente limpias y precisas para su procesamiento por la Raspberry Pi 4. El diseño del sistema de filtrado incluye tanto filtros de paso bajo como de paso alto, optimizados para cada banda de frecuencia, lo que mejora la fiabilidad del control basado en las ondas cerebrales.
-
-
 \subsection{Gel conductor}
 El gel conductor neutro empleado en los electroencefalogramas (EEG) es una sustancia formulada para optimizar la conductividad eléctrica entre los electrodos y el cuero cabelludo del paciente. Su principal objetivo es minimizar la resistencia entre los electrodos y la piel, garantizando una transmisión eficiente y sin interferencias de las señales eléctricas cerebrales hacia los electrodos. 
 
@@ -664,7 +676,7 @@ Usamos la jaula de Faraday para:
     \item \textbf{Seguridad de los Datos:} Aunque no es una prioridad principal, la jaula de Faraday también puede actuar como un mecanismo de protección adicional para evitar que las señales de datos sean interceptadas o alteradas por fuentes externas maliciosas o no deseadas.
 \end{itemize}
 
-\subsection{Apantallamiento Electrico}
+\subsubsection{Apantallamiento Electrico}
 El apantallamiento eléctrico, también conocido como blindaje eléctrico, es un fenómeno que ocurre cuando un campo eléctrico externo es bloqueado o atenuado por un material conductor que lo rodea. Este principio se basa en la distribución de cargas eléctricas en un material conductor, que actúa como una barrera para evitar que el campo eléctrico externo afecte el espacio protegido.
 
 El concepto de apantallamiento eléctrico está estrechamente relacionado con el funcionamiento de la jaula de Faraday. Cuando un conductor rodea un área en presencia de un campo eléctrico, las cargas en el conductor se redistribuyen de tal manera que cancelan el campo eléctrico dentro del área apantallada.
@@ -673,9 +685,7 @@ El concepto de apantallamiento eléctrico está estrechamente relacionado con el
 
 Un circuito de offset se utiliza para agregar un voltaje constante a una señal, desplazando su nivel de referencia sin cambiar la forma de la señal. Este tipo de circuito es común en sistemas de procesamiento de señales, donde se requiere ajustar el punto de referencia de una señal para que coincida con el rango de entrada de otro dispositivo o componente.
 
-\textbf{Ejemplo de Funcionamiento}:
-
-Una señal de entrada, como una señal de corriente alterna (AC), puede presentar un rango de voltaje que oscila entre valores positivos y negativos, por ejemplo, una onda senoidal entre -5V y 5V.
+\textbf{Ejemplo de Funcionamiento}: Una señal de entrada, como una señal de corriente alterna (AC), puede presentar un rango de voltaje que oscila entre valores positivos y negativos, por ejemplo, una onda senoidal entre -5V y 5V.
 
 Si se desea desplazar esta señal para que su rango esté comprendido entre 0V y 10V, se debe aplicar un voltaje de offset de 5V.
 
@@ -1123,10 +1133,13 @@ Este estudio ha sido utilizado como referencia para nuestro proyecto, específic
 \subsection{Inteligencia artificial}
 
 \subsubsection{bias\_ai.py}
+\lstinputlisting[language=python]{Codigos/InteligenciaArtificial/bias_ai.py}
 
 \subsection{Filtrado y procesamiento de señales}
 
 \subsubsection{bias\_dsp.py}
+
+\subsubsection{bias\_dsp\_task.py}
 
 \subsubsection{bias\_graphing.py} 
 \lstinputlisting[language=python]{Codigos/Filtrado/bias_graphing.py}
@@ -1143,10 +1156,13 @@ Este estudio ha sido utilizado como referencia para nuestro proyecto, específic
 
 
 \subsubsection{CMakeLists.txt}
+\lstinputlisting[]{Codigos/Recepcion/CMakeLists.txt}
 
 \subsubsection{pico\_sdk\_import.cmake}
+\lstinputlisting[language=c]{Codigos/Recepcion/pico_sdk_import.cmake}
 
 \subsubsection{reception.c}
+\lstinputlisting[language=c]{Codigos/Recepcion/reception.c}
 
 \subsection{Página Web}
 El sitio web ofrece una breve descripción sobre nosotros, nuestros objetivos, y proporciona enlaces a nuestras redes sociales, donde podrán contactarnos o conocer más acerca de nuestro trabajo.
