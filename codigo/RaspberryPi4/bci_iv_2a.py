@@ -103,7 +103,7 @@ class AIBias:
         model = Sequential([
             InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),
             Conv1D(filters=64, kernel_size=3, activation='relu'),
-            MaxPooling1D(pool_size=1),
+            MaxPooling1D(pool_size=2),
             Dropout(0.5),
             #Flatten(),
             LSTM(50, return_sequences=False),
@@ -234,6 +234,7 @@ class AIBias:
                 antes_channel.append(antes_motor_imagery)
                 durante_channel.append(durante_motor_imagery)
                 despues_channel.append(despues_motor_imagery)
+
             antes_total.append(antes_channel)
             durante_total.append(durante_channel)
             despues_total.append(despues_channel)
