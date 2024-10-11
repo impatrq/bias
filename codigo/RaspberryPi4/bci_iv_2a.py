@@ -8,6 +8,7 @@ from sklearn.svm import SVC
 from scipy.signal import welch, cwt, morlet
 from scipy.stats import skew, kurtosis, entropy
 import numpy as np
+from sklearn.metrics import accuracy_score, precision_score, confusion_matrix
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 from bias_dsp import ProcessingBias, FilterBias
@@ -177,7 +178,7 @@ class AIBias:
 
         return all_trials, all_classes
 
-    def rendimiento_modelo_svm(self, X_train, y_train):
+    def rendimiento_modelo_svm(self, X_train, y_train, X_test, y_test):
         modelo = SVC(kernel='rbf', C=10, gamma='scale')
 
         modelo.fit(X_train, y_train)
@@ -350,8 +351,8 @@ class AIBias:
         y = lb.fit_transform(y)
 
         # Train the model
-        #self.train_model(X, y)
-        self.rendimiento_modelo_svm(X, y)
+        #self.train_model(X, y) # Train in with CNN
+        self.rendimiento_modelo_svm(X, y) # Train it with SVM model
         print("Training complete.")
 
 if __name__ == "__main__":
