@@ -58,9 +58,9 @@ class AIBias:
         self._number_of_channels = channels
         self._features_length = len(["mean", "variance", "skewness", "kurt", "energy",
                                  "band_power", "wavelet_energy", "entropy"])
-        self._number_of_waves_per_channel = len(["alpha", "beta", "gamma", "delta", "theta"])
+        self._number_of_waves_per_channel = len(["signal", "alpha", "beta", "gamma", "delta", "theta"])
         # Add features for the whole signal
-        self._num_features_per_channel = self._features_length * (self._number_of_waves_per_channel + 1)
+        self._num_features_per_channel = self._features_length * self._number_of_waves_per_channel
         self._commands = commands
         self._model = self.build_model(output_dimension=len(self._commands))
         self._is_trained = False
@@ -92,7 +92,8 @@ class AIBias:
                         signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
                     else:
                         print(f"Trial: {trial}")
-                        signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs, command=command)
+                        #signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
+                        signals = generate_synthetic_eeg_bandpower(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs, command=command)
                     
                     filtered_data = filter_instance.filter_signals(signals)
                     _, eeg_signals = processing_instance.process_signals(filtered_data)
@@ -154,7 +155,7 @@ class AIBias:
         # Iterate over each channel in eeg_data
         for ch, signals_per_channel in eeg_data.items():
             channel_features = []
-            assert(len(signals_per_channel) == self._number_of_waves_per_channel + 1)
+            assert(len(signals_per_channel) == self._number_of_waves_per_channel)
             # Iterate over the signals of each channel
             for band_name, signal_wave in signals_per_channel.items():
                 signal_wave = np.array(signal_wave)
@@ -190,10 +191,7 @@ class AIBias:
 
         features = np.abs(np.array(features))
         features = self._scaler.fit_transform(features)  # Normalize
-        # Perform PCA if needed, currently commented out
-        # features = self._pca.fit_transform(features)  # Dimensionality Reduction
 
-        # Adjust reshaping based on actual size
         # Get the total number of features per channel
         num_features_per_channel = features.shape[1]
         assert(self._num_features_per_channel == num_features_per_channel)
@@ -203,7 +201,6 @@ class AIBias:
         return features
 
     def train_model(self, X, y):
-        # X_processed = np.array([self.extract_features(epoch) for epoch in X])
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self._model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
         self._is_trained = True
@@ -229,7 +226,7 @@ class AIBias:
         
         return predicted_command
 
-def generate_synthetic_eeg(n_samples, n_channels, fs, command=None):
+def generate_synthetic_eeg_bandpower(n_samples, n_channels, fs, command=None):
     """
     Generate synthetic raw EEG data for multiple channels.
     The output is a dictionary where each channel has 1000 raw samples.
@@ -297,7 +294,6 @@ def generate_synthetic_eeg(n_samples, n_channels, fs, command=None):
 
     return data
 
-'''
 def generate_synthetic_eeg(n_samples, n_channels, fs):
     """
     Generate synthetic raw EEG data for multiple channels. 
@@ -324,7 +320,6 @@ def generate_synthetic_eeg(n_samples, n_channels, fs):
         data[ch] = signal
 
     return data
-'''
 
 if __name__ == "__main__":
     main()
