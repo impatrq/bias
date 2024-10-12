@@ -141,7 +141,54 @@ class AIBias:
                 variance = np.var(signal_wave)
                 skewness = skew(signal_wave)
                 kurt = kurtosis(signal_wave)
-                                               
+                energy = np.sum(signal_wave ** 2)
+                freqs, psd = welch(signal_wave, fs=self._fs)
+                band_power = np.sum(psd)
+                scales = np.arange(1, 31)
+                coeffs = cwt(signal_wave, morlet, scales)
+                wavelet_energy = np.sum(coeffs ** 2)
+                signal_entropy = entropy(np.histogram(signal_wave, bins=10)[0])
+                list_of_features = [mean, variance, skewness, kurt, energy, band_power, wavelet_energy, signal_entropy]
+                channel_features.extend(list_of_features)
+            features.append(channel_features)
+        features = np.abs(np.array(features))
+        features = self._scaler.fit_transform(features)
+        num_features_per_channel = features.shape[1]
+        assert(self._num_features_per_channel == num_features_per_channel)
+        features = features.reshape((self._number_of_channels, self._num_features_per_channel))
+        return features
+
+    def train_model(self, X, y):
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        print(f"Unique classes in y_test: {np.unique(y_test)}")
+        #self._model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+        #self.model_evaluation(X_test, y_test)
+
+        self._model.fit(X_train, y_train)
+        self.rendimiento_modelo_svm(self._model, X_test, y_test)
+        '''
+        # Train model
+        # Build a pipeline
+        # CSP to extract spatial features + SVM classifier pipeline
+        # Initialize CSP (Common Spatial Patterns)
+
+        csp = CSP(n_components=4, reg='ledoit_wolf', log=True)  # Choose `n_components` based on your experiment
+
+        # Fit CSP to the training data (CSP will handle 3D shape internally)
+        X_train_csp = csp.fit_transform(X_train, y_train)
+        X_test_csp = csp.transform(X_test)
+
+        # Now X_train_csp and X_test_csp are 2D arrays of shape (samples, components)
+
+        # StandardScaler expects 2D data, so it's fine now
+        scaler = StandardScaler()
+
+        # Scale the CSP-transformed data
+        X_train_scaled = scaler.fit_transform(X_train_csp)
+        X_test_scaled = scaler.transform(X_test_csp)
+
+        # Train SVM
+        self._model.fit(X_train_scaled, y_train)
 
 
 '''
