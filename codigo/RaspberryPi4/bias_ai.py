@@ -59,7 +59,8 @@ class AIBias:
         self._features_length = len(["mean", "variance", "skewness", "kurt", "energy",
                                  "band_power", "wavelet_energy", "entropy"])
         self._number_of_waves_per_channel = len(["alpha", "beta", "gamma", "delta", "theta"])
-        self._num_features_per_channel = self._features_length * self._number_of_waves_per_channel
+        # Add features for the whole signal
+        self._num_features_per_channel = self._features_length * (self._number_of_waves_per_channel + 1)
         self._commands = commands
         self._model = self.build_model(output_dimension=len(self._commands))
         self._is_trained = False
@@ -153,7 +154,7 @@ class AIBias:
         # Iterate over each channel in eeg_data
         for ch, signals_per_channel in eeg_data.items():
             channel_features = []
-            assert(len(signals_per_channel) == self._number_of_waves_per_channel)
+            assert(len(signals_per_channel) == self._number_of_waves_per_channel + 1)
             # Iterate over the signals of each channel
             for band_name, signal_wave in signals_per_channel.items():
                 signal_wave = np.array(signal_wave)
