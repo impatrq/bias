@@ -2,8 +2,7 @@ from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer, BatchNormalization # type: ignore
 from tensorflow.keras.regularizers import l2 # type: ignore
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.decomposition import PCA
 from bias_reception import ReceptionBias
 from bias_dsp import FilterBias, ProcessingBias
@@ -124,12 +123,18 @@ class AIBias:
             data = np.load(f"{saved_dataset_path}.npz")
             X, y = data['X'], data['y']
 
-        # Convert y to one-hot encoding
-        lb = LabelBinarizer()
-        y = lb.fit_transform(y)
+        # Convert labels to one-hot encoded format using OneHotEncoder
+        one_hot_encoder = OneHotEncoder(sparse_output=False)
+        y_one_hot = one_hot_encoder.fit_transform(y.reshape(-1, 1))
+        print(f"y_one_hot_shape: {y_one_hot.shape}")
 
+        unique_classes, counts = np.unique(y_one_hot, return_counts=True)
+        print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
+        
         # Train the model with the collected data
-        self.train_model(X, y)
+        self.train_model(X, y_one_hot)
+        
+        print("Training complete.")     
 
     def build_model(self, output_dimension):
         model = Sequential([

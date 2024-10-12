@@ -19,6 +19,10 @@ import plotext as plt
 import random
 import time
 
+CNN = True
+SVM = False
+CSP = False
+
 def main():
     n = 750
     fs = 250
@@ -107,8 +111,6 @@ class AIBias:
         return self._is_trained
 
     def build_model(self, output_dimension):
-        CNN = False
-        SVM = True
         if CNN:
             model = Sequential([
                 InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),
@@ -116,13 +118,14 @@ class AIBias:
                 BatchNormalization(),
                 MaxPooling1D(pool_size=2),
                 Dropout(0.3),
-
                 LSTM(50, return_sequences=False),
                 Dense(128, activation='relu'),
                 Dropout(0.5),
                 Dense(64, activation='relu'),
                 Dropout(0.5),
-                Dense(16, activation='softmax')
+                Dense(32, activation='relu'),
+                Dropout(0.5),
+                Dense(output_dimension, activation='softmax')
             ])
             model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
             model.summary()
@@ -165,36 +168,38 @@ class AIBias:
     def train_model(self, X, y):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         print(f"Unique classes in y_test: {np.unique(y_test)}")
-        #self._model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
-        #self.model_evaluation(X_test, y_test)
 
-        self._model.fit(X_train, y_train)
-        self.rendimiento_modelo_svm(self._model, X_test, y_test)
-        '''
-        # Train model
-        # Build a pipeline
-        # CSP to extract spatial features + SVM classifier pipeline
-        # Initialize CSP (Common Spatial Patterns)
+        if CNN:
+            self._model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+            self.model_evaluation(X_test, y_test)
 
-        csp = CSP(n_components=4, reg='ledoit_wolf', log=True)  # Choose `n_components` based on your experiment
+        if SVM:
+            self._model.fit(X_train, y_train)
+            self.rendimiento_modelo_svm(self._model, X_test, y_test)
+        
+        if CSP:
+            # Train model
+            # Build a pipeline
+            # CSP to extract spatial features + SVM classifier pipeline
+            # Initialize CSP (Common Spatial Patterns)
+            csp = CSP(n_components=4, reg='ledoit_wolf', log=True)  # Choose `n_components` based on your experiment
 
-        # Fit CSP to the training data (CSP will handle 3D shape internally)
-        X_train_csp = csp.fit_transform(X_train, y_train)
-        X_test_csp = csp.transform(X_test)
+            # Fit CSP to the training data (CSP will handle 3D shape internally)
+            X_train_csp = csp.fit_transform(X_train, y_train)
+            X_test_csp = csp.transform(X_test)
 
-        # Now X_train_csp and X_test_csp are 2D arrays of shape (samples, components)
+            # Now X_train_csp and X_test_csp are 2D arrays of shape (samples, components)
 
-        # StandardScaler expects 2D data, so it's fine now
-        scaler = StandardScaler()
+            # StandardScaler expects 2D data, so it's fine now
+            scaler = StandardScaler()
 
-        # Scale the CSP-transformed data
-        X_train_scaled = scaler.fit_transform(X_train_csp)
-        X_test_scaled = scaler.transform(X_test_csp)
+            # Scale the CSP-transformed data
+            X_train_scaled = scaler.fit_transform(X_train_csp)
+            X_test_scaled = scaler.transform(X_test_csp)
 
-        # Train SVM
-        self._model.fit(X_train_scaled, y_train)
-        #self.rendimiento_modelo_svm(self._model, X_train_scaled, y_train, X_test_scaled, y_test)
-        '''
+            # Train SVM
+            self._model.fit(X_train_scaled, y_train)
+            self.rendimiento_modelo_svm(self._model, X_test_scaled, y_test)
 
     def predict_command(self, eeg_data):
         if not self._is_trained:
@@ -265,7 +270,6 @@ class AIBias:
                  print("Label not in command_map")
 
     def segmentar_seniales(self, matrix, inicio, fin, fs=250):
-
         # Listas para almacenar los segmentos por canal
         segmentos_de_seniales = []  # Matriz de todos los bloques de las señales (ANTES, CRISIS, DESPUÉS)
         segmentos_de_seniales_completa = []  # Señales completas (Antes + Durante + Después)
@@ -340,7 +344,7 @@ class AIBias:
                 label = classes[num_trial][0]
                 if label in self._command_map.keys():
                     # Create a dictionary to hold the EEG signals for each channel
-                    eeg_signals = {f"ch{ch}": antes_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4
+                    eeg_signals = {f"ch{ch}": antes_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4, FPz
 
                     filtered_data = filter_instance.filter_signals(eeg_signals)
                     # Process the raw EEG signals using ProcessingBias to extract frequency bands
@@ -366,24 +370,19 @@ class AIBias:
         X = np.array(X)
         y = np.array(y)
 
-        unique_classes, counts = np.unique(y, return_counts=True)
-        print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
+        if CNN:
+            # Convert labels to one-hot encoded format using OneHotEncoder
+            one_hot_encoder = OneHotEncoder(sparse_output=False)
+            y_one_hot = one_hot_encoder.fit_transform(y.reshape(-1, 1))
+            print(f"y_one_hot_shape: {y_one_hot.shape}")
 
-        print(f"x_Shape: {X.shape}")
-        print(f"y_shape: {y.shape}")
+            unique_classes, counts = np.unique(y_one_hot, return_counts=True)
+            print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
+            self.train_model(X, y_one_hot)
 
-        # Convert labels to one-hot encoded format using OneHotEncoder
-        #one_hot_encoder = OneHotEncoder(sparse_output=False)
-        #y_one_hot = one_hot_encoder.fit_transform(y.reshape(-1, 1))
-        #print(f"y_one_hot_shape: {y_one_hot.shape}")
-
-        #unique_classes, counts = np.unique(y_one_hot, return_counts=True)
-        #print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
-
-        X_reshaped = X.reshape(X.shape[0], -1)
-
-        # Train the model
-        self.train_model(X_reshaped, y)
+        if SVM:
+            X_reshaped = X.reshape(X.shape[0], -1)
+            self.train_model(X_reshaped, y)
 
         print("Training complete.")
 

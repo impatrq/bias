@@ -5,7 +5,7 @@ import time
 def main():
     # Define motor instance
     biasMotor = MotorBias(echo_forward=18, trigger_forward=17, echo_backwards=23, trigger_backwards=22, echo_right=5, trigger_right=6,
-                          echo_left=25, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, motor1_in1=13, 
+                          echo_left=25, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, motor1_in1=13,
                           motor1_in2=19, motor2_in1=7, motor2_in2=8)
     while True:
         # Get command
@@ -14,9 +14,9 @@ def main():
 
 class MotorBias:
     def __init__(self, echo_forward, trigger_forward, echo_backwards, trigger_backwards, echo_right, trigger_right,
-                 echo_left, trigger_left, led_forward, led_backwards, led_left, led_right, buzzer, motor1_in1, 
+                 echo_left, trigger_left, led_forward, led_backwards, led_left, led_right, buzzer, motor1_in1,
                  motor1_in2, motor2_in1, motor2_in2):
-        
+
         # Configurar pin factory in order to use pigpio
         factory = PiGPIOFactory()
 
