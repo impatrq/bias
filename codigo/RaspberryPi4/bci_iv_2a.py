@@ -371,7 +371,7 @@ class AIBias:
         unique_classes, counts = np.unique(y, return_counts=True)
         print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
 
-      print(f"x_Shape: {X.shape}")
+        print(f"x_Shape: {X.shape}")
         print(f"y_shape: {y.shape}")
 
         # Convert labels to one-hot encoded format using OneHotEncoder
