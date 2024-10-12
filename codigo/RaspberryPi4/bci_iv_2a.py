@@ -81,7 +81,7 @@ class MotorImageryDataset:
         for c in channels:
             t, c = self.get_trials_from_channel(channel=c)
 
-           tt = np.concatenate(t, axis=0)
+            tt = np.concatenate(t, axis=0)
             trials_c.append(tt)
             classes_c.append(c)
         return trials_c, classes_c
@@ -107,27 +107,27 @@ class AIBias:
         return self._is_trained
 
     def build_model(self, output_dimension):
-        '''
-        model = Sequential([
-            InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),
-            Conv1D(filters=128, kernel_size=3, activation='relu'),
-            BatchNormalization(),
-            MaxPooling1D(pool_size=2),
-            Dropout(0.3),
+        if CNN:
+            model = Sequential([
+                InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),
+                Conv1D(filters=128, kernel_size=3, activation='relu'),
+                BatchNormalization(),
+                MaxPooling1D(pool_size=2),
+                Dropout(0.3),
 
-            LSTM(50, return_sequences=False),
-            Dense(128, activation='relu'),
-            Dropout(0.5),
-            Dense(64, activation='relu'),
-            Dropout(0.5),
-            Dense(16, activation='softmax')
-        ])
-        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-        model.summary()
-        '''
-        # CSP to extract spatial features + SVM classifier pipeline
-        model = SVC(kernel='sigmoid', C=10, gamma='scale', class_weight='balanced')
-        #model = SVC(kernel='linear', C=1)
+                LSTM(50, return_sequences=False),
+                Dense(128, activation='relu'),
+                Dropout(0.5),
+                Dense(64, activation='relu'),
+                Dropout(0.5),
+                Dense(16, activation='softmax')
+            ])
+            model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+            model.summary()
+        if SVM:
+            # CSP to extract spatial features + SVM classifier pipeline
+            model = SVC(kernel='sigmoid', C=10, gamma='scale', class_weight='balanced')
+            #model = SVC(kernel='linear', C=1)
 
         return model
 
@@ -135,6 +135,7 @@ class AIBias:
         features = []
         for ch, signals_per_channel in eeg_data.items():
             channel_features = []
+            assert(len(signals_per_channel) == self._number_of_waves_per_channel)
             for band_name, signal_wave in signals_per_channel.items():
                 signal_wave = np.array(signal_wave)
                 mean = np.mean(signal_wave)
@@ -150,6 +151,7 @@ class AIBias:
                 signal_entropy = entropy(np.histogram(signal_wave, bins=10)[0])
                 list_of_features = [mean, variance, skewness, kurt, energy, band_power, wavelet_energy, signal_entropy]
                 channel_features.extend(list_of_features)
+                assert(len(list_of_features) == self._features_length)
             features.append(channel_features)
         features = np.abs(np.array(features))
         features = self._scaler.fit_transform(features)
@@ -299,13 +301,7 @@ class AIBias:
             antes_total.append(antes_channel)
             durante_total.append(durante_channel)
             despues_total.append(despues_channel)
-            '''
-            print(f"len antes_total: {len(antes_total)}")
-            print(f"trials: {matrix.shape}")
-            print(f"antes: {antes_total.shape}")
-            print(f"durante: {durante_total.shape}")
-            print(f"despues: {despues_total.shape}")
-            '''
+
         n_samples_totales = len(segmentos_de_seniales_completa[0])  # Número total de muestras de la señal completa
         tiempo_inicial = inicio - 3  # En segundos, desde donde comenzamos el recorte
         time_total = tiempo_inicial + np.arange(n_samples_totales) / fs  # Vector de tiempo en segundos
