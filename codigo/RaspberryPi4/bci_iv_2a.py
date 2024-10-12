@@ -371,6 +371,27 @@ class AIBias:
         unique_classes, counts = np.unique(y, return_counts=True)
         print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
 
+      print(f"x_Shape: {X.shape}")
+        print(f"y_shape: {y.shape}")
+
+        # Convert labels to one-hot encoded format using OneHotEncoder
+        #one_hot_encoder = OneHotEncoder(sparse_output=False)
+        #y_one_hot = one_hot_encoder.fit_transform(y.reshape(-1, 1))
+        #print(f"y_one_hot_shape: {y_one_hot.shape}")
+
+        #unique_classes, counts = np.unique(y_one_hot, return_counts=True)
+        #print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
+
+        X_reshaped = X.reshape(X.shape[0], -1)
+
+        # Train the model
+        self.train_model(X_reshaped, y)
+
+        print("Training complete.")
+
+if __name__ == "__main__":
+    main()
+
 '''
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM
