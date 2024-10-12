@@ -189,6 +189,65 @@ class AIBias:
 
         # Train SVM
         self._model.fit(X_train_scaled, y_train)
+        #self.rendimiento_modelo_svm(self._model, X_train_scaled, y_train, X_test_scaled, y_test)
+        '''
+
+    def predict_command(self, eeg_data):
+        if not self._is_trained:
+            raise Exception("Model has not been trained yet.")
+        features = self.extract_features(eeg_data)
+        features = features.reshape(1, self._number_of_channels, self._num_features_per_channel)
+        prediction = self._model.predict(features)
+        predicted_label_index = np.argmax(prediction, axis=1)[0]
+        predicted_command = self._reverse_label_map[predicted_label_index]
+        return predicted_command
+
+    def load_datasets(self, file_names):
+        all_trials = []
+        all_classes = []
+        for file_name in file_names:
+            dataset = MotorImageryDataset(file_name)
+            trials, classes = dataset.get_trials_from_channels([0, 7, 9, 11])
+            # Invert the dimensions of trials and classes using zip
+            inverted_trials = list(map(list, zip(*trials)))
+            inverted_classes = list(map(list, zip(*classes)))
+            print(f"trial length: {len(inverted_trials)}")
+            all_trials.extend(inverted_trials)
+            all_classes.extend(inverted_classes)
+        print(f"trials length: {len(all_trials)}")
+
+        return all_trials, all_classes
+    
+   def rendimiento_modelo_svm(self, svm, X_test, y_test):
+        # Make predictions
+        y_pred_test = svm.predict(X_test)
+
+        # Calculate accuracy
+        test_accuracy = accuracy_score(y_test, y_pred_test)
+        print(f"Test Accuracy: {test_accuracy:.4f}")
+
+        # Classification report
+        print("Classification Report:")
+        print(classification_report(y_test, y_pred_test, target_names=["forward", "backwards", "left", "right"]))  # Adjust class names as needed
+
+        # Confusion Matrix
+        cm = confusion_matrix(y_test, y_pred_test)
+        print("Confusion Matrix:")
+        print(cm)
+
+    def make_predictions(self, filter_instance, processing_instance):
+        file_list = [f"bcidatasetIV2a-master/A09T.npz"]
+        trials, classes = self.load_datasets(file_list)
+
+        for num_trial in range(len(trials)):
+            label = classes[num_trial][0]
+            print(f"Label: {label}")
+            if label in self._command_map.keys():
+                # Create a dictionary to hold the EEG signals for each channel
+                eeg_signals = {f"ch{ch}": trials[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 3 channels: C3, Cz, C4
+
+                filtered_data = filter_instance.filter_signals(eeg_signals)
+                # Process the raw EEG signals using ProcessingBias to extract frequency bands
 
 
 '''
