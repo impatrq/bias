@@ -1,4 +1,151 @@
 from tensorflow.keras.models import Sequential
+from sklearn.model_selection import cross_val_score
+from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization
+from tensorflow.keras.regularizers import l2
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.metrics import accuracy_score, precision_score, confusion_matrix, classification_report
+from sklearn.svm import SVC
+from scipy.signal import welch, cwt, morlet
+from scipy.stats import skew, kurtosis, entropy
+import numpy as np
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+from mne.decoding import CSP
+from sklearn.pipeline import Pipeline
+from bias_dsp import ProcessingBias, FilterBias
+import plotext as plt
+import random
+import time
+
+def main():
+    n = 750
+    fs = 250
+    online = True
+    number_of_channels = 4
+    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
+    biasProcessing = ProcessingBias(n=n, fs=fs)
+    commands = ["forward", "backwards", "left", "right"] #, "stop", "rest"]
+    biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
+    train = input("Do you want to train model? (y/n): ")
+    if train.lower() == "y":
+        saved_dataset_path = None
+        save_path = None
+        loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
+        if loading_dataset.lower() == "y":
+            saved_dataset_path = input("Write the name of the file where dataset was saved: ")
+        else:
+            save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
+            if save_new_dataset == "y":
+                save_path = input("Write the path where you want to save the dataset: ")
+        biasAI.collect_and_train_from_bci_dataset(filter_instance=biasFilter, processing_instance=biasProcessing, save_path=save_path,
+                                                  saved_dataset_path=saved_dataset_path)
+    #biasAI.make_predictions(filter_instance=biasFilter, processing_instance=biasProcessing)
+
+# Import MotorImageryDataset class from your dataset code.
+class MotorImageryDataset:
+    def __init__(self, dataset='A01T.npz'):
+        if not dataset.endswith('.npz'):
+            dataset += '.npz'
+        self.data = np.load(dataset)
+
+        self.Fs = 250  # 250Hz from original paper
+        self.raw = self.data['s'].T
+        self.events_type = self.data['etyp'].T
+        self.events_position = self.data['epos'].T
+        self.events_duration = self.data['edur'].T
+        self.artifacts = self.data['artifacts'].T
+        self.mi_types = {769: 'left', 770: 'right', 771: 'foot', 772: 'tongue', 783: 'unknown'}
+
+    def get_trials_from_channel(self, channel=7):
+        starttrial_code = 768
+        starttrial_events = self.events_type == starttrial_code
+        idxs = [i for i, x in enumerate(starttrial_events[0]) if x]
+        trials, classes = [], []
+        for index in idxs:
+            try:
+                type_e = self.events_type[0, index + 1]
+                class_e = self.mi_types[type_e]
+                classes.append(class_e)
+                start = self.events_position[0, index]
+                stop = start + self.events_duration[0, index]
+                trial = self.raw[channel, start:stop].reshape((1, -1))
+                trials.append(trial)
+            except:
+                continue
+        return trials, classes
+
+    def get_trials_from_channels(self, channels=[0, 7, 9, 11]):
+        trials_c, classes_c = [], []
+        for c in channels:
+            t, c = self.get_trials_from_channel(channel=c)
+
+           tt = np.concatenate(t, axis=0)
+            trials_c.append(tt)
+            classes_c.append(c)
+        return trials_c, classes_c
+
+class AIBias:
+    def __init__(self, n, fs, channels, commands):
+        self._n = n
+        self._fs = fs
+        self._number_of_channels = channels
+        self._features_length = len(["mean", "variance", "skewness", "kurt", "energy", "band_power", "wavelet_energy", "entropy"])
+        self._number_of_waves_per_channel = len(["signal", "alpha", "beta", "gamma", "delta", "theta"])
+        self._num_features_per_channel = self._features_length * self._number_of_waves_per_channel
+        self._commands = commands
+        self._model = self.build_model(output_dimension=len(self._commands))
+        self._is_trained = False
+        self._pca = PCA(n_components=0.95)
+        self._scaler = StandardScaler()
+        self._label_map = {command: idx for idx, command in enumerate(self._commands)}
+        self._reverse_label_map = {idx: command for command, idx in self._label_map.items()}
+        self._command_map = {"left": "left", "right": "right", "foot": "forward", "tongue": "backwards"}
+
+    def ai_is_trained(self):
+        return self._is_trained
+
+    def build_model(self, output_dimension):
+        '''
+        model = Sequential([
+            InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),
+            Conv1D(filters=128, kernel_size=3, activation='relu'),
+            BatchNormalization(),
+            MaxPooling1D(pool_size=2),
+            Dropout(0.3),
+
+            LSTM(50, return_sequences=False),
+            Dense(128, activation='relu'),
+            Dropout(0.5),
+            Dense(64, activation='relu'),
+            Dropout(0.5),
+            Dense(16, activation='softmax')
+        ])
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+        model.summary()
+        '''
+        # CSP to extract spatial features + SVM classifier pipeline
+        model = SVC(kernel='sigmoid', C=10, gamma='scale', class_weight='balanced')
+        #model = SVC(kernel='linear', C=1)
+
+        return model
+
+    def extract_features(self, eeg_data):
+        features = []
+        for ch, signals_per_channel in eeg_data.items():
+            channel_features = []
+            for band_name, signal_wave in signals_per_channel.items():
+                signal_wave = np.array(signal_wave)
+                mean = np.mean(signal_wave)
+                variance = np.var(signal_wave)
+                skewness = skew(signal_wave)
+                kurt = kurtosis(signal_wave)
+                                               
+
+
+'''
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM
 from tensorflow.keras.regularizers import l2
 from sklearn.model_selection import train_test_split
@@ -357,7 +504,7 @@ class AIBias:
 
 if __name__ == "__main__":
     main()
-
+'''
 '''
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM
