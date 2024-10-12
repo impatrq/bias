@@ -218,7 +218,7 @@ class AIBias:
 
         return all_trials, all_classes
     
-   def rendimiento_modelo_svm(self, svm, X_test, y_test):
+    def rendimiento_modelo_svm(self, svm, X_test, y_test):
         # Make predictions
         y_pred_test = svm.predict(X_test)
 
@@ -248,7 +248,36 @@ class AIBias:
 
                 filtered_data = filter_instance.filter_signals(eeg_signals)
                 # Process the raw EEG signals using ProcessingBias to extract frequency bands
+                _, processed_signals = processing_instance.process_signals(filtered_data)
 
+                predicted_command = self.predict_command(processed_signals)
+                command = self._command_map[label]
+                if predicted_command == command:
+                    print(f"Prediction ok. Command: {command}")
+
+                else:
+                    print(f"Wrong prediction. Predicted {predicted_command}. Actual command: {command}")
+            else:
+                 print("Label not in command_map")
+
+    def segmentar_seniales(self, matrix, inicio, fin, fs=250):
+
+        # Listas para almacenar los segmentos por canal
+        segmentos_de_seniales = []  # Matriz de todos los bloques de las señales (ANTES, CRISIS, DESPUÉS)
+        segmentos_de_seniales_completa = []  # Señales completas (Antes + Durante + Después)
+
+        # Listas globales para almacenar todos los segmentos concatenados de todos los canales
+        antes_total = []
+        durante_total = []
+        despues_total = []
+
+        print(f"len matrix: {len(matrix)}, {len(matrix[0])}, {len(matrix[0][0])}")
+
+        for trial in range(len(matrix)):
+            matriz_trial = matrix[trial]
+            antes_channel = []
+            despues_channel = []
+            durante_channel = []
 
 '''
 from tensorflow.keras.models import Sequential
