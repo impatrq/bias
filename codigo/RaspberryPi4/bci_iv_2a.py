@@ -340,6 +340,36 @@ class AIBias:
             seniales, senial_completa, time_total, antes_total, durante_total, despues_total = self.segmentar_seniales(trials, 3, 6)
             for num_trial in range(len(trials)):
                 label = classes[num_trial][0]
+                if label in self._command_map.keys():
+                    # Create a dictionary to hold the EEG signals for each channel
+                    eeg_signals = {f"ch{ch}": antes_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4
+
+                    filtered_data = filter_instance.filter_signals(eeg_signals)
+                    # Process the raw EEG signals using ProcessingBias to extract frequency bands
+                    _, processed_signals = processing_instance.process_signals(filtered_data)
+
+                    # Extract features from the processed signals (frequency bands)
+                    features = self.extract_features(processed_signals)
+
+                    # Append the extracted features and the corresponding command label
+                    X.append(features)
+                    y.append(self._label_map[self._command_map[label]])
+
+            if save_path:
+                # Save the dataset as a compressed NumPy file
+                np.savez_compressed(f"{save_path}.npz", X=X, y=y)
+                print(f"Dataset saved to {save_path}.npz")
+
+        else:
+            data = np.load(f"{saved_dataset_path}.npz")
+            X, y = data['X'], data['y']
+
+        # Convert lists to arrays for training
+        X = np.array(X)
+        y = np.array(y)
+
+        unique_classes, counts = np.unique(y, return_counts=True)
+        print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
 
 '''
 from tensorflow.keras.models import Sequential
