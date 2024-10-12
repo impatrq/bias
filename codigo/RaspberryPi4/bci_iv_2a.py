@@ -279,6 +279,68 @@ class AIBias:
             despues_channel = []
             durante_channel = []
 
+            for ch in range(self._number_of_channels):
+                antes_motor_imagery = matriz_trial[ch][(inicio -  3) * fs : inicio * fs].tolist()
+                durante_motor_imagery = matriz_trial[ch][inicio * fs : fin * fs].tolist()
+                despues_motor_imagery = matriz_trial[ch][fin * fs : (fin + 2) * fs].tolist()
+
+                senial = [antes_motor_imagery, durante_motor_imagery, despues_motor_imagery]
+                senial_completa = np.concatenate(senial)
+
+                # Guardar en las listas por canal
+                segmentos_de_seniales.append(senial)
+                segmentos_de_seniales_completa.append(senial_completa)
+
+                # Concatenar los segmentos a las listas globales
+                antes_channel.append(antes_motor_imagery)
+                durante_channel.append(durante_motor_imagery)
+                despues_channel.append(despues_motor_imagery)
+
+            antes_total.append(antes_channel)
+            durante_total.append(durante_channel)
+            despues_total.append(despues_channel)
+            '''
+            print(f"len antes_total: {len(antes_total)}")
+            print(f"trials: {matrix.shape}")
+            print(f"antes: {antes_total.shape}")
+            print(f"durante: {durante_total.shape}")
+            print(f"despues: {despues_total.shape}")
+            '''
+        n_samples_totales = len(segmentos_de_seniales_completa[0])  # Número total de muestras de la señal completa
+        tiempo_inicial = inicio - 3  # En segundos, desde donde comenzamos el recorte
+        time_total = tiempo_inicial + np.arange(n_samples_totales) / fs  # Vector de tiempo en segundos
+
+        return segmentos_de_seniales, np.array(segmentos_de_seniales_completa), time_total, antes_total, durante_total, despues_total
+
+    def model_evaluation(self, X_test, y_test):
+        # Evaluate model performance on the test set
+        loss, accuracy = self._model.evaluate(X_test, y_test)
+        print(f"Test Accuracy: {accuracy}")
+
+        # Get model predictions on the test set
+        y_pred = self._model.predict(X_test)
+        y_pred_classes = np.argmax(y_pred, axis=1)  # Convert one-hot encoding to class labels
+
+        # Confusion matrix
+        cm = confusion_matrix(np.argmax(y_test, axis=1), y_pred_classes)
+
+        # Plot the confusion matrix
+        sns.heatmap(cm, annot=True, fmt='d')
+        plt.xlabel('Predicted')
+        plt.ylabel('True')
+
+    def collect_and_train_from_bci_dataset(self, filter_instance, processing_instance, save_path, saved_dataset_path):
+        # Initialize X and y as empty lists
+        X = []
+        y = []
+
+        if saved_dataset_path is None:
+            file_list = [f"bcidatasetIV2a-master/A0{i}T.npz" for i in range(1, 9)]
+            trials, classes = self.load_datasets(file_list)
+            seniales, senial_completa, time_total, antes_total, durante_total, despues_total = self.segmentar_seniales(trials, 3, 6)
+            for num_trial in range(len(trials)):
+                label = classes[num_trial][0]
+
 '''
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM
