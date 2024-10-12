@@ -41,9 +41,9 @@ def main():
         biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
                                  trials_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
     # Generate synthetic data
-    signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
+    signals = generate_synthetic_eeg_bandpower(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
     #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
-    
+
     filtered_data = biasFilter.filter_signals(signals)
     # Process data
     times, eeg_signals = biasProcessing.process_signals(filtered_data)
@@ -74,8 +74,8 @@ class AIBias:
     # Define getter
     def ai_is_trained(self):
         return self._is_trained
-    
-    def collect_and_train(self, reception_instance, filter_instance, processing_instance, trials_per_command, 
+
+    def collect_and_train(self, reception_instance, filter_instance, processing_instance, trials_per_command,
                           save_path=None, saved_dataset_path=None, real_data=True):
         """
         Collects EEG data, extracts features, and trains the model.
@@ -94,19 +94,19 @@ class AIBias:
                         print(f"Trial: {trial}")
                         #signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
                         signals = generate_synthetic_eeg_bandpower(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs, command=command)
-                    
+
                     filtered_data = filter_instance.filter_signals(signals)
                     _, eeg_signals = processing_instance.process_signals(filtered_data)
 
                     # Extract features and append to X
                     features = self.extract_features(eeg_signals)
-                    
+
                     X.append(features)
                     y.append(self._label_map[command])
 
                     if real_data:
                         time.sleep(1)
-                
+
                 if real_data:
                     print("Changing command. Be ready")
                     time.sleep(20)
@@ -119,7 +119,7 @@ class AIBias:
                 # Save the dataset as a compressed NumPy file
                 np.savez_compressed(f"{save_path}.npz", X=X, y=y)
                 print(f"Dataset saved to {save_path}.npz")
-        
+
         else:
             data = np.load(f"{saved_dataset_path}.npz")
             X, y = data['X'], data['y']
@@ -184,9 +184,9 @@ class AIBias:
 
                 # Append all features together
                 channel_features.extend(list_of_features)
-                
+
                 assert(len(list_of_features) == self._features_length)
-                
+
             features.append(channel_features)
 
         features = np.abs(np.array(features))
@@ -208,7 +208,7 @@ class AIBias:
     def predict_command(self, eeg_data):
         if not self._is_trained:
             raise Exception("Model has not been trained yet.")
-        
+
         # Extract features from the EEG data
         features = self.extract_features(eeg_data)
         

@@ -10,7 +10,7 @@ def main():
     fs = 500
     number_of_channels = 4
     # Receive data
-    biasReception = ReceptionBias()
+    biasReception = ReceptionBias(port='/dev/serial0', baudrate=115200, timeout=1)
     signals = biasReception.get_real_data(channels=number_of_channels, n=n)
 
     # Graph signals

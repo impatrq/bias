@@ -107,6 +107,8 @@ class AIBias:
         return self._is_trained
 
     def build_model(self, output_dimension):
+        CNN = False
+        SVM = True
         if CNN:
             model = Sequential([
                 InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),

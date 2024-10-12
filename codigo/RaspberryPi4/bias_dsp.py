@@ -1,9 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import scipy.interpolate
 import mne
 from scipy.signal import butter, filtfilt, firwin, lfilter, iirfilter
-import matplotlib.pyplot as plt
 from bias_reception import ReceptionBias
 from bias_graphing import GraphingBias
 
@@ -14,17 +12,17 @@ def main():
     duration = n / fs
 
     # Receive data from RP2040 Zero
-    biasReception = ReceptionBias()
+    biasReception = ReceptionBias(port='/dev/serial0', baudrate=115200, timeout=1)
 
     signals = biasReception.get_real_data(channels=number_of_channels, n=n)
 
     # Graph signals
-    biasGraphing = GraphingBias(graph_in_terminal=False)
+    biasGraphing = GraphingBias(graph_in_terminal=True)
     for ch, signal in signals.items():
         t = np.arange(len(signals[ch])) / fs
         biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
 
-    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=True, iir=True)
+    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
 
     # Apply digital filtering
     filtered_data = biasFilter.filter_signals(signals)
@@ -55,7 +53,7 @@ class ProcessingBias(DSPBias):
     # Constructor
     def __init__(self, n, fs):
         super().__init__(n, fs)
-        self._biasGraphing = GraphingBias(graph_in_terminal=False)
+        self._biasGraphing = GraphingBias(graph_in_terminal=True)
 
     # Process all the data
     def process_signals(self, eeg_signals):
@@ -67,7 +65,7 @@ class ProcessingBias(DSPBias):
             t, processed_signal = self.preprocess_signal(np.array(signal), ch)
             processed_signals[ch] = processed_signal
             times[ch] = t
-            
+
         return times, processed_signals
 
     # Process one signal in particular
@@ -107,19 +105,20 @@ class ProcessingBias(DSPBias):
         }
 
         filtered_signals = {}
-        
+
         # Reconstruct the negative part of signals
         for band_name, band_range in bands.items():
             # Reconstruct and then apply Fourier in order to get the five signals over time
             filtered_signals[band_name] = self.filter_and_reconstruct(signal_fft, frequencies, band_range)
-                
+
         # New sampling rate for interpolation
         new_fs = self._fs * 10
         new_t = np.linspace(0, self._duration, int(self._duration * new_fs), endpoint=True)
 
         # Interpolate each wave
         interpolated_signals = {band_name: self.interpolate_signal(t, sig.real, new_t) for band_name, sig in filtered_signals.items()}
-
+        # Add signal dimention
+        interpolated_signals["signal"] = signal
         # Return time vector and the signals already processed
         return new_t, interpolated_signals
 
