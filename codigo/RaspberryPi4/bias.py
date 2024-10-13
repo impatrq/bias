@@ -46,7 +46,7 @@ class BiasClass:
 
         while True:
             # Receive eeg data
-            #signals = self._biasReception.get_real_data(channels=self._number_of_channels, n=self._n)
+            #signals = self._biasReception.get_real_data(n=self._n, channels=self._number_of_channels)
             signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
 
             '''
@@ -57,7 +57,7 @@ class BiasClass:
             '''
 
             # Apply digital filtering
-            filtered_data = self._biasFilter.filter_signals(signals)
+            filtered_data = self._biasFilter.filter_signals(eeg_signals=signals)
 
             # Calculate the time vector
             t = np.linspace(0, self._duration, self._n, endpoint=False)
@@ -70,14 +70,14 @@ class BiasClass:
             '''
 
             # Process data
-            times, eeg_signals = self._biasProcessing.process_signals(filtered_data)
+            times, eeg_signals = self._biasProcessing.process_signals(eeg_signals=filtered_data)
 
             '''
             # Plot 4 signals with its resepctive bands
             for ch, signals in eeg_signals.items():
                 # Plot the interpolated signals
-                for band_name, sig in signals.items():
-                    self._biasGraphing.graph_signal_voltage_time(t=times[ch], signal=sig, title=f"{band_name.capitalize()} interpolated. {ch}")
+                for band_name, wave in signals.items():
+                    self._biasGraphing.graph_signal_voltage_time(t=times[ch], signal=wave, title=f"{band_name.capitalize()} interpolated. {ch}")
             
             # Plot
             self._biasGraphing.plot_now()

@@ -9,9 +9,9 @@ def main():
     n = 1000
     fs = 500
     number_of_channels = 4
-    port='/dev/serial0'
-    baudrate=115200
-    timeout=1
+    port = '/dev/serial0'
+    baudrate = 115200
+    timeout = 1
     # Receive data
     biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
     signals = biasReception.get_real_data(n=n, channels=number_of_channels)

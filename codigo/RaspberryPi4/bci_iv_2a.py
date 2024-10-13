@@ -64,9 +64,9 @@ def main():
     signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
     #signals = biasReception.get_real_data(n=n, channels=number_of_channels)
 
-    filtered_data = biasFilter.filter_signals(signals)
+    filtered_data = biasFilter.filter_signals(eeg_signals=signals)
     # Process data
-    times, eeg_signals = biasProcessing.process_signals(filtered_data)
+    times, eeg_signals = biasProcessing.process_signals(eeg_signals=filtered_data)
     predicted_command = biasAI.predict_command(eeg_data=eeg_signals)
     print(f"Predicted Command: {predicted_command}")
 

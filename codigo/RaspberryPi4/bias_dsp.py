@@ -11,8 +11,13 @@ def main():
     number_of_channels = 4
     duration = n / fs
 
-    # Receive data from RP2040 Zero
-    biasReception = ReceptionBias(port='/dev/serial0', baudrate=115200, timeout=1)
+    number_of_channels = 4
+    port = '/dev/serial0'
+    baudrate = 115200
+    timeout = 1
+
+    # Receive data
+    biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
 
     signals = biasReception.get_real_data(n=n, channels=number_of_channels)
 
@@ -25,7 +30,7 @@ def main():
     biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
 
     # Apply digital filtering
-    filtered_data = biasFilter.filter_signals(signals)
+    filtered_data = biasFilter.filter_signals(eeg_signals=signals)
 
     # Calculate the time vector
     t = np.linspace(0, duration, n, endpoint=False)
