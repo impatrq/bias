@@ -26,8 +26,8 @@ def main():
     biasProcessing = ProcessingBias(n=n, fs=fs)
     commands = ["forward", "backwards", "left", "right", "stop", "rest"]
     biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
-    train = input("Do you want to train model? (y/n): ")
-    if train.lower() == "y":
+    model_lt = input("Do you want to load or train a model? (l/t): ")
+    if model_lt.lower() == "t":
         saved_dataset_path = None
         save_path = None
         loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
@@ -39,6 +39,9 @@ def main():
                 save_path = input("Write the path where you want to save the dataset: ")
         biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
                                  trials_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
+    elif model_lt.lower():
+        model_name = input("Write the filname where model is saved: ")
+        print("Charging model")
     # Generate synthetic data
     signals = generate_synthetic_eeg_bandpower(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
     #signals = biasReception.get_real_data(channels=number_of_channels, n=n)

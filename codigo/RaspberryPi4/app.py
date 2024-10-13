@@ -28,8 +28,27 @@ def main():
             port = '/dev/serial0'
             baudrate = 115200
             timeout = 1
+            
+            save_path = None
+            save_dataset_path = None
+            model_name = None
+
+            model_lt = input("Do you want to load or train a model (l/t): ")
+            if model_lt.lower() == "t":
+                loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
+                if loading_dataset.lower() == "y":
+                    saved_dataset_path = input("Write the name of the file where dataset was saved: ")
+                else:
+                    save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
+                    if save_new_dataset == "y":
+                        save_path = input("Write the path where you want to save the dataset: ")
+
+            elif model_lt.lower():
+                model_name = input("Write the filname where model is saved: ")
+                print("Charging model")
+
             # Crear objeto y correr la aplicación
-            biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout)
+            biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout, save_path=save_path, saved_dataset_path=saved_dataset_path, model_name=model_name)
             biasInstance.app_run()
 
         if choice == '6':

@@ -9,7 +9,7 @@ import time
 
 class BiasClass:
     # Constructor
-    def __init__(self, n, fs, channels, port, baudrate, timeout):
+    def __init__(self, n, fs, channels, port, baudrate, timeout, save_path, saved_dataset_path, model_name):
         # Define propieties for the class
         self._n = n
         self._fs = fs
@@ -18,6 +18,9 @@ class BiasClass:
         self._port = port
         self._baudrate = baudrate
         self._timeout = timeout
+        self._save_path = save_path
+        self._model_name = model_name
+        self._saved_dataset_path = saved_dataset_path
         self._commands = ["forward", "backwards", "left", "right"] #, "stop", "rest"]
         self._samples_trainig_command = 100
 
@@ -31,25 +34,15 @@ class BiasClass:
                                     motor1_in2=19, motor2_in1=7, motor2_in2=8)
         self._biasAI = AIBias(self._n, self._fs, self._number_of_channels, self._commands)
 
-    def train_ai_model(self, save_path, saved_dataset_path):
+    def train_ai_model(self):
         self._biasAI.collect_and_train(reception_instance=self._biasReception, filter_instance=self._biasFilter,
                                        processing_instance=self._biasProcessing, 
-                                       trials_per_command=self._samples_trainig_command, save_path=save_path,
-                                       saved_dataset_path=saved_dataset_path, real_data=True)
+                                       trials_per_command=self._samples_trainig_command, save_path=self._save_path,
+                                       saved_dataset_path=self._saved_dataset_path, real_data=True)
 
     def app_run(self):
-        train = input("Do you want to train model? (y/n): ")
-        if train.lower() == "y":
-            saved_dataset_path = None
-            save_path = None
-            loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
-            if loading_dataset.lower() == "y":
-                saved_dataset_path = input("Write the name of the file where dataset was saved: ")
-            else:
-                save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
-                if save_new_dataset == "y":
-                    save_path = input("Write the path where you want to save the dataset: ")
-            self.train_ai_model(save_path, saved_dataset_path)
+        if self._model_name is None:
+            self.train_ai_model()
 
         while True:
             # Receive eeg data
