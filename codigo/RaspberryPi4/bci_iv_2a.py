@@ -11,11 +11,9 @@ from scipy.signal import welch, cwt, morlet
 from scipy.stats import skew, kurtosis, entropy
 import numpy as np
 from sklearn.metrics import confusion_matrix
-import seaborn as sns
 from mne.decoding import CSP
 from sklearn.pipeline import Pipeline
 from bias_dsp import ProcessingBias, FilterBias
-import plotext as plt
 from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 
 CNN = False
