@@ -119,14 +119,16 @@ class ProcessingBias(DSPBias):
             # Reconstruct and then apply Fourier in order to get the five signals over time
             filtered_signals[band_name] = self.filter_and_reconstruct(signal_fft, frequencies, band_range)
 
+        # Add signal dimention
+        filtered_signals["signal"] = signal
+
         # New sampling rate for interpolation
         new_fs = self._fs * 10
         new_t = np.linspace(0, self._duration, int(self._duration * new_fs), endpoint=True)
 
         # Interpolate each wave
         interpolated_signals = {band_name: self.interpolate_signal(t, sig.real, new_t) for band_name, sig in filtered_signals.items()}
-        # Add signal dimention
-        interpolated_signals["signal"] = signal
+
         # Return time vector and the signals already processed
         return new_t, interpolated_signals
 
