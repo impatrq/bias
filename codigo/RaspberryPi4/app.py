@@ -225,7 +225,6 @@ def main():
                 model_name = input("Write the filname where model is saved: ")
                 print("Charging model")
 
-            # Crear objeto y correr la aplicación
             biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout, save_path=save_path, saved_dataset_path=saved_dataset_path, model_name=model_name, commands=command_list)
             biasInstance.app_run()
          
@@ -241,7 +240,6 @@ def show_menu():
     print("8. Exit")
 
 def run_motor_control():
-    # Crear instancia de MotorBias y correr el control de motores
     biasMotor = MotorBias(
         echo_forward=18, trigger_forward=17,
         echo_backwards=23, trigger_backwards=22,
