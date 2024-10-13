@@ -1,6 +1,5 @@
 import numpy as np
 import scipy.interpolate
-import mne
 from scipy.signal import butter, filtfilt, firwin, lfilter, iirfilter
 from bias_reception import ReceptionBias
 from bias_graphing import GraphingBias
@@ -74,7 +73,7 @@ class ProcessingBias(DSPBias):
         return times, processed_signals
 
     # Process one signal in particular
-    def preprocess_signal(self, eeg_signal, channel_number):
+    def preprocess_signal(self, eeg_signal):
         # Time vector
         t = np.linspace(0, self._duration, self._n, endpoint=False)
 
@@ -82,9 +81,7 @@ class ProcessingBias(DSPBias):
         if isinstance(eeg_signal, np.ndarray):
             # Injection of real data
             signal = eeg_signal
-        elif isinstance(eeg_signal, mne.epochs.Epochs):
-            signal = eeg_signal.get_data(copy=True).mean(axis=0)  # Average over epochs
-            t = np.linspace(0, self._duration, len(signal), endpoint=False)
+
         else:
             raise ValueError("Unsupported data format")
 

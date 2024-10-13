@@ -1,18 +1,15 @@
 from tensorflow.keras.models import Sequential
-from sklearn.model_selection import cross_val_score
-from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization
-from tensorflow.keras.regularizers import l2
+from tensorflow.keras.layers import Dense, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.decomposition import PCA
-from sklearn.metrics import accuracy_score, precision_score, confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.svm import SVC
 from scipy.signal import welch, cwt, morlet
 from scipy.stats import skew, kurtosis, entropy
 import numpy as np
 from sklearn.metrics import confusion_matrix
 from mne.decoding import CSP
-from sklearn.pipeline import Pipeline
 from bias_dsp import ProcessingBias, FilterBias
 from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 

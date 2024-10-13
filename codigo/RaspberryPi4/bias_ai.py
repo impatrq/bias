@@ -1,6 +1,5 @@
 from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense, Flatten, Conv1D, MaxPooling1D, Dropout, InputLayer, BatchNormalization # type: ignore
-from tensorflow.keras.regularizers import l2 # type: ignore
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.decomposition import PCA
