@@ -16,7 +16,7 @@ from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 
 CNN = False
 SVM = False
-CSP = False
+CSPT = False
 
 def main():
     n = 750
@@ -32,14 +32,14 @@ def main():
     commands = ["forward", "backwards", "left", "right"]
     algorithm = input("Choose an algorithm: (cnn/svm/csp): ")
 
-    global CNN, SVM, CSP
+    global CNN, SVM, CSPT
 
     if algorithm.lower().strip() == "cnn":
         CNN = True
     elif algorithm.lower().strip() == "svm":
         SVM = True
     elif algorithm.lower().strip() == "csp":
-        CSP = True
+        CSPT = True
 
     biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
 
@@ -69,9 +69,9 @@ def main():
     filtered_data = biasFilter.filter_signals(eeg_signals=signals)
     # Process data
     times, eeg_signals = biasProcessing.process_signals(eeg_signals=filtered_data)
+
     predicted_command = biasAI.predict_command(eeg_data=eeg_signals)
     print(f"Predicted Command: {predicted_command}")
-
 
 # Import MotorImageryDataset class from your dataset code.
 class MotorImageryDataset:
@@ -156,7 +156,7 @@ class AIBias:
             model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
             model.summary()
         
-        if SVM:
+        if SVM or CSPT:
             # CSP to extract spatial features + SVM classifier pipeline
             model = SVC(kernel='sigmoid', C=10, gamma='scale', class_weight='balanced')
             #model = SVC(kernel='linear', C=1)
@@ -198,13 +198,15 @@ class AIBias:
 
         if CNN:
             self._model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+            self._is_trained = True
             self.model_evaluation(X_test, y_test)
 
         if SVM:
             self._model.fit(X_train, y_train)
+            self._is_trained = True
             self.rendimiento_modelo_svm(self._model, X_test, y_test)
         
-        if CSP:
+        if CSPT:
             # Train model
             # Build a pipeline
             # CSP to extract spatial features + SVM classifier pipeline
@@ -226,16 +228,17 @@ class AIBias:
 
             # Train SVM
             self._model.fit(X_train_scaled, y_train)
-            self.rendimiento_modelo_svm(self._model, X_test_scaled, y_test)
-        
-        self._is_trained = True
+            self._is_trained = True
+            self.rendimiento_modelo_svm(self._model, X_test_scaled, y_test) 
 
     def predict_command(self, eeg_data):
         if not self._is_trained:
             raise Exception("Model has not been trained yet.")
         features = self.extract_features(eeg_data)
-        features = features.reshape(1, self._number_of_channels, self._num_features_per_channel)
-        prediction = self._model.predict(features)
+        features_reshaped = features.reshape(1, self._number_of_channels, self._num_features_per_channel)
+        if SVM:
+            features_reshaped = features_reshaped.reshape(features_reshaped.shape[0], -1)
+        prediction = self._model.predict(features_reshaped)
         predicted_label_index = np.argmax(prediction, axis=1)[0]
         predicted_command = self._reverse_label_map[predicted_label_index]
         return predicted_command
@@ -409,6 +412,10 @@ class AIBias:
         if SVM:
             X_reshaped = X.reshape(X.shape[0], -1)
             self.train_model(X_reshaped, y)
+
+        if CSPT:
+            self.train_model(X, y)
+
 
         print("Training complete.")
 
