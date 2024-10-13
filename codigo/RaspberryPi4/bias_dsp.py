@@ -72,7 +72,7 @@ class ProcessingBias(DSPBias):
 
         # Process each signal in each channel for processing
         for ch, signal in eeg_signals.items():
-            t, processed_signal = self.preprocess_signal(np.array(signal), ch)
+            t, processed_signal = self.preprocess_signal(np.array(signal))
             processed_signals[ch] = processed_signal
             times[ch] = t
 

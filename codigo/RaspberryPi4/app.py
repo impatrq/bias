@@ -27,7 +27,7 @@ def main():
             biasGraphing = GraphingBias(graph_in_terminal=True)
 
             real_data = input("Do you want to get real data? (y/n): ")
-            if real_data:
+            if real_data.lower().strip() == 'y':
                 signals = biasReception.get_real_data(channels=number_of_channels, n=n)
             else:
                 signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
@@ -160,7 +160,7 @@ def main():
                     save_path = input("Enter the path where you want to save the dataset (without extension): ")
 
             # Create BiasClass instance
-            biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout, save_path=save_path, saved_dataset_path=saved_dataset_path, model_name=None, commands=command_list, real_data=True)
+            biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout, save_path=save_path, saved_dataset_path=saved_dataset_path, model_name=None, commands=command_list)
 
             biasInstance.train_ai_model()
 

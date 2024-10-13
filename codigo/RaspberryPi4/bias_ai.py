@@ -27,9 +27,12 @@ def main():
     commands = ["forward", "backwards", "left", "right", "stop", "rest"]
     biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
 
-    # Get the user's input desires
     model_lt = input("Do you want to load or train a model (l/t): ")
     if model_lt.lower() == "t":
+        # Get the user's input desires
+        save_path = None
+        saved_dataset_path = None
+
         training_real_data = False
         loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
         if loading_dataset.lower() == "y":
