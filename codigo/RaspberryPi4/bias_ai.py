@@ -34,7 +34,7 @@ def main():
         saved_dataset_path = None
 
         training_real_data = False
-        loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
+        loading_dataset = input("Do you want to load an existent dataset? (y/n): ")
         if loading_dataset.lower() == "y":
             saved_dataset_path = input("Write the name of the file where dataset was saved: ")
         else:

@@ -11,6 +11,7 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 from mne.decoding import CSP
 from bias_dsp import ProcessingBias, FilterBias
+from bias_reception import ReceptionBias
 from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 
 CNN = False
@@ -20,8 +21,12 @@ CSP = False
 def main():
     n = 750
     fs = 250
-    online = True
     number_of_channels = 4
+    port = '/dev/serial0'
+    baudrate = 115200
+    timeout = 1 
+    
+    biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
     biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
     biasProcessing = ProcessingBias(n=n, fs=fs)
     commands = ["forward", "backwards", "left", "right"]
@@ -42,7 +47,7 @@ def main():
     if model_lt.lower() == "t":
         saved_dataset_path = None
         save_path = None
-        loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
+        loading_dataset = input("Do you want to load an existent dataset? (y/n): ")
         if loading_dataset.lower() == "y":
             saved_dataset_path = input("Write the name of the file where dataset was saved: ")
         else:
@@ -56,11 +61,11 @@ def main():
         print("Charging model")
 
     #biasAI.make_predictions(filter_instance=biasFilter, processing_instance=biasProcessing)
-    
-    # Generate synthetic data
-    signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
-    #signals = biasReception.get_real_data(n=n, channels=number_of_channels)
-
+    real_data = input("Do you want to get real data? (y/n): ")
+    if real_data.lower().strip() == 'y':
+        signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    else:
+        signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
     filtered_data = biasFilter.filter_signals(eeg_signals=signals)
     # Process data
     times, eeg_signals = biasProcessing.process_signals(eeg_signals=filtered_data)

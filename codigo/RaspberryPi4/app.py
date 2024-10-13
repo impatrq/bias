@@ -191,12 +191,12 @@ def main():
             model_lt = input("Do you want to load or train a model (l/t): ")
             if model_lt.lower() == "t":
                 training_real_data = False
-                loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
+                loading_dataset = input("Do you want to load an existent dataset? (y/n): ")
                 if loading_dataset.lower() == "y":
                     saved_dataset_path = input("Write the name of the file where dataset was saved: ")
                 else:
                     # Generate data
-                    want_real_data = input("Do you want to get real data? (y/n): ")
+                    want_real_data = input("Do you want to train it with real data? (y/n): ")
 
                     if want_real_data.lower().strip() == "y":
                         training_real_data = True
@@ -266,7 +266,7 @@ def main():
             # Get the user's desire
             model_lt = input("Do you want to load or train a model (l/t): ")
             if model_lt.lower() == "t":
-                loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
+                loading_dataset = input("Do you want to load an existent dataset? (y/n): ")
                 if loading_dataset.lower() == "y":
                     saved_dataset_path = input("Write the name of the file where dataset was saved: ")
                 else:
