@@ -13,6 +13,7 @@ def main():
         choice = input("Enter your choice: ")
 
         if choice == '1':
+            # Set parameters
             n = int(input("Enter number of data points: "))
             fs = int(input("Enter sampling frequency: "))
             number_of_channels = int(input("Enter number of channels: "))
@@ -36,6 +37,7 @@ def main():
             biasGraphing.plot_now()
 
         if choice == '2':
+            # Set parameters
             n = int(input("Enter number of data points: "))
             fs = int(input("Enter sampling frequency: "))
             number_of_channels = int(input("Enter number of channels: "))
@@ -43,7 +45,7 @@ def main():
             baudrate = 115200
             timeout = 1
             
-            # Receive eeg data
+            # Define objects that will be used
             biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
             biasGraphing = GraphingBias(graph_in_terminal=True)
             biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
@@ -72,6 +74,7 @@ def main():
             biasGraphing.plot_now()
 
         if choice == '3':
+            # Set parameters
             n = int(input("Enter number of data points: "))
             fs = int(input("Enter sampling frequency: "))
             number_of_channels = int(input("Enter number of channels: "))
@@ -79,7 +82,7 @@ def main():
             baudrate = 115200
             timeout = 1
 
-            # Receive eeg data
+            # Define objects that will be used
             biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
             biasGraphing = GraphingBias(graph_in_terminal=True)
             biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
@@ -117,6 +120,7 @@ def main():
             biasGraphing.plot_now()
             
         if choice == '4':
+            # Set parameters
             n = int(input("Enter number of data points: "))
             fs = int(input("Enter sampling frequency: "))
             number_of_channels = int(input("Enter number of channels: "))
@@ -133,6 +137,7 @@ def main():
             saved_dataset_path = None
             save_path = None
             
+            # Get the user's input desires
             loading_dataset = input("Do you want to load an existing dataset? (y/n): ")
             if loading_dataset.lower() == "y":
                 saved_dataset_path = input("Enter the name of the file where dataset was saved (without extension): ")
@@ -141,11 +146,13 @@ def main():
                 if save_new_dataset.lower() == "y":
                     save_path = input("Enter the path where you want to save the dataset (without extension): ")
 
+            # Create BiasClass instance
             biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout, save_path=save_path, saved_dataset_path=saved_dataset_path, model_name=None, commands=command_list)
 
             biasInstance.train_ai_model()
 
         if choice == '5':
+            # Set parameters
             n = int(input("Enter number of data points: "))
             fs = int(input("Enter sampling frequency: "))
             number_of_channels = int(input("Enter number of channels: "))
@@ -161,11 +168,13 @@ def main():
             # Split the input string by commas and convert to a list
             command_list = [cmd.strip() for cmd in commands.split(",")]
 
+            # Define objects to use
             biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
             biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
             biasProcessing = ProcessingBias(n=n, fs=fs)
             biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=command_list)
 
+            # Get the user's input desires
             model_lt = input("Do you want to load or train a model (l/t): ")
             if model_lt.lower() == "t":
                 loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
@@ -178,24 +187,29 @@ def main():
                 biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
                                  trials_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
 
+            # Load an existent model
             elif model_lt.lower() == 'l':
                 model_name = input("Write the filname where model is saved: ")
                 print("Charging model")
 
-            # Generate synthetic data
+            # Generate data
             signals = generate_synthetic_eeg_bandpower(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
             #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
 
+            # Filter data
             filtered_data = biasFilter.filter_signals(signals)
             # Process data
             times, eeg_signals = biasProcessing.process_signals(eeg_signals=filtered_data)
+            # Predict command
             predicted_command = biasAI.predict_command(eeg_data=eeg_signals)
-            print(f"Movement: {predicted_command}")
+            print(f"Command: {predicted_command}")
 
         if choice == '6':
+            # Set parameters
             run_motor_control()
 
         if choice == '7':
+            # Set parameters
             n = int(input("Enter number of data points: "))
             fs = int(input("Enter sampling frequency: "))
             number_of_channels = int(input("Enter number of channels: "))
@@ -203,14 +217,18 @@ def main():
             baudrate = 115200
             timeout = 1
 
+            # Initialize everything as None
             save_path = None
             saved_dataset_path = None
             model_name = None
+
+            # See the user's commands
             commands = input("Write commands (separated by commas): ")
 
             # Split the input string by commas and convert to a list
             command_list = [cmd.strip() for cmd in commands.split(",")]
 
+            # Get the user's desire
             model_lt = input("Do you want to load or train a model (l/t): ")
             if model_lt.lower() == "t":
                 loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
@@ -221,6 +239,7 @@ def main():
                     if save_new_dataset == "y":
                         save_path = input("Write the path where you want to save the dataset: ")
 
+            # Load an existent model
             elif model_lt.lower() == 'l':
                 model_name = input("Write the filname where model is saved: ")
                 print("Charging model")
@@ -240,6 +259,7 @@ def show_menu():
     print("8. Exit")
 
 def run_motor_control():
+    # Define MotorBias class
     biasMotor = MotorBias(
         echo_forward=18, trigger_forward=17,
         echo_backwards=23, trigger_backwards=22,
@@ -253,6 +273,7 @@ def run_motor_control():
     )
 
     while True:
+        # Move if command is possible
         command = input("Enter command (forward/left/backwards/right/stop): ").strip()
         biasMotor.move_if_possible(command)
 

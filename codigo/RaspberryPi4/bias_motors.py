@@ -17,7 +17,7 @@ class MotorBias:
                  echo_left, trigger_left, led_forward, led_backwards, led_left, led_right, buzzer, motor1_in1,
                  motor1_in2, motor2_in1, motor2_in2):
 
-        # Configurar pin factory in order to use pigpio
+        # Set up pin factory in order to use pigpio
         factory = PiGPIOFactory()
 
         # Configure ultrasonic sensors and LEDs
