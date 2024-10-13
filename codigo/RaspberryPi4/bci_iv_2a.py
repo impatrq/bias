@@ -62,7 +62,7 @@ def main():
     
     # Generate synthetic data
     signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
-    #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    #signals = biasReception.get_real_data(n=n, channels=number_of_channels)
 
     filtered_data = biasFilter.filter_signals(signals)
     # Process data

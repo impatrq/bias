@@ -14,7 +14,7 @@ def main():
     # Receive data from RP2040 Zero
     biasReception = ReceptionBias(port='/dev/serial0', baudrate=115200, timeout=1)
 
-    signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    signals = biasReception.get_real_data(n=n, channels=number_of_channels)
 
     # Graph signals
     biasGraphing = GraphingBias(graph_in_terminal=True)

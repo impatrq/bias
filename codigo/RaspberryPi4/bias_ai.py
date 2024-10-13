@@ -46,7 +46,7 @@ def main():
 
     # Generate synthetic data
     signals = generate_synthetic_eeg_bandpower(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
-    #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    #signals = biasReception.get_real_data(n=n, channels=number_of_channels)
 
     filtered_data = biasFilter.filter_signals(signals)
     # Process data
@@ -93,7 +93,7 @@ class AIBias:
                     # Get real data or generate synthetic data
                     if real_data:
                         print(f"Think about {command}. Trial: {trial}")
-                        signals = reception_instance.get_real_data(channels=self._number_of_channels, n=self._n)
+                        signals = reception_instance.get_real_data( n=self._n, channels=self._number_of_channels)
                     else:
                         print(f"Trial: {trial}")
                         #signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
