@@ -46,8 +46,9 @@ class MotorBias:
     def move_if_possible(self, command):
         try:
             # Move forward
-            if command == "forward": 
-                distance = self._ultrasonic_forward.distance * 100
+            if command == "forward":
+                #distance = self._ultrasonic_forward.distance * 100
+                distance = 30
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Forward is blocked
@@ -55,13 +56,15 @@ class MotorBias:
                     self._buzzer.on()
                     print(f"Obastacle forward: {distance:.1f} cm. Blocked movement.")
                 else:
+                    print("Going forward")
                     # Do the movement
                     self._led_forward.off()
                     self._buzzer.off()
                     self.move_forward(25)
             # Move backwards
             elif command == "backwards":
-                distance = self._ultrasonic_backwards.distance * 100
+                #distance = self._ultrasonic_backwards.distance * 100
+                distance = 30
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Backwards is blocked
@@ -69,13 +72,15 @@ class MotorBias:
                     self._buzzer.on()
                     print(f"Obstacle backwards: {distance:.1f} cm. Blocked movement.")
                 else:
+                    print("Going backwards")
                     # Do the movement
                     self._led_backwards.off()
                     self._buzzer.off()
                     self.move_backward(25)
             # Turn left
             elif command == "left":
-                distance = self._ultrasonic_left.distance * 100
+                distance = 30
+                #distance = self._ultrasonic_left.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Left is blocked
@@ -83,13 +88,15 @@ class MotorBias:
                     self._buzzer.on()
                     print(f"Obstacle on the left: {distance:.1f} cm. Blocked movement")
                 else:
+                    print("Turning left")
                     # Do the movement
                     self._led_left.off()
                     self._buzzer.off()
                     self.turn_left(25)
             # Turn right
             elif command == "right":
-                distance = self._ultrasonic_right.distance * 100
+                distance = 30
+                #distance = self._ultrasonic_right.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Right is blocked
@@ -97,12 +104,14 @@ class MotorBias:
                     self._buzzer.on()
                     print(f"Obstacle on the right: {distance:.1f} cm. Blocked movement.")
                 else:
+                    print("Turning right")
                     # Do the movement
                     self._led_right.off()
                     self._buzzer.off()
                     self.turn_right(25)
             # Brake
             elif command == "stop":
+                print("Stopping")
                 # Make all parameters off
                 self.brake()
                 self._led_forward.off()
@@ -121,9 +130,10 @@ class MotorBias:
             self._led_right.off()
             self._buzzer.off()
         
+        
         except KeyboardInterrupt:
             print("Program stopped by user")
-    
+
     # Configure speed of motor depending on PWM
     def set_motor_speed(self, motor_in1, motor_in2, speed, invert=False):
         # Define positive speed

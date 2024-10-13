@@ -16,10 +16,11 @@ from mne.decoding import CSP
 from sklearn.pipeline import Pipeline
 from bias_dsp import ProcessingBias, FilterBias
 import plotext as plt
+from bias_ai import generate_synthetic_eeg
 import random
 import time
 
-CNN = True
+CNN = False
 SVM = False
 CSP = False
 
@@ -31,12 +32,24 @@ def main():
     biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
     biasProcessing = ProcessingBias(n=n, fs=fs)
     commands = ["forward", "backwards", "left", "right"] #, "stop", "rest"]
+    algorithm = input("Choose an algorithm: (cnn/svm/csp): ")
+
+    global CNN, SVM, CSP
+
+    if algorithm.lower().strip() == "cnn":
+        CNN = True
+    elif algorithm.lower().strip() == "svm":
+        SVM = True
+    elif algorithm.lower().strip() == "csp":
+        CSP = True
+
     biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
     train = input("Do you want to train model? (y/n): ")
     if train.lower() == "y":
         saved_dataset_path = None
         save_path = None
         loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
+
         if loading_dataset.lower() == "y":
             saved_dataset_path = input("Write the name of the file where dataset was saved: ")
         else:
@@ -46,6 +59,17 @@ def main():
         biasAI.collect_and_train_from_bci_dataset(filter_instance=biasFilter, processing_instance=biasProcessing, save_path=save_path,
                                                   saved_dataset_path=saved_dataset_path)
     #biasAI.make_predictions(filter_instance=biasFilter, processing_instance=biasProcessing)
+    
+    # Generate synthetic data
+    signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
+    #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+
+    filtered_data = biasFilter.filter_signals(signals)
+    # Process data
+    times, eeg_signals = biasProcessing.process_signals(filtered_data)
+    predicted_command = biasAI.predict_command(eeg_data=eeg_signals)
+    print(f"Predicted Command: {predicted_command}")
+
 
 # Import MotorImageryDataset class from your dataset code.
 class MotorImageryDataset:
@@ -129,6 +153,7 @@ class AIBias:
             ])
             model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
             model.summary()
+        
         if SVM:
             # CSP to extract spatial features + SVM classifier pipeline
             model = SVC(kernel='sigmoid', C=10, gamma='scale', class_weight='balanced')
@@ -200,6 +225,8 @@ class AIBias:
             # Train SVM
             self._model.fit(X_train_scaled, y_train)
             self.rendimiento_modelo_svm(self._model, X_test_scaled, y_test)
+        
+        self._is_trained = True
 
     def predict_command(self, eeg_data):
         if not self._is_trained:
