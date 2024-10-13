@@ -16,9 +16,7 @@ from mne.decoding import CSP
 from sklearn.pipeline import Pipeline
 from bias_dsp import ProcessingBias, FilterBias
 import plotext as plt
-from bias_ai import generate_synthetic_eeg
-import random
-import time
+from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 
 CNN = False
 SVM = False
@@ -357,10 +355,7 @@ class AIBias:
         # Confusion matrix
         cm = confusion_matrix(np.argmax(y_test, axis=1), y_pred_classes)
 
-        # Plot the confusion matrix
-        sns.heatmap(cm, annot=True, fmt='d')
-        plt.xlabel('Predicted')
-        plt.ylabel('True')
+        print(cm)
 
     def collect_and_train_from_bci_dataset(self, filter_instance, processing_instance, save_path, saved_dataset_path):
         # Initialize X and y as empty lists
