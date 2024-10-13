@@ -17,7 +17,6 @@ from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 def main():
     n = 1000
     fs = 500
-    online = True
     number_of_channels = 4
     port = '/dev/serial0'
     baudrate = 115200
@@ -27,20 +26,32 @@ def main():
     biasProcessing = ProcessingBias(n=n, fs=fs)
     commands = ["forward", "backwards", "left", "right", "stop", "rest"]
     biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
-    model_lt = input("Do you want to load or train a model? (l/t): ")
+
+    # Get the user's input desires
+    model_lt = input("Do you want to load or train a model (l/t): ")
     if model_lt.lower() == "t":
-        saved_dataset_path = None
-        save_path = None
+        training_real_data = False
         loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
         if loading_dataset.lower() == "y":
             saved_dataset_path = input("Write the name of the file where dataset was saved: ")
         else:
+            # Generate data
+            want_real_data = input("Do you want to train it with real data? (y/n): ")
+
+            if want_real_data.lower().strip() == "y":
+                training_real_data = True
+            else:
+                training_real_data = False
+
             save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
             if save_new_dataset == "y":
                 save_path = input("Write the path where you want to save the dataset: ")
+
         biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
-                                 trials_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
-    elif model_lt.lower():
+                            trials_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, training_real_data=training_real_data)
+
+    # Load an existent model
+    elif model_lt.lower() == 'l':
         model_name = input("Write the filname where model is saved: ")
         print("Charging model")
 
@@ -80,7 +91,7 @@ class AIBias:
         return self._is_trained
 
     def collect_and_train(self, reception_instance, filter_instance, processing_instance, trials_per_command,
-                          save_path=None, saved_dataset_path=None, real_data=True):
+                          save_path=None, saved_dataset_path=None, training_real_data=True):
         """
         Collects EEG data, extracts features, and trains the model.
         """
@@ -91,9 +102,9 @@ class AIBias:
             for trial in range(trials_per_command):
                 for command in self._commands:
                     # Get real data or generate synthetic data
-                    if real_data:
+                    if training_real_data:
                         print(f"Think about {command}. Trial: {trial}")
-                        signals = reception_instance.get_real_data( n=self._n, channels=self._number_of_channels)
+                        signals = reception_instance.get_real_data(n=self._n, channels=self._number_of_channels)
                     else:
                         print(f"Trial: {trial}")
                         #signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
@@ -108,10 +119,10 @@ class AIBias:
                     X.append(features)
                     y.append(self._label_map[command])
 
-                    if real_data:
+                    if training_real_data:
                         time.sleep(1)
 
-                if real_data:
+                if training_real_data:
                     print("Changing command. Be ready")
                     time.sleep(20)
 

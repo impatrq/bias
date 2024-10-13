@@ -3,6 +3,7 @@ import scipy.interpolate
 from scipy.signal import butter, filtfilt, firwin, lfilter, iirfilter
 from bias_reception import ReceptionBias
 from bias_graphing import GraphingBias
+from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 
 def main():
     n = 1000
@@ -18,7 +19,13 @@ def main():
     # Receive data
     biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
 
-    signals = biasReception.get_real_data(n=n, channels=number_of_channels)
+    # Generate data
+    real_data = input("Do you want to get real data? (y/n): ")
+
+    if real_data.lower().strip() == "y":
+        signals = biasReception.get_real_data(n=n, channels=number_of_channels)
+    else:
+        signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
 
     # Graph signals
     biasGraphing = GraphingBias(graph_in_terminal=True)
@@ -26,9 +33,8 @@ def main():
         t = np.arange(len(signals[ch])) / fs
         biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
 
-    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
-
     # Apply digital filtering
+    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
     filtered_data = biasFilter.filter_signals(eeg_signals=signals)
 
     # Calculate the time vector

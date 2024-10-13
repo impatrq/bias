@@ -37,16 +37,18 @@ class BiasClass:
         self._biasAI.collect_and_train(reception_instance=self._biasReception, filter_instance=self._biasFilter,
                                        processing_instance=self._biasProcessing, 
                                        trials_per_command=self._samples_trainig_command, save_path=self._save_path,
-                                       saved_dataset_path=self._saved_dataset_path, real_data=True)
+                                       saved_dataset_path=self._saved_dataset_path, training_real_data=True)
 
-    def app_run(self):
+    def app_run(self, real_data):
         if self._model_name is None:
             self.train_ai_model()
 
         while True:
             # Receive eeg data
-            #signals = self._biasReception.get_real_data(n=self._n, channels=self._number_of_channels)
-            signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
+            if real_data:
+                signals = self._biasReception.get_real_data(n=self._n, channels=self._number_of_channels)
+            else:
+                signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
 
             '''
             # Graph signals

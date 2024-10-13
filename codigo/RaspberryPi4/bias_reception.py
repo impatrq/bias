@@ -3,6 +3,7 @@ import time
 import numpy as np
 import json
 from bias_graphing import GraphingBias
+from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 
 def main():
     # Set constants
@@ -14,7 +15,14 @@ def main():
     timeout = 1
     # Receive data
     biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
-    signals = biasReception.get_real_data(n=n, channels=number_of_channels)
+
+    # Generate data
+    real_data = input("Do you want to get real data? (y/n): ")
+
+    if real_data.lower().strip() == "y":
+        signals = biasReception.get_real_data(n=n, channels=number_of_channels)
+    else:
+        signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
 
     # Graph signals
     biasGraphing = GraphingBias(graph_in_terminal=True)

@@ -9,6 +9,7 @@ from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 
 def main():
     while True:
+        # Show the menu
         show_menu()
         choice = input("Enter your choice: ")
 
@@ -25,8 +26,11 @@ def main():
             biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
             biasGraphing = GraphingBias(graph_in_terminal=True)
 
-            #singals = biasReception.get_real_data(channels=number_of_channel, n=n)
-            signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
+            real_data = input("Do you want to get real data? (y/n): ")
+            if real_data:
+                signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+            else:
+                signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
 
             # Graph signals
             for ch, signal in signals.items():
@@ -50,8 +54,13 @@ def main():
             biasGraphing = GraphingBias(graph_in_terminal=True)
             biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
 
-            #singals = biasReception.get_real_data(channels=number_of_channel, n=n)
-            signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
+            # Generate data
+            real_data = input("Do you want to get real data? (y/n): ")
+
+            if real_data.lower().strip() == "y":
+                signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+            else:
+                signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
 
             # Graph signals
             for ch, signal in signals.items():
@@ -88,8 +97,13 @@ def main():
             biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
             biasProcessing = ProcessingBias(n=n, fs=fs)
 
-            #singals = biasReception.get_real_data(channels=number_of_channel, n=n)
-            signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
+            # Generate data
+            real_data = input("Do you want to get real data? (y/n): ")
+
+            if real_data.lower().strip() == "y":
+                signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+            else:
+                signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
 
             # Graph signals
             for ch, signal in signals.items():
@@ -133,7 +147,6 @@ def main():
             # Split the input string by commas and convert to a list
             command_list = [cmd.strip() for cmd in commands.split(",")]
 
-
             saved_dataset_path = None
             save_path = None
             
@@ -147,7 +160,7 @@ def main():
                     save_path = input("Enter the path where you want to save the dataset (without extension): ")
 
             # Create BiasClass instance
-            biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout, save_path=save_path, saved_dataset_path=saved_dataset_path, model_name=None, commands=command_list)
+            biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout, save_path=save_path, saved_dataset_path=saved_dataset_path, model_name=None, commands=command_list, real_data=True)
 
             biasInstance.train_ai_model()
 
@@ -177,15 +190,25 @@ def main():
             # Get the user's input desires
             model_lt = input("Do you want to load or train a model (l/t): ")
             if model_lt.lower() == "t":
+                training_real_data = False
                 loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
                 if loading_dataset.lower() == "y":
                     saved_dataset_path = input("Write the name of the file where dataset was saved: ")
                 else:
+                    # Generate data
+                    want_real_data = input("Do you want to get real data? (y/n): ")
+
+                    if want_real_data.lower().strip() == "y":
+                        training_real_data = True
+                    else:
+                        training_real_data = False
+
                     save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
                     if save_new_dataset == "y":
                         save_path = input("Write the path where you want to save the dataset: ")
+
                 biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
-                                 trials_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, real_data=False)
+                                 trials_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, training_real_data=training_real_data)
 
             # Load an existent model
             elif model_lt.lower() == 'l':
@@ -193,8 +216,12 @@ def main():
                 print("Charging model")
 
             # Generate data
-            signals = generate_synthetic_eeg_bandpower(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
-            #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+            real_data = input("Do you want to get real data? (y/n): ")
+
+            if real_data.lower().strip() == "y":
+                signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+            else:
+                signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
 
             # Filter data
             filtered_data = biasFilter.filter_signals(signals)
@@ -222,6 +249,14 @@ def main():
             saved_dataset_path = None
             model_name = None
 
+            # Generate data
+            want_real_data = input("Do you want to get real data? (y/n): ")
+
+            if want_real_data.lower().strip() == "y":
+                real_data = True
+            else:
+                real_data = False
+
             # See the user's commands
             commands = input("Write commands (separated by commas): ")
 
@@ -245,7 +280,7 @@ def main():
                 print("Charging model")
 
             biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout, save_path=save_path, saved_dataset_path=saved_dataset_path, model_name=model_name, commands=command_list)
-            biasInstance.app_run()
+            biasInstance.app_run(real_data=real_data)
          
 def show_menu():
     print("EEG-based Wheelchair Control System")
