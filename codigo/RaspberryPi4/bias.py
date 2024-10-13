@@ -9,7 +9,7 @@ import time
 
 class BiasClass:
     # Constructor
-    def __init__(self, n, fs, channels, port, baudrate, timeout, save_path, saved_dataset_path, model_name):
+    def __init__(self, n, fs, channels, port, baudrate, timeout, save_path, saved_dataset_path, model_name, commands):
         # Define propieties for the class
         self._n = n
         self._fs = fs
@@ -21,7 +21,7 @@ class BiasClass:
         self._save_path = save_path
         self._model_name = model_name
         self._saved_dataset_path = saved_dataset_path
-        self._commands = ["forward", "backwards", "left", "right"] #, "stop", "rest"]
+        self._commands = commands 
         self._samples_trainig_command = 100
 
         # Create objects as propieties in order to apply the rest of the code in Bias class

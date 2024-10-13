@@ -9,6 +9,10 @@ from bias_dsp import FilterBias, ProcessingBias
 from scipy.signal import welch
 from scipy.stats import skew, kurtosis, entropy
 from scipy.signal import cwt, morlet
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+from mne.decoding import CSP
+import plotext as plt
 import numpy as np
 import random
 import time
@@ -42,6 +46,7 @@ def main():
     elif model_lt.lower():
         model_name = input("Write the filname where model is saved: ")
         print("Charging model")
+
     # Generate synthetic data
     signals = generate_synthetic_eeg_bandpower(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
     #signals = biasReception.get_real_data(channels=number_of_channels, n=n)
@@ -211,6 +216,7 @@ class AIBias:
     def train_model(self, X, y):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self._model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+        self.model_evaluation(X_test, y_test)
         self._is_trained = True
 
     def predict_command(self, eeg_data):
@@ -233,6 +239,23 @@ class AIBias:
         predicted_command = self._reverse_label_map[predicted_label_index]
         
         return predicted_command
+
+    def model_evaluation(self, X_test, y_test):
+        # Evaluate model performance on the test set
+        loss, accuracy = self._model.evaluate(X_test, y_test)
+        print(f"Test Accuracy: {accuracy}")
+
+        # Get model predictions on the test set
+        y_pred = self._model.predict(X_test)
+        y_pred_classes = np.argmax(y_pred, axis=1)  # Convert one-hot encoding to class labels
+
+        # Confusion matrix
+        cm = confusion_matrix(np.argmax(y_test, axis=1), y_pred_classes)
+
+        # Plot the confusion matrix
+        sns.heatmap(cm, annot=True, fmt='d')
+        plt.xlabel('Predicted')
+        plt.ylabel('True')
 
 def generate_synthetic_eeg_bandpower(n_samples, n_channels, fs, command=None):
     """

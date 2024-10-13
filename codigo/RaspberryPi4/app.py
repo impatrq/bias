@@ -28,10 +28,14 @@ def main():
             port = '/dev/serial0'
             baudrate = 115200
             timeout = 1
-            
+
             save_path = None
-            save_dataset_path = None
+            saved_dataset_path = None
             model_name = None
+            commands = input("Write commands (separated by commas): ")
+
+            # Split the input string by commas and convert to a list
+            command_list = [cmd.strip() for cmd in commands.split(",")]
 
             model_lt = input("Do you want to load or train a model (l/t): ")
             if model_lt.lower() == "t":
@@ -48,7 +52,7 @@ def main():
                 print("Charging model")
 
             # Crear objeto y correr la aplicación
-            biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout, save_path=save_path, saved_dataset_path=saved_dataset_path, model_name=model_name)
+            biasInstance = BiasClass(n=n, fs=fs, channels=number_of_channels, port=port, baudrate=baudrate, timeout=timeout, save_path=save_path, saved_dataset_path=saved_dataset_path, model_name=model_name, commands=command_list)
             biasInstance.app_run()
 
         if choice == '6':

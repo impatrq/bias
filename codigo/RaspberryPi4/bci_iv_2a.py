@@ -31,7 +31,7 @@ def main():
     number_of_channels = 4
     biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
     biasProcessing = ProcessingBias(n=n, fs=fs)
-    commands = ["forward", "backwards", "left", "right"] #, "stop", "rest"]
+    commands = ["forward", "backwards", "left", "right"]
     algorithm = input("Choose an algorithm: (cnn/svm/csp): ")
 
     global CNN, SVM, CSP
@@ -44,12 +44,12 @@ def main():
         CSP = True
 
     biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
-    train = input("Do you want to train model? (y/n): ")
-    if train.lower() == "y":
+
+    model_lt = input("Do you want to load or train a model? (l/t): ")
+    if model_lt.lower() == "t":
         saved_dataset_path = None
         save_path = None
         loading_dataset = input("Do you want to load a existent dataset? (y/n): ")
-
         if loading_dataset.lower() == "y":
             saved_dataset_path = input("Write the name of the file where dataset was saved: ")
         else:
@@ -58,6 +58,10 @@ def main():
                 save_path = input("Write the path where you want to save the dataset: ")
         biasAI.collect_and_train_from_bci_dataset(filter_instance=biasFilter, processing_instance=biasProcessing, save_path=save_path,
                                                   saved_dataset_path=saved_dataset_path)
+    elif model_lt.lower():
+        model_name = input("Write the filname where model is saved: ")
+        print("Charging model")
+
     #biasAI.make_predictions(filter_instance=biasFilter, processing_instance=biasProcessing)
     
     # Generate synthetic data
