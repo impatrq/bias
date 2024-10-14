@@ -80,7 +80,7 @@
 
 \section{Introducción}
 
-BIAS es un módulo aplicable a una silla de ruedas que permite a los usuarios dirigirla mediante el sus pensamientos, eliminando la necesidad de controles físicos tradicionales y optimizando la experiencia de movilidad. Este proyecto representa un avance significativo en el campo de la movilidad asistida, con el objetivo de mejorar la independencia y la calidad de vida de las personas con movilidad reducida.
+BIAS es un módulo aplicable a una silla de ruedas que permite a los usuarios dirigirla mediante sus pensamientos, eliminando la necesidad de controles físicos tradicionales y optimizando la experiencia de movilidad. Este proyecto representa un avance significativo en el campo de la movilidad asistida, con el objetivo de mejorar la independencia y la calidad de vida de las personas con movilidad reducida.
 
 Este sistema se basa en la avanzada tecnología de interfaz cerebro-computadora (BCI), la cual captura las señales neuronales del usuario y las traduce en comandos precisos para maniobrar la silla de ruedas sin esfuerzo. Además, el diseño modular y adaptable del sistema permite su integración en diversos modelos de sillas de ruedas y su personalización según las necesidades específicas de cada usuario. 
 
@@ -89,13 +89,13 @@ La seguridad es una prioridad fundamental en este desarrollo, por lo que el mód
 Aspiramos a revolucionar la forma en que las personas con movilidad reducida interactúan con su entorno, brindándoles una herramienta que amplía su capacidad para controlar su vida de manera más segura e independiente.
 
 \subsection{Resumen del proyecto}
-Este proyecto se centra en el desarrollo de una silla de ruedas controlada mediante señales cerebrales. El sistema se compone principalmente de los siguientes componentes: la silla de ruedas, un dispositivo EEG (electroencefalograma) y dos motores que permiten al usuario moverse en la dirección deseada.
+Este proyecto se centra en el desarrollo de una silla de ruedas controlada mediante señales cerebrales. El sistema se compone principalmente de los siguientes componentes: la silla de ruedas, un dispositivo EEG (electroencefalografo) y dos motores que permiten al usuario moverse en la dirección deseada.
 
 El funcionamiento del sistema es el siguiente: el usuario se sienta en la silla y se coloca el EEG en la cabeza. A continuación, el usuario piensa en la dirección en la que desea moverse, y los motores responden en consecuencia.
 
 El EEG tiene la función de leer las señales cerebrales del usuario. Estas señales se clasifican en las categorías de alpha, beta, gamma, delta y theta, y luego se someten a un proceso de filtrado para eliminar cualquier ruido. Posteriormente, las señales filtradas son analizadas por una Inteligencia Artificial (IA) desarrollada por nuestro equipo, la cual identifica patrones para determinar si el usuario desea moverse o detenerse.
 
-Además, la silla está equipada con un sistema de emergencia que se activa en caso de lecturas erróneas o la detección de obstáculos. Este sistema de emergencia está compuesto por sensores infrarrojos y ultrasónicos que detectan la presencia de obstáculos frente a la silla.
+Además, la silla está equipada con un sistema de emergencia que se activa en caso de lecturas erróneas o la detección de obstáculos. Este sistema de emergencia está compuesto por ultrasónidos que detectan la presencia de obstáculos frente a la silla.
 
 \subsection{Motivación}
 Como estudiantes de séptimo año, buscamos desarrollar un proyecto con el fin de cumplir con el requerimiento horario de practicas profesionalizantes. Nuestra intención inicial fue encontrar el proyecto ideal en cuestiones de impacto social, enfocándonos en la mejora de la calidad de vida de aquellas personas con discapacidades. Bajo este marco, y tras una extensa investigación, proponemos crear un módulo aplicable a una silla de ruedas controlado mediante la actividad cerebral del usuario, utilizando tecnología de interfaces cerebro-computadora (BCI), para brindarles mayor autonomía, independencia y participación social.   Creemos que este proyecto tiene el potencial de transformar la vida de las personas con movilidad motora reducida debido a enfermedades como ELA, esclerosis múltiple o cuadriplejia, permitiéndoles controlar su propio movimiento y mejorar significativamente su calidad de vida.
@@ -720,6 +720,7 @@ El diseño y construcción de una jaula de Faraday varía dependiendo del propó
 \subsubsection{Aplicacion en la silla}
 En nuestro proyecto, la jaula de Faraday juega un papel crucial para asegurar que las señales cerebrales recogidas por los electrodos EEG no sean afectadas por interferencias electromagnéticas externas. Las señales EEG son extremadamente débiles, y cualquier interferencia externa podría alterar su interpretación, lo que afectaría directamente el control de la silla. 
 
+\newpage
 Usamos la jaula de Faraday para:
 \begin{itemize}
     \item \textbf{Protección de Señales EEG:} Las señales EEG tienen una amplitud muy baja, generalmente en el rango de microvoltios (µV), lo que las hace particularmente vulnerables a interferencias de otros dispositivos electrónicos o radiaciones electromagnéticas del ambiente (como WiFi, Bluetooth, teléfonos móviles, etc.). Sin protección, estas interferencias pueden introducir ruido en las señales, lo que dificultaría o impediría que los algoritmos de procesamiento interpreten correctamente las órdenes cerebrales para controlar el movimiento de la silla.
@@ -767,9 +768,9 @@ El sistema de control diseñado para este proyecto está compuesto por una Raspb
 
 Para la regulación del movimiento de los motores, se emplea modulación por ancho de pulso (PWM, por sus siglas en inglés), operando a una frecuencia de 50 Hz. La modulación por ancho de pulso es una técnica eficiente que permite controlar la velocidad y dirección de los motores mediante la variación del ciclo de trabajo. En este caso, cuando uno de los canales de PWM presenta un ciclo de trabajo del 25\%, mientras que el otro está en 0\%, se provoca el movimiento del motor en una dirección específica. Por otro lado, cuando ambos canales de PWM se encuentran en un ciclo de trabajo del 0\%, el motor permanece detenido, lo cual corresponde a una condición de reposo.
 
-Es crucial tener en cuenta la existencia de un estado prohibido dentro de este esquema de control. Si ambos canales de PWM se configuran simultáneamente con un ciclo de trabajo del 25\%, se generaría una condición de cortocircuito, que podría dañar el sistema. [El cortocircuito ocurre cuando las señales de los canales se anulan entre sí, generando una sobrecarga en los componentes, lo cual puede comprometer la integridad tanto de los motores como de los circuitos de control.] Este escenario es considerado una condición crítica, y para evitar cualquier eventualidad peligrosa, se implementa un sistema de emergencias que actúa como una salvaguardia para el correcto funcionamiento del sistema.
+Es crucial tener en cuenta la existencia de un estado prohibido dentro de este esquema de control. Si ambos canales de PWM se configuran simultáneamente con un ciclo de trabajo del 25\%, se generaría una condición de cortocircuito, que podría dañar el sistema. El cortocircuito ocurre cuando las señales de los canales se anulan entre sí, generando una sobrecarga en los componentes, lo cual puede comprometer la integridad tanto de los motores como de los circuitos de control. Este escenario es considerado una condición crítica, y para evitar cualquier eventualidad peligrosa, se implementa un sistema de emergencias que actúa como una salvaguardia para el correcto funcionamiento del sistema.
 
-El sistema de emergencias tiene la capacidad de detener el movimiento de los motores en el caso de que un obstáculo sea detectado en la dirección hacia la cual el usuario intenta moverse. Cuando se identifica tal situación, los motores se detienen inmediatamente, un buzzer emitirá un sonido de advertencia, y el LED correspondiente a la dirección obstruida se encenderá, proporcionando una señal visual clara de la situación. [Este sistema no solo previene accidentes, sino que también mejora la seguridad del usuario al evitar colisiones involuntarias.]
+El sistema de emergencias tiene la capacidad de detener el movimiento de los motores en el caso de que un obstáculo sea detectado en la dirección hacia la cual el usuario intenta moverse. Cuando se identifica tal situación, los motores se detienen inmediatamente, un buzzer emitirá un sonido de advertencia, y el LED correspondiente a la dirección obstruida se encenderá, proporcionando una señal visual clara de la situación. Este sistema no solo previene accidentes, sino que también mejora la seguridad del usuario al evitar colisiones involuntarias.
 
 Cada una de las salidas del sistema, ya sea para la señalización PWM, los pines dedicados al buzzer, los sensores ultrasónicos o los LEDs, está directamente asociada a un GPIO (General-Purpose Input/Output) de la Raspberry Pi 4. Esta asociación permite un control preciso y eficiente de todos los componentes periféricos, asegurando que el sistema responda de manera coordinada y fiable a las señales de entrada y a las condiciones de emergencia detectadas.
 
@@ -954,8 +955,6 @@ El funcionamiento es sencillo:
 
 \subsection{Explicacion de los codigos utlizados}
 En este apartado se explicaran los codigos utilizados en el proyecto y porqué los hemos utilizados.
-
-Hay que recalcar que todos estos codigo estan hechos en python y en Programacion Orientada a Objetos (POO).
 
 \subsubsection{Explicacion de bias.py}
 Este codigo es la clase organizadora de las demas clases que contienen: recepcion, filtrado, IA y movimiento de motor.
@@ -1352,8 +1351,8 @@ La clase AIBias es responsable de manejar todo el ciclo de vida del modelo de IA
     \end{itemize}
     \item Método extract\_features:
     \begin{itemize}
-        \item Propósito: Extrae características estadísticas y de dominio de frecuencia de las señales EEG.
-        \item Características Extraídas:
+        \item Propósito: Extrae Features estadísticas y de dominio de frecuencia de las señales EEG.
+        \item Features Extraídas:
         \begin{itemize}
             \item Estadísticas: Media, varianza, asimetría, curtosis, energía.
             \item Frecuencia: Potencia espectral de banda, energía de wavelet.
@@ -1361,10 +1360,10 @@ La clase AIBias es responsable de manejar todo el ciclo de vida del modelo de IA
         \end{itemize}
         \item Proceso:
         \begin{itemize}
-            \item Itera sobre cada canal y cada banda de frecuencia para calcular las características.
-            \item Normaliza las características utilizando StandardScaler.
+            \item Itera sobre cada canal y cada banda de frecuencia para calcular las Features.
+            \item Normaliza las Features utilizando StandardScaler.
             \item Opcionalmente aplica PCA para reducir la dimensionalidad (actualmente comentado).
-            \item Reorganiza las características en la forma esperada para el modelo.
+            \item Reorganiza las Features en la forma esperada para el modelo.
         \end{itemize}
     \end{itemize}
     \item Método train\_model:
