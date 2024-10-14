@@ -225,7 +225,7 @@ class AIBias:
             print("hola")
             # Step 1: Set up a pipeline to combine PCA and CSP
             pca_csp_pipeline = Pipeline([
-                #('csp', CSP(n_components=4, reg='ledoit_wolf', log=True)),  # CSP to extract spatial patterns
+                ('csp', CSP(n_components=4, reg='ledoit_wolf', log=True)),  # CSP to extract spatial patterns
                 ('pca', PCA(n_components=0.95)),      # PCA to reduce feature dimensionality 
                 ('scaler', StandardScaler()),         # Standardize the features
                 ('svm', SVC(kernel='rbf', C=1, gamma='scale', class_weight='balanced'))  # SVM classifier
@@ -461,11 +461,11 @@ class AIBias:
             print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
             self.train_model(X, y_one_hot)
 
-        if SVM or ALL:
+        if SVM:
             X_reshaped = X.reshape(X.shape[0], -1)
             self.train_model(X_reshaped, y)
 
-        if CSPT:
+        if CSPT or ALL:
             self.train_model(X, y)
 
         print("Training complete.")
