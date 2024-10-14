@@ -57,6 +57,11 @@
 
 \begin{document}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{Imagenes//BIAS/LogoBIASbn.png}
+\end{figure}
+
 \maketitle
 
 \vspace{1cm} 
@@ -75,14 +80,48 @@
 \newpage
 
 
+\subsection{Adell, Nicolás Fabián}
+
+\begin{figure}[H]
+    \includegraphics[width=0.3\linewidth]{Imagenes//BIAS/Fabi.jpg}
+\end{figure}
+
+\subsection{De Blasi, Luca}
+
+\begin{figure}[H]
+    \includegraphics[width=0.3\linewidth]{Imagenes//BIAS/pela.jpg}
+\end{figure}
+
+\subsection{Diaz Melión, Danilo Sebastián}
+
+\begin{figure}[H]
+    \includegraphics[width=0.3\linewidth]{Imagenes//BIAS/Dani.jpg}
+\end{figure}
+
+\subsection{Gil Soria, Ian Lucas}
+
+\begin{figure}[H]
+    \includegraphics[width=0.3\linewidth]{Imagenes//BIAS/Soria2.png}
+\end{figure}
+
+\subsection{Montenegro, Luciano Nahuel}
+
+\begin{figure}[H]
+    \includegraphics[width=0.3\linewidth]{Imagenes//BIAS/Lucho.jpg}
+\end{figure}
+
+\subsection{Sojka, Santiago Alejandro}
+
+\begin{figure}[H]
+    \includegraphics[width=0.3\linewidth]{Imagenes//BIAS/Sojka2.jpg}
+\end{figure}
 
 
 
 
+\newpage
 
-\begin{center}
-    \section{Marzo de 2024}
-\end{center}
+\section{Marzo de 2024}
 
 Inicio de anteproyecto e investigación sobre la utilización de MATLAB, Python y cómo vincular el Neurosky Mindwave Mobile 2 a una computadora o celular. Decisión de elección de microcontrolador y hardware a utilizar.
 
@@ -593,15 +632,25 @@ Se trabaja con la extracción de features para el entrenamiento de la IA, utiliz
 
 Se trabaja con los modelos de inteligencia artificial, viendo que ya se puede entrenar y va prediciendo comandos. El modelo utiliza una red neuronal convolucional.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Imagenes//Septiembre/prediccion.jpg}
+\end{figure}
 
-
+\newpage
 Se sigue realizando la carpeta técnica. Se suelda el primer canal del EEG. Se investiga sobre el multiprocessing y el multithreading con python. Se realizan códigos para el multithreading. Se mide la señal de la salida de la placa de los filtros. Se prueba la corriente del motor para calcular las dimensiones de los capacitores.
 
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Imagenes//Septiembre/multithreading.png}
+\end{figure}
 
 Probamos el circuito de filtrado y se encontró un problema. El último notch tenía las entradas inversoras y no inversoras invertidas
 
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Imagenes//Septiembre/filtros.jpg}
+\end{figure}
 
 Probamos el circuito de filtrado y se soluciono el problema que encontramos el día anterior. Probamos el circuito de emergencia desde el PCB. Se sigue realizando la carpeta técnica. Se encuentra un error en la última etapa de notch, que por alguna razón empieza a amplificar luego de los 100 Hz.
 
@@ -609,27 +658,32 @@ Probamos el circuito de filtrado y se soluciono el problema que encontramos el d
 
 Se avanza con el soldado de la placa de offset. A su vez se termina el diseño del puente H para imprimir y finalmente se descarga el dataset BCI IV 2a. para luego utilizarlo para el entrenamiento del modelo.
 
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Imagenes//Septiembre/offset.jpg}
+\end{figure}
 
 Se programa un Arduino Nano 3.0 para usar un joystick y mover los motores. Por lo tanto, se crea un programa de slave para la arduino y un programa de master para la Raspberry Pi 4.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Imagenes//Septiembre/joystick.png}
+\end{figure}
 
+\newpage
+Se prueba la placa de emergencia, se ve que hay un error en el buzzer y posteriormente se termina la placa de alimentación para la Pi 4. Se termina de realizar la lista para la compra de materiales. Se descubre que la plaqueta de alimentación contiene el LED rojo al revés. Se terminan de planchar las pistas del puente H y se estañan las mismas.
 
-Se prueba la placa de emergencia, se ve que hay un error en el buzzer y posteriormente se termina la placa de alimentación para la Pi 4. Se termina de realizar la lista para la compra de materiales.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Imagenes//Septiembre/emergencia.png}
+\end{figure}
 
+Se prueba el circuito de offset y se descubre que el diodo Zener práctico no es igual a la simulación ya que en el mismo circula corriente aunque sea menor a la tensión esperada. Se prueba circuito de transmisión por UART y se ve que a la salida no le llega nada a la Pi 4. Se descubre que el problema en la plaqueta de la comunicación UART es la velocidad de transmisión. Se puede transmitir hasta 9600 baudios. Por esa razón, se reemplaza por un optoacoplador 6n137 y por un transistor 2n2222.
 
-
-Se descubre que la plaqueta de alimentación contiene el LED rojo al revés. Se terminan de planchar las pistas del puente H y se estañan las mismas.
-
-
-
-Se prueba el circuito de offset y se descubre que el diodo Zener práctico no es igual a la simulación ya que en el mismo circula corriente aunque sea menor a la tensión esperada. Se prueba circuito de transmisión por UART y se ve que a la salida no le llega nada a la Pi 4.
-
-
-
-Se descubre que el problema en la plaqueta de la comunicación UART es la velocidad de transmisión. Se puede transmitir hasta 9600 baudios. Por esa razón, se reemplaza por un optoacoplador 6n137 y por un transistor 2n2222.
-
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{Imagenes//Septiembre/UARAT.png}
+\end{figure}
 
 Se va a hablar con una técnica neuróloga en el hospital del cruce con el objetivo de que nos muestre las instalaciones EEG y nos despeje algunas dudas de la localización de los electrodos..
 
@@ -638,14 +692,20 @@ Se va a hablar con una técnica neuróloga en el hospital del cruce con el objet
 Se van a comprar los componentes restantes y se resuelve el problema de la velocidad de comunicación UART mediante el reemplazo de los materiales nombrados anteriormente. Se rediseñan las placas por tema de alimentaciones y, por último, se rediseña la placa de recepción. Además, se sueldan los últimos componentes del puente H. Por otro lado, se piensa en hacer una silla de diseño 3D chiquita.
 
 
-
 Se prueba el puente H y nos damos cuenta de un error, y es que circulan 160 A cuando ambas entradas PWM están en cero. Se prueba el circuito de filtrado en protoboard pero termina un AD620AN quemado debido a que las alimentaciones estaban invertidas. Por otro lado, se realiza la plaqueta de control de la Pi 4.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Imagenes//Septiembre/puenteh.jpg}
+\end{figure}
 
-
+\newpage
 Se arreglan ciertas incoherencias en la “shape” del dataset del código de la IA. Se realiza el banner y se manda a cooperadora.
 
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Imagenes/Septiembre/banner.jpg}
+\end{figure}
 
 Se prueba el circuito de filtrado sin el último filtro Notch. Este último distorsionaba la señal al punto de aumentarla hasta los 120 Hz y disminuye luego de esta frecuencia. Sin este último nos aseguramos que no haya distorsión. Se termina de soldar el circuito de control y recepción de datos. Se prueba el circuito de offset y nos damos cuenta que el zener empieza a conducir antes de que la señal se recorte, por lo que sugerimos cambiar la resistencia. De esta forma, la tensión de la resistencia será menor.
 
@@ -657,15 +717,26 @@ Se prueba el circuito de filtrado sin el último filtro Notch. Este último dist
 
 Se comienza a diseñar la jaula de Faraday. Se miden los PCBs. La silla de madera termina de ser fabricada.
 
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Imagenes//Octubre/Faraday.jpeg}
+\end{figure}
 
 Se comienza a realizar el Informe Técnico del proyecto para presentar en las ONIET.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Imagenes//Octubre/InformeDescriptivo.jpeg}
+\end{figure}
 
+\newpage
 
 Se probó el circuito de filtrado con los electrodos, usando la cabeza de Santiago Sojka. Se sigue realizando la carpeta técnica. Se buscan soluciones a los errores del puente H.
 
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Imagenes/Octubre/SojkaElectrodos.png}
+\end{figure}
 
 Se prueba nuevamente la placa de filtrado con osciloscopio digital. Se prepara todo para entregar el informe descriptivo y el informe de redes sociales para las ONIET.
 
@@ -677,11 +748,20 @@ Se diseña un nuevo circuito de puente H que tiene más probabilidades de funcio
 
 Se hace funcionar el puente H con un nuevo circuito. En este caso, lo que hicimos fue hacer un cruce entre los gates de los mosfets y, de esta forma, vimos que la carga podía tener +24 V, -24 V y 0 V. Por último, se intentó probar todas las etapas de filtros y nos dimos cuenta que las baterías estaban descargadas.
 
-
+\newpage
 
 Se prueban todas las placas juntas y nos damos cuenta que hay un error en una plaqueta debido a que había una pata de resistencia haciendo cortocircuito con masa. Después, se empieza a hacer la jaula de Faraday de madera. Por último, se terminan todas las placas de filtros y se empiezan a probarlas. Se prueban todas las placas juntas para ver la gráfica de señales en la terminal con los 9 electrodos juntos.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Imagenes/Octubre/Osciloscopio.jpeg}
+\end{figure}
 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Imagenes/Octubre/Silla.jpeg}
+\end{figure}
 
 Se termina de realizar la placa del puente H. Se empieza a diagramar las conexiones. Se avanza en realizar la carpeta técnica. Se ve que el modelo de inteligencia artificial posee un 25\% de precisión.
 
