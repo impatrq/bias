@@ -19,7 +19,7 @@ from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 CNN = False
 SVM = False
 CSPT = False
-ALL = True
+ALL = False
 
 def main():
     n = 750
@@ -142,9 +142,10 @@ class AIBias:
         return self._is_trained
 
     def build_model(self, output_dimension):
-        if CNN:
+        global CNN, SVM, CSPT, ALL
+        if CNN or CSP:
             model = Sequential([
-                InputLayer(shape=(self._number_of_channels, self._num_features_per_channel)),
+                InputLayer(shape=(self._number_of_channels, 750)),
                 Conv1D(filters=128, kernel_size=3, activation='relu'),
                 BatchNormalization(),
                 MaxPooling1D(pool_size=2),
@@ -161,9 +162,9 @@ class AIBias:
             model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
             model.summary()
         
-        if SVM or CSPT or ALL:
+        if SVM or ALL:
             # CSP to extract spatial features + SVM classifier pipeline
-            model = SVC(kernel='sigmoid', C=10, gamma='scale', class_weight='balanced')
+            model = SVC(kernel='linear', C=0.1, gamma='scale', class_weight='balanced')
             #model = SVC(kernel='linear', C=1)
             #model = SVC(class_weight='balanced')
 
@@ -258,12 +259,13 @@ class AIBias:
             # Scale the CSP-transformed data
             X_train_scaled = scaler.fit_transform(X_train_csp)
             X_test_scaled = scaler.transform(X_test_csp)
-
+            
+            '''
             # Define parameter grid
             param_grid = {
                 'C': [0.1, 1, 10, 100],
                 'gamma': ['scale', 'auto'],
-                'kernel': ['linear', 'rbf', 'sigmoid']
+                'kernel': ['linear', 'rbf', 'sigmoid', 'poly']
             }
 
             # Initialize SVM with balanced class weight
@@ -281,7 +283,19 @@ class AIBias:
             # Train SVM
             self._model.fit(X_train_scaled, y_train)
             self._is_trained = True
-            self.rendimiento_modelo_svm(self._model, X_test_scaled, y_test) 
+            self.rendimiento_modelo_svm(self._model, X_test_scaled, y_test)
+            '''
+            
+            # Convert labels to one-hot encoded format using OneHotEncoder
+            one_hot_encoder = OneHotEncoder(sparse_output=False)
+            y_one_hot_test = one_hot_encoder.fit_transform(y_test.reshape(-1, 1))
+            y_one_hot_train = one_hot_encoder.fit_transform(y_train.reshape(-1, 1))
+
+            print(f"y_one_hot_shape: {y_one_hot_test.shape}")
+
+            self._model.fit(X_train, y_one_hot_train, epochs=10, batch_size=32, validation_data=(X_test, y_one_hot_test))
+            self._is_trained = True
+            self.model_evaluation(X_test, y_one_hot_test)
 
     def predict_command(self, eeg_data):
         if not self._is_trained:
@@ -300,7 +314,7 @@ class AIBias:
         all_classes = []
         for file_name in file_names:
             dataset = MotorImageryDataset(file_name)
-            trials, classes = dataset.get_trials_from_channels([0, 7, 9, 11])
+            trials, classes = dataset.get_trials_from_channels([7, 9, 11, 19])
             # Invert the dimensions of trials and classes using zip
             inverted_trials = list(map(list, zip(*trials)))
             inverted_classes = list(map(list, zip(*classes)))
@@ -425,17 +439,18 @@ class AIBias:
                 label = classes[num_trial][0]
                 if label in self._command_map.keys():
                     # Create a dictionary to hold the EEG signals for each channel
-                    eeg_signals = {f"ch{ch}": antes_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4, FPz
+                    #eeg_signals = {f"ch{ch}": antes_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4, FPz
 
-                    filtered_data = filter_instance.filter_signals(eeg_signals)
+                    #filtered_data = filter_instance.filter_signals(eeg_signals)
                     # Process the raw EEG signals using ProcessingBias to extract frequency bands
-                    _, processed_signals = processing_instance.process_signals(filtered_data)
+                    #_, processed_signals = processing_instance.process_signals(filtered_data)
 
                     # Extract features from the processed signals (frequency bands)
-                    features = self.extract_features(processed_signals)
+                    #features = self.extract_features(processed_signals)
 
                     # Append the extracted features and the corresponding command label
-                    X.append(features)
+                    #X.append(features)
+                    X.append(antes_total[num_trial])
                     y.append(self._label_map[self._command_map[label]])
 
             if save_path:
@@ -449,6 +464,7 @@ class AIBias:
 
         # Convert lists to arrays for training
         X = np.array(X)
+        print(X.shape)
         y = np.array(y)
 
         if CNN:
@@ -461,11 +477,11 @@ class AIBias:
             print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
             self.train_model(X, y_one_hot)
 
-        if SVM or ALL:
+        if SVM:
             X_reshaped = X.reshape(X.shape[0], -1)
             self.train_model(X_reshaped, y)
 
-        if CSPT:
+        if ALL or CSPT:
             self.train_model(X, y)
 
         print("Training complete.")
