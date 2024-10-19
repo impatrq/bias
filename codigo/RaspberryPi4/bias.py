@@ -73,7 +73,7 @@ class BiasClass:
             # Process data
             times, eeg_signals = self._biasProcessing.process_signals(eeg_signals=filtered_data)
 
-            '''
+            
             # Plot 4 signals with its resepctive bands
             for ch, signals in eeg_signals.items():
                 # Plot the interpolated signals
@@ -82,7 +82,7 @@ class BiasClass:
             
             # Plot
             self._biasGraphing.plot_now()
-            '''
+            
 
             command = self._biasAI.predict_command(eeg_data=eeg_signals)
             print(f"command: {command}")

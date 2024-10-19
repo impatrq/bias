@@ -1,7 +1,11 @@
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization
+from tensorflow.keras.layers import Dense, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization, AveragePooling1D, Activation, GlobalAveragePooling1D, Flatten
+from tensorflow.keras.losses import binary_crossentropy
+from tensorflow.keras.constraints import max_norm
+from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from keras import activations 
 from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.svm import SVC
@@ -144,23 +148,35 @@ class AIBias:
     def build_model(self, output_dimension):
         global CNN, SVM, CSPT, ALL
         if CNN or CSP:
-            model = Sequential([
-                InputLayer(shape=(self._number_of_channels, 750)),
-                Conv1D(filters=128, kernel_size=3, activation='relu'),
-                BatchNormalization(),
-                MaxPooling1D(pool_size=2),
-                Dropout(0.3),
-                LSTM(50, return_sequences=False),
-                Dense(128, activation='relu'),
-                Dropout(0.5),
-                Dense(64, activation='relu'),
-                Dropout(0.5),
-                Dense(32, activation='relu'),
-                Dropout(0.5),
-                Dense(output_dimension, activation='softmax')
-            ])
-            model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-            model.summary()
+            batch_norm = False
+            Max_norm = None
+            n_outputs = 4
+            dropout_rate = 0.5
+            model = Sequential()
+            time_axis = -1
+            InputLayer(shape=(self._number_of_channels, 750)),
+            model.add(BatchNormalization(axis=time_axis, epsilon=1e-05, momentum=0.1))
+            
+            #model.add(AveragePooling1D(pool_size=(5)))
+            model.add(Conv1D(50, 5,  padding='same', activation=None))
+            model.add(Activation(activations.relu))
+            model.add(Dropout(dropout_rate))
+            model.add(AveragePooling1D(pool_size=(2)))
+            model.add(Conv1D(50, 5, padding='same', activation=None))
+            model.add(Activation(activations.relu))
+            model.add(Dropout(dropout_rate))
+            model.add(AveragePooling1D(pool_size=(2)))
+            model.add(Conv1D(50, 5, padding='same', activation=None))
+            model.add(Activation(activations.relu))
+            model.add(Dropout(dropout_rate))
+            model.add(GlobalAveragePooling1D())
+            model.add(Dense(100, activation=None))
+            model.add(Activation(activations.relu))
+            model.add(Dropout(dropout_rate))
+
+            model.add(Flatten()) # added in Version 3.2 to enhance model validation accuracy
+            model.add(Dense(n_outputs, activation='softmax',kernel_constraint=max_norm(Max_norm)))
+            model.compile(loss=binary_crossentropy, optimizer=Adam(learning_rate=0.001))
         
         if SVM or ALL:
             # CSP to extract spatial features + SVM classifier pipeline
@@ -293,7 +309,7 @@ class AIBias:
 
             print(f"y_one_hot_shape: {y_one_hot_test.shape}")
 
-            self._model.fit(X_train, y_one_hot_train, epochs=100, batch_size=32, validation_data=(X_test, y_one_hot_test))
+            self._model.fit(X_train, y_one_hot_train, epochs=10, batch_size=32, validation_data=(X_test, y_one_hot_test))
             self._is_trained = True
             self.model_evaluation(X_test, y_one_hot_test)
 
@@ -482,6 +498,7 @@ class AIBias:
             self.train_model(X_reshaped, y)
 
         if ALL or CSPT:
+            #X.reshape(6273000, self._number_of_channels, 750)
             self.train_model(X, y)
 
         print("Training complete.")

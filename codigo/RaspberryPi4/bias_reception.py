@@ -84,7 +84,9 @@ class ReceptionBias:
     def process_data(self, data):
         try:
             json_data = json.loads(data)
+            """
             print(json_data)
+            """
             return json_data
         except json.JSONDecodeError as e:
             print(f"Error decoding JSON: {e}")

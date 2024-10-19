@@ -24,7 +24,7 @@ def main():
     biasReception = ReceptionBias(port, baudrate, timeout)
     biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
     biasProcessing = ProcessingBias(n=n, fs=fs)
-    commands = ["forward", "backwards", "left", "right", "stop", "rest"]
+    commands = ["forward", "backwards", "left", "right"] #, "stop", "rest"]
     biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
 
     model_lt = input("Do you want to load or train a model (l/t): ")

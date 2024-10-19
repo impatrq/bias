@@ -47,8 +47,7 @@ class MotorBias:
         try:
             # Move forward
             if command == "forward":
-                #distance = self._ultrasonic_forward.distance * 100
-                distance = 30
+                distance = self._ultrasonic_forward.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Forward is blocked
@@ -63,8 +62,7 @@ class MotorBias:
                     self.move_forward(25)
             # Move backwards
             elif command == "backwards":
-                #distance = self._ultrasonic_backwards.distance * 100
-                distance = 30
+                distance = self._ultrasonic_backwards.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Backwards is blocked
@@ -79,8 +77,7 @@ class MotorBias:
                     self.move_backward(25)
             # Turn left
             elif command == "left":
-                distance = 30
-                #distance = self._ultrasonic_left.distance * 100
+                distance = self._ultrasonic_left.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Left is blocked
@@ -95,8 +92,7 @@ class MotorBias:
                     self.turn_left(25)
             # Turn right
             elif command == "right":
-                distance = 30
-                #distance = self._ultrasonic_right.distance * 100
+                distance = self._ultrasonic_right.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Right is blocked
@@ -129,8 +125,8 @@ class MotorBias:
             self._led_left.off()
             self._led_right.off()
             self._buzzer.off()
-        
-        
+
+
         except KeyboardInterrupt:
             print("Program stopped by user")
 
@@ -138,16 +134,22 @@ class MotorBias:
     def set_motor_speed(self, motor_in1, motor_in2, speed, invert=False):
         # Define positive speed
         if speed > 0:
-            motor_in1.value = ((100.0 - speed) / 100.0) if invert else speed / 100.0
             motor_in2.value = 0
+            motor_in1.value = ((100.0 - speed) / 100.0) if invert else speed / 100.0
+            print(motor_in1.value)
+            print(motor_in2.value)
         # Define negative speed
         elif speed < 0:
             motor_in1.value = 0
             motor_in2.value = ((100.0 - abs(speed)) / 100.0) if invert else abs(speed) / 100.0
+            print(motor_in1.value)
+            print(motor_in2.value)
         # If it's zero brake
         else:
             motor_in1.value = 0
             motor_in2.value = 0
+            print(motor_in1.value)
+            print(motor_in2.value)
 
     # Move wheelchair forward
     def move_forward(self, speed):
