@@ -7,6 +7,9 @@ def main():
     biasMotor = MotorBias(echo_forward=18, trigger_forward=17, echo_backwards=23, trigger_backwards=22, echo_right=5, trigger_right=6,
                           echo_left=25, trigger_left=24, led_forward=16, led_backwards=20, led_left=21, led_right=26, buzzer=12, motor1_in1=13,
                           motor1_in2=19, motor2_in1=7, motor2_in2=8)
+
+    biasMotor.brake()
+
     while True:
         # Get command
         command = input("Enter command (forward/left/backwards/right/stop): ").strip()
@@ -36,12 +39,12 @@ class MotorBias:
         self._buzzer = Buzzer(buzzer)
 
         # GPIO Pin setup for Motor 1
-        self._motor1_in1 = PWMOutputDevice(motor1_in1, frequency=50, pin_factory=factory)
-        self._motor1_in2 = PWMOutputDevice(motor1_in2, frequency=50, pin_factory=factory)
+        self._motor1_in1 = PWMOutputDevice(motor1_in1, initial_value=0,  frequency=50, pin_factory=factory)
+        self._motor1_in2 = PWMOutputDevice(motor1_in2, initial_value=0, frequency=50, pin_factory=factory)
 
         # GPIO Pin setup for Motor 2
-        self._motor2_in1 = PWMOutputDevice(motor2_in1, frequency=50, pin_factory=factory)
-        self._motor2_in2 = PWMOutputDevice(motor2_in2, frequency=50, pin_factory=factory)
+        self._motor2_in1 = PWMOutputDevice(motor2_in1, initial_value=0, frequency=50, pin_factory=factory)
+        self._motor2_in2 = PWMOutputDevice(motor2_in2, initial_value=0, frequency=50, pin_factory=factory)
 
     def move_if_possible(self, command):
         try:

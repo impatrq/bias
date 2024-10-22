@@ -43,6 +43,8 @@ class BiasClass:
         if self._model_name is None:
             self.train_ai_model()
 
+        self._biasMotor.brake()
+
         while True:
             # Receive eeg data
             if real_data:
