@@ -131,20 +131,24 @@ class MotorBias:
 
 
         except KeyboardInterrupt:
+            self.brake()
             print("Program stopped by user")
 
     # Configure speed of motor depending on PWM
-    def set_motor_speed(self, motor_in1, motor_in2, speed, invert=False):
+    def set_motor_speed(self, motor_in1, motor_in2, speed):
         # Define positive speed
         if speed > 0:
             motor_in2.value = 0
-            motor_in1.value = ((100.0 - speed) / 100.0) if invert else speed / 100.0
+            if motor_in2.value == 0:
+                motor_in1.value = speed / 100.0
             print(motor_in1.value)
             print(motor_in2.value)
+
         # Define negative speed
         elif speed < 0:
             motor_in1.value = 0
-            motor_in2.value = ((100.0 - abs(speed)) / 100.0) if invert else abs(speed) / 100.0
+            if motor_in1.value == 0:
+                motor_in2.value = abs(speed) / 100.0
             print(motor_in1.value)
             print(motor_in2.value)
         # If it's zero brake
@@ -156,28 +160,28 @@ class MotorBias:
 
     # Move wheelchair forward
     def move_forward(self, speed):
-        self.set_motor_speed(self._motor1_in1, self._motor1_in2, speed, invert=True)
-        self.set_motor_speed(self._motor2_in1, self._motor2_in2, speed, invert=True)
+        self.set_motor_speed(self._motor1_in1, self._motor1_in2, speed)
+        self.set_motor_speed(self._motor2_in1, self._motor2_in2, speed)
 
     # Move wheelchair backwards
     def move_backward(self, speed):
-        self.set_motor_speed(self._motor1_in1, self._motor1_in2, -speed, invert=True)
-        self.set_motor_speed(self._motor2_in1, self._motor2_in2, -speed, invert=True)
+        self.set_motor_speed(self._motor1_in1, self._motor1_in2, -speed)
+        self.set_motor_speed(self._motor2_in1, self._motor2_in2, -speed)
 
     # Turn wheelchair left
     def turn_left(self, speed):
-        self.set_motor_speed(self._motor1_in1, self._motor1_in2, -speed, invert=True)
-        self.set_motor_speed(self._motor2_in1, self._motor2_in2, speed, invert=True)
+        self.set_motor_speed(self._motor1_in1, self._motor1_in2, -speed)
+        self.set_motor_speed(self._motor2_in1, self._motor2_in2, speed)
 
     # Turn wheelchair right
     def turn_right(self, speed):
-        self.set_motor_speed(self._motor1_in1, self._motor1_in2, speed, invert=True)
-        self.set_motor_speed(self._motor2_in1, self._motor2_in2, -speed, invert=True)
+        self.set_motor_speed(self._motor1_in1, self._motor1_in2, speed)
+        self.set_motor_speed(self._motor2_in1, self._motor2_in2, -speed)
 
     # Brake wheelchair
     def brake(self):
-        self.set_motor_speed(self._motor1_in1, self._motor1_in2, 0, invert=True)
-        self.set_motor_speed(self._motor2_in1, self._motor2_in2, 0, invert=True)
+        self.set_motor_speed(self._motor1_in1, self._motor1_in2, 0)
+        self.set_motor_speed(self._motor2_in1, self._motor2_in2, 0)
 
 if __name__ == "__main__":
     main()
