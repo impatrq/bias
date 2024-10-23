@@ -1,4 +1,3 @@
-#Prueba de Threading 1
 import threading
 from gpiozero import DistanceSensor, PWMLED, Buzzer, PWMOutputDevice
 from gpiozero.pins.pigpio import PiGPIOFactory
