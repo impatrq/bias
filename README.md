@@ -32,10 +32,10 @@ BIAS es un proyecto innovador que busca mejorar la movilidad de las personas con
 | **Luciano Montenegro**        | Documentación y asistencia técnica            |
 | **Santiago Sojka**   | Marketing, diseño web y estructura de la silla|
 
-|    
+    
 ## Contacto
 
-- **Correo**: [bias.project@gmail.com](mailto:bias.project@gmail.com)
+- **Correo**: [bias.project@gmail.com](mailto:https://www.instagram.com/proyecto.bias/)
 - **Instagram**: [@proyecto.bias](https://www.instagram.com/proyecto.bias)
 
 
