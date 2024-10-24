@@ -32,36 +32,12 @@ BIAS es un proyecto innovador que busca mejorar la movilidad de las personas con
 | **Luciano Montenegro**        | Documentación y asistencia técnica            |
 | **Santiago Sojka**   | Marketing, diseño web y estructura de la silla|
 
-## Instalación
-
-Sigue estos pasos para clonar y ejecutar el proyecto localmente:
-
-1. Clonar el repositorio:
-    ```bash
-    git clone https://github.com/usuario/BIAS.git
-    ```
-2. Navegar al directorio del proyecto:
-    ```bash
-    cd BIAS
-    ```
-3. Instalar las dependencias:
-    ```bash
-    pip install -r requirements.txt
-    ```
-4. Ejecutar el software:
-    ```bash
-    python main.py
-    ```
-
+|    
 ## Contacto
 
 - **Correo**: [bias.project@gmail.com](mailto:bias.project@gmail.com)
 - **Instagram**: [@proyecto.bias](https://www.instagram.com/proyecto.bias)
 
-## Licencia
 
-Este proyecto está bajo la licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
-
----
 
 *BIAS 2024 - Todos los derechos reservados*
