@@ -1,5 +1,6 @@
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization, AveragePooling1D, Activation, GlobalAveragePooling1D, Flatten
+from tensorflow.keras.layers import Dense, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization, AveragePooling1D, Activation, GlobalAveragePooling1D, Flatten, Conv2D, DepthwiseConv2D, SeparableConv2D, BatchNormalization, AveragePooling2D, Input
+from tensorflow.keras.models import Model
 from tensorflow.keras.losses import binary_crossentropy
 from tensorflow.keras.constraints import max_norm
 from tensorflow.keras.optimizers import Adam
@@ -148,36 +149,36 @@ class AIBias:
     def build_model(self, output_dimension):
         global CNN, SVM, CSPT, ALL
         if CNN or CSP:
-            batch_norm = False
-            Max_norm = None
-            n_outputs = 4
-            dropout_rate = 0.5
-            model = Sequential()
-            time_axis = -1
-            InputLayer(shape=(self._number_of_channels, 750)),
-            model.add(BatchNormalization(axis=time_axis, epsilon=1e-05, momentum=0.1))
-            
-            #model.add(AveragePooling1D(pool_size=(5)))
-            model.add(Conv1D(50, 5,  padding='same', activation=None))
-            model.add(Activation(activations.relu))
-            model.add(Dropout(dropout_rate))
-            model.add(AveragePooling1D(pool_size=(2)))
-            model.add(Conv1D(50, 5, padding='same', activation=None))
-            model.add(Activation(activations.relu))
-            model.add(Dropout(dropout_rate))
-            model.add(AveragePooling1D(pool_size=(2)))
-            model.add(Conv1D(50, 5, padding='same', activation=None))
-            model.add(Activation(activations.relu))
-            model.add(Dropout(dropout_rate))
-            model.add(GlobalAveragePooling1D())
-            model.add(Dense(100, activation=None))
-            model.add(Activation(activations.relu))
-            model.add(Dropout(dropout_rate))
+            dropoutRate = 0.5
+            input1 = Input(shape=(self._number_of_channels, self._n, 1))
 
-            model.add(Flatten()) # added in Version 3.2 to enhance model validation accuracy
-            model.add(Dense(n_outputs, activation='softmax',kernel_constraint=max_norm(Max_norm)))
-            model.compile(loss=binary_crossentropy, optimizer=Adam(learning_rate=0.001))
-        
+            # First Conv Block (Spatial Filtering)
+            block1 = Conv2D(16, (1, 64), padding='same', input_shape=(self._number_of_channels, self._n, 1), use_bias=False)(input1)
+            block1 = BatchNormalization()(block1)
+            block1 = DepthwiseConv2D((self._number_of_channels, 1), use_bias=False, depth_multiplier=2)(block1)
+            block1 = BatchNormalization()(block1)
+            block1 = Activation('elu')(block1)
+            block1 = AveragePooling2D((1, 4))(block1)
+            block1 = Dropout(dropoutRate)(block1)
+
+            # Second Conv Block (Temporal Filtering)
+            block2 = SeparableConv2D(16, (1, 16), padding='same', use_bias=False)(block1)
+            block2 = BatchNormalization()(block2)
+            block2 = Activation('elu')(block2)
+            block2 = AveragePooling2D((1, 8))(block2)
+            block2 = Dropout(dropoutRate)(block2)
+
+            # Classification
+            flatten = Flatten()(block2)
+            dense = Dense(4, activation='softmax')(flatten)
+
+            model = Model(inputs=input1, outputs=dense)
+
+            # Compile the model
+            model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+            model.summary()
+  
         if SVM or ALL:
             # CSP to extract spatial features + SVM classifier pipeline
             model = SVC(kernel='linear', C=0.1, gamma='scale', class_weight='balanced')
@@ -222,7 +223,7 @@ class AIBias:
         global CNN, SVM, ALL, CSPT
 
         if CNN:
-            self._model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+            self._model.fit(X_train, y_train, epochs=100, batch_size=32, validation_data=(X_test, y_test))
             self._is_trained = True
             self.model_evaluation(X_test, y_test)
 
@@ -455,7 +456,7 @@ class AIBias:
                 label = classes[num_trial][0]
                 if label in self._command_map.keys():
                     # Create a dictionary to hold the EEG signals for each channel
-                    #eeg_signals = {f"ch{ch}": antes_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4, FPz
+                    #eeg_signals = {f"ch{ch}": durante_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4, FPz
 
                     #filtered_data = filter_instance.filter_signals(eeg_signals)
                     # Process the raw EEG signals using ProcessingBias to extract frequency bands
@@ -466,7 +467,8 @@ class AIBias:
 
                     # Append the extracted features and the corresponding command label
                     #X.append(features)
-                    X.append(antes_total[num_trial])
+                    print("Executing")
+                    X.append(durante_total[num_trial])
                     y.append(self._label_map[self._command_map[label]])
 
             if save_path:
