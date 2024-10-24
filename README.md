@@ -1,6 +1,6 @@
 # BIAS: Brain-Intelligence Artificial System
 
-![BIAS Logo](./PáginaWeb/images/LogoBIAS.nobckg.png)
+![BIAS Logo](PáginaWeb/images/LogoBIAS.nobckg.png)
 
 
 ## Descripción del Proyecto
