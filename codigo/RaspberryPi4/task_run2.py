@@ -6,9 +6,9 @@ def run_script(script_name):
     subprocess.run(['python3', script_name])
 
 # Crear hilos para cada script
-thread_dsp = threading.Thread(target=run_script, args=("task_bias_dsp.py",))
-thread_motors = threading.Thread(target=run_script, args=("task_motor.py",))
-thread_reception = threading.Thread(target=run_script, args=("task_bias_reception.py",))
+thread_dsp = threading.Thread(target=run_script, args=("bias_dsp_threaded.py",))
+thread_motors = threading.Thread(target=run_script, args=("bias_motors_threaded.py",))
+thread_reception = threading.Thread(target=run_script, args=("bias_reception_threaded.py",))
 
 # Iniciar los hilos
 thread_dsp.start()
@@ -19,4 +19,3 @@ thread_reception.start()
 thread_dsp.join()
 thread_motors.join()
 thread_reception.join()
-
