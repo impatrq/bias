@@ -12,10 +12,9 @@ def task_motors():
         led_forward=16, led_backwards=20, led_left=21, led_right=26,
         buzzer=12, motor1_in1=13, motor1_in2=19, motor2_in1=7, motor2_in2=8
     )
-    biasMotor.brake()  # Inicializa el motor
+    biasMotor.brake() 
 
     while True:
-        # Puedes reemplazar esto con otra lógica para recibir comandos, o usar un bucle infinito
         command = input("Enter command (forward/left/backwards/right/stop): ").strip()
         biasMotor.move_if_possible(command)
     # print("Executing motor task")
@@ -29,6 +28,8 @@ def task_AI():
     print("Executing AI task")
 
 if __name__ == "__main__":
+    command_queue = multiprocessing.Queue()
+
     # Crear procesos para cada tarea
     process_motors = multiprocessing.Process(target=task_motors)
     process_reception = multiprocessing.Process(target=task_reception)
@@ -38,6 +39,10 @@ if __name__ == "__main__":
     process_motors.start()
     process_reception.start()
     process_AI.start()
+
+    while True:
+        command = input("Enter command (forward/left/backwards/right/stop): ").strip()
+        command_queue.put(command)
 
     # Esperar a que los procesos terminen
     process_motors.join()
