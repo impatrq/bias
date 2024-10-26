@@ -1,25 +1,31 @@
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization, AveragePooling1D, Activation, GlobalAveragePooling1D, Flatten, Conv2D, DepthwiseConv2D, SeparableConv2D, BatchNormalization, AveragePooling2D, Input
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Dense, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization, AveragePooling1D, Activation, GlobalAveragePooling1D, Flatten, Conv2D, DepthwiseConv2D, SeparableConv2D, BatchNormalization, AveragePooling2D, Input, MultiHeadAttention, LayerNormalization, Reshape
+from tensorflow.keras.regularizers import L2
+from sklearn.utils import shuffle
+from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.losses import binary_crossentropy
 from tensorflow.keras.constraints import max_norm
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from keras import activations 
+from keras import activations
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from tensorflow.keras.layers import Add, Concatenate, Lambda, Input, Permute
 from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
 from scipy.signal import welch, cwt, morlet
 from scipy.stats import skew, kurtosis, entropy
 import numpy as np
+import tensorflow as tf
 from sklearn.metrics import confusion_matrix
 from mne.decoding import CSP
 from sklearn.model_selection import GridSearchCV
 from bias_dsp import ProcessingBias, FilterBias
 from bias_reception import ReceptionBias
 from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
+from sklearn.base import BaseEstimator, ClassifierMixin
 
 CNN = False
 SVM = False
@@ -27,7 +33,7 @@ CSPT = False
 ALL = False
 
 def main():
-    n = 750
+    n = 1000
     fs = 250
     number_of_channels = 4
     port = '/dev/serial0'
@@ -137,11 +143,19 @@ class AIBias:
         self._commands = commands
         self._model = self.build_model(output_dimension=len(self._commands))
         self._is_trained = False
-        self._pca = PCA(n_components=0.95)
-        self._scaler = StandardScaler()
         self._label_map = {command: idx for idx, command in enumerate(self._commands)}
         self._reverse_label_map = {idx: command for command, idx in self._label_map.items()}
         self._command_map = {"left": "left", "right": "right", "foot": "forward", "tongue": "backwards"}
+
+    def standardize_data(self, X_train, X_test): 
+        # X_train & X_test :[Trials, MI-tasks, Channels, Time points]
+        for j in range(self._number_of_channels):
+            scaler = StandardScaler()
+            scaler.fit(X_train[:, 0, j, :])
+            X_train[:, 0, j, :] = scaler.transform(X_train[:, 0, j, :])
+            X_test[:, 0, j, :] = scaler.transform(X_test[:, 0, j, :])
+
+        return X_train, X_test
 
     def ai_is_trained(self):
         return self._is_trained
@@ -149,36 +163,51 @@ class AIBias:
     def build_model(self, output_dimension):
         global CNN, SVM, CSPT, ALL
         if CNN or CSP:
-            dropoutRate = 0.5
-            input1 = Input(shape=(self._number_of_channels, self._n, 1))
+            F1=8
+            D=2
+            kernLength=64
+            dropout=0.25
 
-            # First Conv Block (Spatial Filtering)
-            block1 = Conv2D(16, (1, 64), padding='same', input_shape=(self._number_of_channels, self._n, 1), use_bias=False)(input1)
-            block1 = BatchNormalization()(block1)
-            block1 = DepthwiseConv2D((self._number_of_channels, 1), use_bias=False, depth_multiplier=2)(block1)
-            block1 = BatchNormalization()(block1)
-            block1 = Activation('elu')(block1)
-            block1 = AveragePooling2D((1, 4))(block1)
-            block1 = Dropout(dropoutRate)(block1)
+            input1 = Input(shape = (1, self._number_of_channels, self._n))   
+            input2 = Permute((3,2,1))(input1) 
+            regRate=.25
 
-            # Second Conv Block (Temporal Filtering)
-            block2 = SeparableConv2D(16, (1, 16), padding='same', use_bias=False)(block1)
-            block2 = BatchNormalization()(block2)
+            F2= F1*D
+            block1 = Conv2D(F1, (kernLength, 1), padding = 'same',data_format='channels_last',use_bias = False)(input2)
+            block1 = BatchNormalization(axis = -1)(block1)
+            block2 = DepthwiseConv2D((1, self._number_of_channels), use_bias = False, 
+            depth_multiplier = D,
+            data_format='channels_last',
+            depthwise_constraint = max_norm(1.))(block1)
+
+            block2 = BatchNormalization(axis = -1)(block2)
             block2 = Activation('elu')(block2)
-            block2 = AveragePooling2D((1, 8))(block2)
-            block2 = Dropout(dropoutRate)(block2)
+            block2 = AveragePooling2D((8,1),data_format='channels_last')(block2)
+            block2 = Dropout(dropout)(block2)
+            block3 = SeparableConv2D(F2, (16, 1),
+            data_format='channels_last',
+            use_bias = False, padding = 'same')(block2)
 
-            # Classification
-            flatten = Flatten()(block2)
-            dense = Dense(4, activation='softmax')(flatten)
+            block3 = BatchNormalization(axis = -1)(block3)
+            block3 = Activation('elu')(block3)
+            block3 = AveragePooling2D((8,1),data_format='channels_last')(block3)
+            block3 = Dropout(dropout)(block3)
+            
+            eegnet = Flatten()(block3)
+            dense = Dense(4, name = 'dense',kernel_constraint = max_norm(regRate))(eegnet)
+            softmax = Activation('softmax', name = 'softmax')(dense)
 
-            model = Model(inputs=input1, outputs=dense)
+            model = Model(inputs=input1, outputs=softmax)
+            
 
             # Compile the model
             model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
             model.summary()
-  
+
+            return model
+
+
         if SVM or ALL:
             # CSP to extract spatial features + SVM classifier pipeline
             model = SVC(kernel='linear', C=0.1, gamma='scale', class_weight='balanced')
@@ -218,12 +247,43 @@ class AIBias:
 
     def train_model(self, X, y):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        #X_train = shuffle(X_train)
+        #X_test = shuffle(X_test)
+        #X_train, X_test = self.standardize_data(X_train, X_test)
         print(f"Unique classes in y_test: {np.unique(y_test)}")
         
         global CNN, SVM, ALL, CSPT
 
         if CNN:
-            self._model.fit(X_train, y_train, epochs=100, batch_size=32, validation_data=(X_test, y_test))
+            '''
+            # Wrap the model in KerasClassifier
+            model = KerasClassifier(build_fn=EEGNet, epochs=100, batch_size=32, verbose=0)
+
+            # Define the parameter grid
+            param_grid = {
+                'dropoutRate': [0.2, 0.3, 0.5],
+                'filters': [16, 32],
+                'kernelSize': [3, 5],
+                'batch_size': [16, 32, 64]
+            }
+
+            # Grid search
+            grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv=3)
+            grid_result = grid.fit(X_train, y_train)
+
+            # Summarize results
+            print(f"Best: {grid_result.best_score_} using {grid_result.best_params_}")
+            '''
+            '''
+            callbacks = [
+                ReduceLROnPlateau(monitor="val_loss", factor=0.90, patience=20, verbose=1, min_lr=0.0001),  
+                
+                EarlyStopping(monitor='val_accuracy', verbose=1, mode='max', patience=300)
+            ]
+            '''
+            class_weights = {0:1, 1:1, 2:1, 3:1}
+            print("Training")
+            self._model.fit(X_train, y_train, epochs=300, batch_size=64, validation_data=(X_test, y_test), class_weight=class_weights)
             self._is_trained = True
             self.model_evaluation(X_test, y_test)
 
@@ -264,19 +324,8 @@ class AIBias:
             # Initialize CSP (Common Spatial Patterns)
             csp = CSP(n_components=4, reg='ledoit_wolf', log=True)  # Choose `n_components` based on your experiment
 
-            # Fit CSP to the training data (CSP will handle 3D shape internally)
             X_train_csp = csp.fit_transform(X_train, y_train)
             X_test_csp = csp.transform(X_test)
-
-            # Now X_train_csp and X_test_csp are 2D arrays of shape (samples, components)
-
-            # StandardScaler expects 2D data, so it's fine now
-            scaler = StandardScaler()
-
-            # Scale the CSP-transformed data
-            X_train_scaled = scaler.fit_transform(X_train_csp)
-            X_test_scaled = scaler.transform(X_test_csp)
-            
             '''
             # Define parameter grid
             param_grid = {
@@ -290,18 +339,26 @@ class AIBias:
 
             # Perform grid search
             grid_search = GridSearchCV(svm, param_grid, cv=5, scoring='accuracy')
-            grid_search.fit(X_train_scaled, y_train)
+            grid_search.fit(X_train_csp, y_train)
 
             # Best parameters and model
-            best_params = grid_search.best_params_
+            best_params = grid_search.be            # Compile the model
+            model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+st_params_
             best_model = grid_search.best_estimator_
-            print(f"Best SVM parameters: {best_params}")  
+            print(f"Best SVM parameters: {best_params}")
+            '''
+            svm = SVC(C=10, gamma='scale', kernel='rbf', class_weight='balanced')
+            svm.fit(X_train_csp, y_train)
+            accuracy = svm.score(X_test_csp, y_test)
+            print(f'SVM Accuracy with CSP: {accuracy}')
 
+            '''
             # Train SVM
             self._model.fit(X_train_scaled, y_train)
             self._is_trained = True
             self.rendimiento_modelo_svm(self._model, X_test_scaled, y_test)
-            '''
+            
             
             # Convert labels to one-hot encoded format using OneHotEncoder
             one_hot_encoder = OneHotEncoder(sparse_output=False)
@@ -313,6 +370,7 @@ class AIBias:
             self._model.fit(X_train, y_one_hot_train, epochs=10, batch_size=32, validation_data=(X_test, y_one_hot_test))
             self._is_trained = True
             self.model_evaluation(X_test, y_one_hot_test)
+            '''
 
     def predict_command(self, eeg_data):
         if not self._is_trained:
@@ -335,7 +393,6 @@ class AIBias:
             # Invert the dimensions of trials and classes using zip
             inverted_trials = list(map(list, zip(*trials)))
             inverted_classes = list(map(list, zip(*classes)))
-            print(f"trial length: {len(inverted_trials)}")
             all_trials.extend(inverted_trials)
             all_classes.extend(inverted_classes)
         print(f"trials length: {len(all_trials)}")
@@ -403,8 +460,8 @@ class AIBias:
             durante_channel = []
 
             for ch in range(self._number_of_channels):
-                antes_motor_imagery = matriz_trial[ch][(inicio -  3) * fs : inicio * fs].tolist()
-                durante_motor_imagery = matriz_trial[ch][inicio * fs : fin * fs].tolist()
+                antes_motor_imagery = matriz_trial[ch][0 : int(inicio * fs)].tolist()
+                durante_motor_imagery = matriz_trial[ch][int(inicio * fs) : fin * fs].tolist()
                 despues_motor_imagery = matriz_trial[ch][fin * fs : (fin + 2) * fs].tolist()
 
                 senial = [antes_motor_imagery, durante_motor_imagery, despues_motor_imagery]
@@ -424,10 +481,10 @@ class AIBias:
             despues_total.append(despues_channel)
 
         n_samples_totales = len(segmentos_de_seniales_completa[0])  # Número total de muestras de la señal completa
-        tiempo_inicial = inicio - 3  # En segundos, desde donde comenzamos el recorte
+        tiempo_inicial = 0  # En segundos, desde donde comenzamos el recorte
         time_total = tiempo_inicial + np.arange(n_samples_totales) / fs  # Vector de tiempo en segundos
 
-        return segmentos_de_seniales, np.array(segmentos_de_seniales_completa), time_total, antes_total, durante_total, despues_total
+        return segmentos_de_seniales, np.array(segmentos_de_seniales_completa), time_total, np.array(antes_total), np.array(durante_total), np.array(despues_total)
 
     def model_evaluation(self, X_test, y_test):
         # Evaluate model performance on the test set
@@ -442,7 +499,7 @@ class AIBias:
         cm = confusion_matrix(np.argmax(y_test, axis=1), y_pred_classes)
 
         print(cm)
-
+    
     def collect_and_train_from_bci_dataset(self, filter_instance, processing_instance, save_path, saved_dataset_path):
         # Initialize X and y as empty lists
         X = []
@@ -451,7 +508,7 @@ class AIBias:
         if saved_dataset_path is None:
             file_list = [f"bcidatasetIV2a-master/A0{i}T.npz" for i in range(1, 9)]
             trials, classes = self.load_datasets(file_list)
-            seniales, senial_completa, time_total, antes_total, durante_total, despues_total = self.segmentar_seniales(trials, 3, 6)
+            seniales, senial_completa, time_total, antes_total, durante_total, despues_total = self.segmentar_seniales(trials, 2, 6)
             for num_trial in range(len(trials)):
                 label = classes[num_trial][0]
                 if label in self._command_map.keys():
@@ -484,11 +541,14 @@ class AIBias:
         X = np.array(X)
         print(X.shape)
         y = np.array(y)
-
+        
+        num_trials = len(X)
         if CNN:
+            X = X.reshape(num_trials, 1, self._number_of_channels, self._n)
             # Convert labels to one-hot encoded format using OneHotEncoder
-            one_hot_encoder = OneHotEncoder(sparse_output=False)
-            y_one_hot = one_hot_encoder.fit_transform(y.reshape(-1, 1))
+            #one_hot_encoder = OneHotEncoder(sparse_output=False)
+            #y_one_hot = one_hot_encoder.fit_transform(y.reshape(-1, 1))
+            y_one_hot = to_categorical(y)
             print(f"y_one_hot_shape: {y_one_hot.shape}")
 
             unique_classes, counts = np.unique(y_one_hot, return_counts=True)
@@ -507,3 +567,4 @@ class AIBias:
 
 if __name__ == "__main__":
     main()
+
