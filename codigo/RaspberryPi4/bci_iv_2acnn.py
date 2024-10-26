@@ -1,4 +1,4 @@
-from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.models import Sequential, Model, load_model
 from tensorflow.keras.layers import Dense, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization, AveragePooling1D, Activation, GlobalAveragePooling1D, Flatten, Conv2D, DepthwiseConv2D, SeparableConv2D, BatchNormalization, AveragePooling2D, Input, MultiHeadAttention, LayerNormalization, Reshape
 from tensorflow.keras.regularizers import L2
 from sklearn.utils import shuffle
@@ -44,49 +44,71 @@ def main():
     biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
     biasProcessing = ProcessingBias(n=n, fs=fs)
     commands = ["forward", "backwards", "left", "right"]
-    algorithm = input("Choose an algorithm: (cnn/svm/csp/all): ")
 
     global CNN, SVM, CSPT, ALL
 
-    if algorithm.lower().strip() == "cnn":
-        CNN = True
-    elif algorithm.lower().strip() == "svm":
-        SVM = True
-    elif algorithm.lower().strip() == "csp":
-        CSPT = True
-    elif algorithm.lower().strip() == "all":
-        ALL = True
-
-    biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
-
-    model_lt = input("Do you want to load or train a model? (l/t): ")
-    if model_lt.lower() == "t":
-        saved_dataset_path = None
-        save_path = None
-        loading_dataset = input("Do you want to load an existent dataset? (y/n): ")
-        if loading_dataset.lower() == "y":
-            saved_dataset_path = input("Write the name of the file where dataset was saved: ")
+    while True:
+        algorithm = input("Choose an algorithm: (cnn/svm/csp/all): ")
+        if algorithm.lower().strip() == "cnn":
+            CNN = True
+            print("CNN model selected")
+            break
+        elif algorithm.lower().strip() == "svm":
+            SVM = True
+            print("SVM model selected")
+            break
+        elif algorithm.lower().strip() == "csp":
+            CSPT = True
+            print("CSP model selected")
+            break
+        elif algorithm.lower().strip() == "all":
+            ALL = True
+            print("All models selected")
+            break
         else:
-            save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
-            if save_new_dataset == "y":
-                save_path = input("Write the path where you want to save the dataset: ")
-        biasAI.collect_and_train_from_bci_dataset(filter_instance=biasFilter, processing_instance=biasProcessing, save_path=save_path,
-                                                  saved_dataset_path=saved_dataset_path)
-    elif model_lt.lower():
-        model_name = input("Write the filname where model is saved: ")
-        print("Charging model")
+            print("Error selecting type of model, try again.")
 
-    #biasAI.make_predictions(filter_instance=biasFilter, processing_instance=biasProcessing)
+    biasAI = None 
+
+    while True:
+        model_lt = input("Do you want to load or train a model? (l/t): ")
+
+        if model_lt.lower() == "t" or "train":
+            biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands, model=None)
+            saved_dataset_path = None
+            save_path = None
+            model_path=None
+            loading_dataset = input("Do you want to load an existent dataset? (y/n): ")
+            if loading_dataset.lower() == "y" or "yes":
+                saved_dataset_path = input("Write the name of the file where dataset was saved (extension .npz): ")
+            else:
+                save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
+                if save_new_dataset == "y" or "yes":
+                    save_new_dataset_path = input("Write the path where you want to save the dataset (extensio .npz): ")
+            save_model = input("Do you want to save the model (y/n): ")
+            if model_path.lower() == "y" or "yes":
+                model_path = input("Write the filename where model will be saved (exttension .keras): ")
+
+            biasAI.collect_and_train_from_bci_dataset(filter_instance=biasFilter, processing_instance=biasProcessing, save_new_dataset_path=save_new_dataset_path, saved_dataset_path=saved_dataset_path, model_path=model_path)
+            break
+        elif model_lt.lower() == "l" or "load":
+            model_name = input("Write the filname where model is saved (extension .keras): ")
+            model = load_model(f"{model_name}.keras")
+            biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands, model=model)
+            break
+        else:
+            print("Mode invalid. Choose between loading and training.")
+
     real_data = input("Do you want to get real data? (y/n): ")
-    if real_data.lower().strip() == 'y':
+    if real_data.lower().strip() == 'y' or "yes":
         signals = biasReception.get_real_data(channels=number_of_channels, n=n)
     else:
         signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
     filtered_data = biasFilter.filter_signals(eeg_signals=signals)
     # Process data
-    times, eeg_signals = biasProcessing.process_signals(eeg_signals=filtered_data)
+    #times, eeg_signals = biasProcessing.process_signals(eeg_signals=filtered_data)
 
-    predicted_command = biasAI.predict_command(eeg_data=eeg_signals)
+    predicted_command = biasAI.predict_command(eeg_data=filtered_data)
     print(f"Predicted Command: {predicted_command}")
 
 # Import MotorImageryDataset class from your dataset code.
@@ -133,7 +155,7 @@ class MotorImageryDataset:
         return trials_c, classes_c
 
 class AIBias:
-    def __init__(self, n, fs, channels, commands):
+    def __init__(self, n, fs, channels, commands, model=None):
         self._n = n
         self._fs = fs
         self._number_of_channels = channels
@@ -141,8 +163,12 @@ class AIBias:
         self._number_of_waves_per_channel = len(["signal", "alpha", "beta", "gamma", "delta", "theta"])
         self._num_features_per_channel = self._features_length * self._number_of_waves_per_channel
         self._commands = commands
-        self._model = self.build_model(output_dimension=len(self._commands))
-        self._is_trained = False
+        if model is None:
+            self._model = self.build_model(output_dimension=len(self._commands))
+            self._is_trained = False
+        else:
+            self._model = model
+            self._is_trained = True
         self._label_map = {command: idx for idx, command in enumerate(self._commands)}
         self._reverse_label_map = {idx: command for command, idx in self._label_map.items()}
         self._command_map = {"left": "left", "right": "right", "foot": "forward", "tongue": "backwards"}
@@ -156,9 +182,6 @@ class AIBias:
             X_test[:, 0, j, :] = scaler.transform(X_test[:, 0, j, :])
 
         return X_train, X_test
-
-    def ai_is_trained(self):
-        return self._is_trained
 
     def build_model(self, output_dimension):
         global CNN, SVM, CSPT, ALL
@@ -197,8 +220,7 @@ class AIBias:
             dense = Dense(4, name = 'dense',kernel_constraint = max_norm(regRate))(eegnet)
             softmax = Activation('softmax', name = 'softmax')(dense)
 
-            model = Model(inputs=input1, outputs=softmax)
-            
+            model = Model(inputs=input1, outputs=softmax) 
 
             # Compile the model
             model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
@@ -245,7 +267,7 @@ class AIBias:
         features = features.reshape((self._number_of_channels, self._num_features_per_channel))
         return features
 
-    def train_model(self, X, y):
+    def train_model(self, X, y, model_path=None):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         #X_train = shuffle(X_train)
         #X_test = shuffle(X_test)
@@ -255,35 +277,23 @@ class AIBias:
         global CNN, SVM, ALL, CSPT
 
         if CNN:
-            '''
-            # Wrap the model in KerasClassifier
-            model = KerasClassifier(build_fn=EEGNet, epochs=100, batch_size=32, verbose=0)
-
-            # Define the parameter grid
-            param_grid = {
-                'dropoutRate': [0.2, 0.3, 0.5],
-                'filters': [16, 32],
-                'kernelSize': [3, 5],
-                'batch_size': [16, 32, 64]
-            }
-
-            # Grid search
-            grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv=3)
-            grid_result = grid.fit(X_train, y_train)
-
-            # Summarize results
-            print(f"Best: {grid_result.best_score_} using {grid_result.best_params_}")
-            '''
-            '''
-            callbacks = [
-                ReduceLROnPlateau(monitor="val_loss", factor=0.90, patience=20, verbose=1, min_lr=0.0001),  
-                
-                EarlyStopping(monitor='val_accuracy', verbose=1, mode='max', patience=300)
-            ]
-            '''
             class_weights = {0:1, 1:1, 2:1, 3:1}
             print("Training")
-            self._model.fit(X_train, y_train, epochs=300, batch_size=64, validation_data=(X_test, y_test), class_weight=class_weights)
+
+            # Define EarlyStopping to monitor validation loss with a patience of 15 epochs
+            early_stopping_callback = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True, mode='min')
+            callbacks = [early_stopping_callback]
+            if model_path is not None:
+                checkpoint_callback = ModelCheckpoint(f'{model_path}.keras', monitor='val_accuracy', save_best_only=True, mode='max')
+                callbacks.append(checkpoint_callback)
+
+            history = self._model.fit(
+                    X_train, y_train, 
+                    epochs=300, batch_size=32, 
+                    validation_data=(X_test, y_test), 
+                    class_weight=class_weights, 
+                    callbacks=callbacks
+                    )
             self._is_trained = True
             self.model_evaluation(X_test, y_test)
 
@@ -375,11 +385,15 @@ st_params_
     def predict_command(self, eeg_data):
         if not self._is_trained:
             raise Exception("Model has not been trained yet.")
-        features = self.extract_features(eeg_data)
-        features_reshaped = features.reshape(1, self._number_of_channels, self._num_features_per_channel)
+        # Stack the lists from each channel along the first axis (rows)
+        # Extract the values from the dictionary and stack them as rows
+        print(eeg_data)
+        eeg_data = np.stack([eeg_data[key] for key in sorted(eeg_data.keys())])
+        print(eeg_data.shape)
+        eeg_reshaped = eeg_data.reshape(1, 1, self._number_of_channels, self._n)
         if SVM:
             features_reshaped = features_reshaped.reshape(features_reshaped.shape[0], -1)
-        prediction = self._model.predict(features_reshaped)
+        prediction = self._model.predict(eeg_reshaped)
         predicted_label_index = np.argmax(prediction, axis=1)[0]
         predicted_command = self._reverse_label_map[predicted_label_index]
         return predicted_command
@@ -415,31 +429,6 @@ st_params_
         cm = confusion_matrix(y_test, y_pred_test)
         print("Confusion Matrix:")
         print(cm)
-
-    def make_predictions(self, filter_instance, processing_instance):
-        file_list = [f"bcidatasetIV2a-master/A09T.npz"]
-        trials, classes = self.load_datasets(file_list)
-
-        for num_trial in range(len(trials)):
-            label = classes[num_trial][0]
-            print(f"Label: {label}")
-            if label in self._command_map.keys():
-                # Create a dictionary to hold the EEG signals for each channel
-                eeg_signals = {f"ch{ch}": trials[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 3 channels: C3, Cz, C4
-
-                filtered_data = filter_instance.filter_signals(eeg_signals)
-                # Process the raw EEG signals using ProcessingBias to extract frequency bands
-                _, processed_signals = processing_instance.process_signals(filtered_data)
-
-                predicted_command = self.predict_command(processed_signals)
-                command = self._command_map[label]
-                if predicted_command == command:
-                    print(f"Prediction ok. Command: {command}")
-
-                else:
-                    print(f"Wrong prediction. Predicted {predicted_command}. Actual command: {command}")
-            else:
-                 print("Label not in command_map")
 
     def segmentar_seniales(self, matrix, inicio, fin, fs=250):
         # Listas para almacenar los segmentos por canal
@@ -500,7 +489,7 @@ st_params_
 
         print(cm)
     
-    def collect_and_train_from_bci_dataset(self, filter_instance, processing_instance, save_path, saved_dataset_path):
+    def collect_and_train_from_bci_dataset(self, filter_instance, processing_instance, save_new_dataset_path, saved_dataset_path, model_path):
         # Initialize X and y as empty lists
         X = []
         y = []
@@ -528,7 +517,7 @@ st_params_
                     X.append(durante_total[num_trial])
                     y.append(self._label_map[self._command_map[label]])
 
-            if save_path:
+            if save_new_dataset_path:
                 # Save the dataset as a compressed NumPy file
                 np.savez_compressed(f"{save_path}.npz", X=X, y=y)
                 print(f"Dataset saved to {save_path}.npz")
@@ -545,15 +534,12 @@ st_params_
         num_trials = len(X)
         if CNN:
             X = X.reshape(num_trials, 1, self._number_of_channels, self._n)
-            # Convert labels to one-hot encoded format using OneHotEncoder
-            #one_hot_encoder = OneHotEncoder(sparse_output=False)
-            #y_one_hot = one_hot_encoder.fit_transform(y.reshape(-1, 1))
             y_one_hot = to_categorical(y)
             print(f"y_one_hot_shape: {y_one_hot.shape}")
 
             unique_classes, counts = np.unique(y_one_hot, return_counts=True)
             print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
-            self.train_model(X, y_one_hot)
+            self.train_model(X, y_one_hot, model_path)
 
         if SVM:
             X_reshaped = X.reshape(X.shape[0], -1)
