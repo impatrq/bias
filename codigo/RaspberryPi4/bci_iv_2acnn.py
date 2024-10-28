@@ -73,25 +73,26 @@ def main():
     while True:
         model_lt = input("Do you want to load or train a model? (l/t): ")
 
-        if model_lt.lower() == "t" or "train":
+        saved_dataset_path = None
+        save_new_dataset_path = None
+        model_path = None
+        
+        if model_lt.lower() == "t" or model_lt.lower() == "train":
             biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands, model=None)
-            saved_dataset_path = None
-            save_path = None
-            model_path=None
             loading_dataset = input("Do you want to load an existent dataset? (y/n): ")
-            if loading_dataset.lower() == "y" or "yes":
+            if loading_dataset.lower().strip() == "y" or loading_dataset.lower().strip() == "yes":
                 saved_dataset_path = input("Write the name of the file where dataset was saved (extension .npz): ")
             else:
                 save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
-                if save_new_dataset == "y" or "yes":
+                if save_new_dataset.lower().strip() == "y" or save_new_dataset.lower().strip() == "yes":
                     save_new_dataset_path = input("Write the path where you want to save the dataset (extensio .npz): ")
             save_model = input("Do you want to save the model (y/n): ")
-            if model_path.lower() == "y" or "yes":
+            if save_model.lower().strip() == "y" or save_model.lower().strip() == "yes":
                 model_path = input("Write the filename where model will be saved (exttension .keras): ")
 
             biasAI.collect_and_train_from_bci_dataset(filter_instance=biasFilter, processing_instance=biasProcessing, save_new_dataset_path=save_new_dataset_path, saved_dataset_path=saved_dataset_path, model_path=model_path)
             break
-        elif model_lt.lower() == "l" or "load":
+        elif model_lt.lower().strip() == "l" or model_lt.lower().strip() == "load":
             model_name = input("Write the filname where model is saved (extension .keras): ")
             model = load_model(f"{model_name}.keras")
             biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands, model=model)
@@ -100,7 +101,7 @@ def main():
             print("Mode invalid. Choose between loading and training.")
 
     real_data = input("Do you want to get real data? (y/n): ")
-    if real_data.lower().strip() == 'y' or "yes":
+    if real_data.lower().strip() == 'y' or real_data.lower().strip() == "yes":
         signals = biasReception.get_real_data(channels=number_of_channels, n=n)
     else:
         signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
@@ -144,14 +145,35 @@ class MotorImageryDataset:
                 continue
         return trials, classes
 
-    def get_trials_from_channels(self, channels=[0, 7, 9, 11]):
+    def get_trials_from_channels(self, channels=[[6, 7], [9, 10], [11, 12], [19, 20]]):
         trials_c, classes_c = [], []
-        for c in channels:
-            t, c = self.get_trials_from_channel(channel=c)
-
+    
+        for set_of_channels in channels:
+            ch0, ch1 = set_of_channels[0], set_of_channels[1]
+        
+            # Get trials for each channel in the pair
+            t0, c0 = self.get_trials_from_channel(channel=ch0)
+            t1, c1 = self.get_trials_from_channel(channel=ch1)
+        
+            # Ensure both channels have the same classes
+            assert(len(t0) == len(t1))
+        
+            # Initialize `t` to store differential data for this channel pair
+            t = []
+        
+            # Loop through each trial and perform sample-wise subtraction
+            for trial in range(len(t0)):
+                assert(len(t0[trial]) == len(t1[trial]))  # Ensure sample lengths match
+                differential_trial = [t0[trial][sample] - t1[trial][sample] for sample in range(len(t0[trial]))]
+                t.append(differential_trial)
+        
+                # Confirm class labels match and append data
+                assert(c0[trial] == c1[trial])
             tt = np.concatenate(t, axis=0)
-            trials_c.append(tt)
-            classes_c.append(c)
+
+            trials_c.append(tt)  # Convert to array for each channel pair
+            classes_c.append(c0)  # Use the class labels from `c0` (or `c1`, as they should be identical)
+    
         return trials_c, classes_c
 
 class AIBias:
@@ -280,8 +302,8 @@ class AIBias:
             class_weights = {0:1, 1:1, 2:1, 3:1}
             print("Training")
 
-            # Define EarlyStopping to monitor validation loss with a patience of 15 epochs
-            early_stopping_callback = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True, mode='min')
+            # Define EarlyStopping to monitor validation loss with a patience of 20 epochs
+            early_stopping_callback = EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True, mode='min')
             callbacks = [early_stopping_callback]
             if model_path is not None:
                 checkpoint_callback = ModelCheckpoint(f'{model_path}.keras', monitor='val_accuracy', save_best_only=True, mode='max')
@@ -389,6 +411,9 @@ st_params_
         # Extract the values from the dictionary and stack them as rows
         print(eeg_data)
         eeg_data = np.stack([eeg_data[key] for key in sorted(eeg_data.keys())])
+        for ch in range(self._number_of_channels):
+            for sample_number in range(self._n):
+                eeg_data[ch][sample_number] = eeg_data[ch][sample_number] / 29.47045
         print(eeg_data.shape)
         eeg_reshaped = eeg_data.reshape(1, 1, self._number_of_channels, self._n)
         if SVM:
@@ -403,7 +428,7 @@ st_params_
         all_classes = []
         for file_name in file_names:
             dataset = MotorImageryDataset(file_name)
-            trials, classes = dataset.get_trials_from_channels([7, 9, 11, 19])
+            trials, classes = dataset.get_trials_from_channels([[1, 5], [6, 12], [13, 17], [18, 20]])  #[6, 7], [9, 10] , [11, 12], [19, 20]])
             # Invert the dimensions of trials and classes using zip
             inverted_trials = list(map(list, zip(*trials)))
             inverted_classes = list(map(list, zip(*classes)))
@@ -519,8 +544,8 @@ st_params_
 
             if save_new_dataset_path:
                 # Save the dataset as a compressed NumPy file
-                np.savez_compressed(f"{save_path}.npz", X=X, y=y)
-                print(f"Dataset saved to {save_path}.npz")
+                np.savez_compressed(f"{save_new_dataset_path}.npz", X=X, y=y)
+                print(f"Dataset saved to {save_new_dataset_path}.npz")
 
         else:
             data = np.load(f"{saved_dataset_path}.npz")
@@ -553,4 +578,3 @@ st_params_
 
 if __name__ == "__main__":
     main()
-

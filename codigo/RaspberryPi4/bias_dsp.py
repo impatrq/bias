@@ -174,7 +174,7 @@ class FilterBias(DSPBias):
         # Filter by signals in each channel
         for ch, signal in eeg_signals.items():
             filtered_signal = self.digital_filtering(eeg_data=signal)
-            filtered_signals[ch] = filtered_signal
+            filtered_signals[f'ch{ch}'] = filtered_signal
         return filtered_signals
 
     def digital_filtering(self, eeg_data):
