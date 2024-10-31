@@ -498,7 +498,7 @@ Disassembly of section .text:
 10000488:	20004238 	.word	0x20004238
 1000048c:	20001610 	.word	0x20001610
 10000490:	10000305 	.word	0x10000305
-10000494:	fffff830 	.word	0xfffff830
+10000494:	fffff060 	.word	0xfffff060
 
 10000498 <build_json>:
 10000498:	b5f0      	push	{r4, r5, r6, r7, lr}
