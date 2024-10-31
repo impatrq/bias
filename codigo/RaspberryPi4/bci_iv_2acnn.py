@@ -26,7 +26,8 @@ from bias_dsp import ProcessingBias, FilterBias
 from bias_reception import ReceptionBias
 from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 from sklearn.base import BaseEstimator, ClassifierMixin
-
+from bias_graphing import GraphingBias
+from sklearn.utils.class_weight import compute_class_weight
 CNN = False
 SVM = False
 CSPT = False
@@ -43,6 +44,7 @@ def main():
     biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
     biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
     biasProcessing = ProcessingBias(n=n, fs=fs)
+    biasGraphing = GraphingBias(graph_in_terminal=True)
     commands = ["forward", "backwards", "left", "right"]
 
     global CNN, SVM, CSPT, ALL
@@ -101,16 +103,27 @@ def main():
             print("Mode invalid. Choose between loading and training.")
 
     real_data = input("Do you want to get real data? (y/n): ")
-    if real_data.lower().strip() == 'y' or real_data.lower().strip() == "yes":
-        signals = biasReception.get_real_data(channels=number_of_channels, n=n)
-    else:
-        signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
-    filtered_data = biasFilter.filter_signals(eeg_signals=signals)
-    # Process data
-    #times, eeg_signals = biasProcessing.process_signals(eeg_signals=filtered_data)
+    for i in range(10):
+        if real_data.lower().strip() == 'y' or real_data.lower().strip() == "yes":
+            signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+        else:
+            signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
 
-    predicted_command = biasAI.predict_command(eeg_data=filtered_data)
-    print(f"Predicted Command: {predicted_command}")
+        filtered_data = biasFilter.filter_signals(eeg_signals=signals) 
+
+        
+        # Calculate the time vector
+        t = np.arange(n) / fs
+        # Graph signals
+        for ch, signal in filtered_data.items():
+           # Graph filtered signal
+            biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Filtered Signal {}".format(ch))
+
+        # Process data
+        #times, eeg_signals = biasProcessing.process_signals(eeg_signals=filtered_data)
+
+        predicted_command = biasAI.predict_command(eeg_data=filtered_data)
+        print(f"Predicted Command: {predicted_command}")
 
 # Import MotorImageryDataset class from your dataset code.
 class MotorImageryDataset:
@@ -194,6 +207,9 @@ class AIBias:
         self._label_map = {command: idx for idx, command in enumerate(self._commands)}
         self._reverse_label_map = {idx: command for command, idx in self._label_map.items()}
         self._command_map = {"left": "left", "right": "right", "foot": "forward", "tongue": "backwards"}
+        self._montage = {'Fz': 0, 'FC3': 1, 'FC1': 2, 'FCz': 3, 'FC2': 4, 'FC4': 5, 'C5': 6, 'C3': 7, 'C1': 8,
+                         'Cz': 9, 'C2': 10, 'C4': 11, 'C6': 12, 'CP3': 13, 'CP1': 14, 'CPz': 15, 'CP2': 16,
+                         'CP4': 17, 'P3': 18, 'Pz': 19, 'P4': 20, 'Oz':21}
 
     def standardize_data(self, X_train, X_test): 
         # X_train & X_test :[Trials, MI-tasks, Channels, Time points]
@@ -299,16 +315,18 @@ class AIBias:
         global CNN, SVM, ALL, CSPT
 
         if CNN:
-            class_weights = {0:1, 1:1, 2:1, 3:1}
+            # Define all class labels explicitly
+            all_classes = np.arange(y_train.shape[1])  # This will be [0, 1, 2, 3] for 4 classes
+            class_weights = dict(enumerate(compute_class_weight('balanced', classes=np.unique(y_train), y=y_train.argmax(axis=1))))
             print("Training")
 
             # Define EarlyStopping to monitor validation loss with a patience of 20 epochs
             early_stopping_callback = EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True, mode='min')
-            callbacks = [early_stopping_callback]
+            lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, min_lr=1e-6)
             if model_path is not None:
                 checkpoint_callback = ModelCheckpoint(f'{model_path}.keras', monitor='val_accuracy', save_best_only=True, mode='max')
-                callbacks.append(checkpoint_callback)
-
+        
+            callbacks = [early_stopping_callback, checkpoint_callback, lr_scheduler]
             history = self._model.fit(
                     X_train, y_train, 
                     epochs=300, batch_size=32, 
@@ -338,7 +356,7 @@ class AIBias:
                 #('csp', CSP(n_components=4, reg='ledoit_wolf', log=True)),  # CSP to extract spatial patterns
                 ('pca', PCA(n_components=0.95)),      # PCA to reduce feature dimensionality 
                 ('scaler', StandardScaler()),         # Standardize the features
-                ('svm', SVC(kernel='rbf', C=1, gamma='scale', class_weight='balanced'))  # SVM classifier
+                ('svm', SVC(kernel='rbf', C=1, gammea='scale', class_weight='balanced'))  # SVM classifier
             ])
 
             # Step 2: Fit the pipeline to the training data
@@ -389,7 +407,7 @@ st_params_
             # Train SVM
             self._model.fit(X_train_scaled, y_train)
             self._is_trained = True
-            self.rendimiento_modelo_svm(self._model, X_test_scaled, y_test)
+            self.rendimiento_modelo_svm(self._modele, X_test_scaled, y_test)
             
             
             # Convert labels to one-hot encoded format using OneHotEncoder
@@ -424,11 +442,19 @@ st_params_
         return predicted_command
 
     def load_datasets(self, file_names):
+        montage = {'Fz': 0, 'FC3': 1, 'FC1': 2, 'FCz': 3, 'FC2': 4, 'FC4': 5, 'C5': 6, 'C3': 7, 'C1': 8,
+                         'Cz': 9, 'C2': 10, 'C4': 11, 'C6': 12, 'CP3': 13, 'CP1': 14, 'CPz': 15, 'CP2': 16,
+                         'CP4': 17, 'P3': 18, 'Pz': 19, 'P4': 20, 'Oz': 21}
+
         all_trials = []
         all_classes = []
         for file_name in file_names:
             dataset = MotorImageryDataset(file_name)
-            trials, classes = dataset.get_trials_from_channels([[1, 5], [6, 12], [13, 17], [18, 20]])  #[6, 7], [9, 10] , [11, 12], [19, 20]])
+            trials, classes = dataset.get_trials_from_channels([[montage['C3'], montage['FC1']], 
+                                                                [montage['C4'], montage['FC2']],
+                                                                [montage['Cz'], montage['Fz']], 
+                                                                [montage['FC3'], montage['FC4']]])
+
             # Invert the dimensions of trials and classes using zip
             inverted_trials = list(map(list, zip(*trials)))
             inverted_classes = list(map(list, zip(*classes)))
@@ -454,6 +480,22 @@ st_params_
         cm = confusion_matrix(y_test, y_pred_test)
         print("Confusion Matrix:")
         print(cm)
+
+   # Assuming eeg_data has the shape (trials, channels, samples)
+    def normalize_eeg_data_zscore(self, eeg_data):
+        scaler = StandardScaler()
+        normalized_data = []
+    
+        # Normalize each channel separately for each trial
+        for trial in range(eeg_data.shape[0]):  # Loop over trials
+            trial_data = []
+            for channel in range(eeg_data.shape[1]):  # Loop over channels
+                # Normalize the channel data using StandardScaler
+                normalized_channel = scaler.fit_transform(eeg_data[trial, channel, :].reshape(-1, 1)).flatten()
+                trial_data.append(normalized_channel.tolist())  # Convert to list and append
+            normalized_data.append(trial_data)
+    
+        return normalized_data
 
     def segmentar_seniales(self, matrix, inicio, fin, fs=250):
         # Listas para almacenar los segmentos por canal
@@ -509,10 +551,13 @@ st_params_
         y_pred = self._model.predict(X_test)
         y_pred_classes = np.argmax(y_pred, axis=1)  # Convert one-hot encoding to class labels
 
-        # Confusion matrix
-        cm = confusion_matrix(np.argmax(y_test, axis=1), y_pred_classes)
-
+        # Print confusion matrix and classification report
+        y_true = np.argmax(y_test, axis=1)
+        cm = confusion_matrix(y_true, y_pred_classes)
         print(cm)
+    
+        print(classification_report(y_true, y_pred_classes, target_names=['Class 0', 'Class 1', 'Class 2', 'Class 3']))
+        plot_confusion_matrix(y_true, y_pred_classes)
     
     def collect_and_train_from_bci_dataset(self, filter_instance, processing_instance, save_new_dataset_path, saved_dataset_path, model_path):
         # Initialize X and y as empty lists
@@ -523,13 +568,14 @@ st_params_
             file_list = [f"bcidatasetIV2a-master/A0{i}T.npz" for i in range(1, 9)]
             trials, classes = self.load_datasets(file_list)
             seniales, senial_completa, time_total, antes_total, durante_total, despues_total = self.segmentar_seniales(trials, 2, 6)
+            durante_total = self.normalize_eeg_data_zscore(durante_total)
             for num_trial in range(len(trials)):
                 label = classes[num_trial][0]
                 if label in self._command_map.keys():
                     # Create a dictionary to hold the EEG signals for each channel
-                    #eeg_signals = {f"ch{ch}": durante_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4, FPz
+                    eeg_signals = {f"ch{ch}": durante_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4, FPz
 
-                    #filtered_data = filter_instance.filter_signals(eeg_signals)
+                    filtered_data = filter_instance.filter_signals(eeg_signals)
                     # Process the raw EEG signals using ProcessingBias to extract frequency bands
                     #_, processed_signals = processing_instance.process_signals(filtered_data)
 
@@ -538,7 +584,7 @@ st_params_
 
                     # Append the extracted features and the corresponding command label
                     #X.append(features)
-                    print("Executing")
+                    eeg_data = np.stack([filtered_data[key] for key in sorted(filtered_data.keys())])
                     X.append(durante_total[num_trial])
                     y.append(self._label_map[self._command_map[label]])
 

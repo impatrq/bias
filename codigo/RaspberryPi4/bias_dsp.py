@@ -196,7 +196,7 @@ class FilterBias(DSPBias):
             
             if self._bandpass:
                 # Apply high-pass and low-pass filters (bandpass)
-                eeg_data = self.butter_bandpass_filter(eeg_data, lowcut=0.5, highcut=50)
+                eeg_data = self.butter_bandpass_filter(eeg_data, lowcut=8, highcut=30)
                 print(f"Data shape after bandpass filter: {eeg_data.shape}")
             
             if self._fir:
@@ -238,11 +238,6 @@ class FilterBias(DSPBias):
         # Range of the bandpass filter
         b, a = butter(order, [low, high], btype='band')
 
-        # Check the padding length
-        padlen = 3 * max(len(b), len(a)) 
-        if data.shape[1] <= padlen:
-            raise ValueError(f"The length of the input vector must be greater than padlen, which is {padlen}. Data length is {data.shape[1]}.")
-        
         # Apply the bandpass filter
         y = filtfilt(b, a, data, axis=1)
         return y
@@ -255,11 +250,6 @@ class FilterBias(DSPBias):
         # Calculate the specific small band which will be filtered
         b, a = butter(2, [notch - notch / quality_factor, notch + notch / quality_factor], btype='bandstop')
 
-        # Calculate the padding length
-        padlen = 3 * max(len(b), len(a))
-        if data.shape[1] <= padlen:
-            raise ValueError(f"The length of the input vector must be greater than padlen, which is {padlen}. Data length is {data.shape[1]}.")
-        
         # Apply the notch filter
         y = filtfilt(b, a, data, axis=1)
         return y
