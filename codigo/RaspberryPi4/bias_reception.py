@@ -3,17 +3,26 @@ import time
 import numpy as np
 import json
 from bias_graphing import GraphingBias
-from signals import random_signal
+from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 
 def main():
     # Set constants
     n = 1000
     fs = 500
     number_of_channels = 4
+    port = '/dev/serial0'
+    baudrate = 115200
+    timeout = 1
     # Receive data
-    biasReception = ReceptionBias()
-    signals = {}
-    signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
+
+    # Generate data
+    real_data = input("Do you want to get real data? (y/n): ")
+
+    if real_data.lower().strip() == "y":
+        signals = biasReception.get_real_data(n=n, channels=number_of_channels)
+    else:
+        signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
 
     # Graph signals
     biasGraphing = GraphingBias(graph_in_terminal=True)
@@ -29,7 +38,7 @@ class ReceptionBias:
         self._timeout = timeout
 
     # Get the data from the RP2040 Zero
-    def get_real_data(self, channels, n):
+    def get_real_data(self, n, channels):
         # Initialize serial communication
         self._ser = self.init_serial(self._port, self._baudrate, self._timeout)
         try:
@@ -67,12 +76,6 @@ class ReceptionBias:
 
         return signals
 
-    '''
-    def combine_signals(self, signals):
-        combined_signal = np.mean([signals[f'ch{ch}'] for ch in range(len(signals))], axis=0)
-        return combined_signal
-    '''
-
     # Initialize serial communication
     def init_serial(self, port, baudrate, timeout):
         return serial.Serial(port, baudrate, timeout=timeout)
@@ -81,7 +84,6 @@ class ReceptionBias:
     def process_data(self, data):
         try:
             json_data = json.loads(data)
-            print(json_data)
             return json_data
         except json.JSONDecodeError as e:
             print(f"Error decoding JSON: {e}")

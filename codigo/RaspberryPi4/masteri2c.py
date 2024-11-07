@@ -50,13 +50,13 @@ while True:
     command = read_from_arduino()
     if command:
         print(f"Recibido: {command}")
-        if command == "FORWARD":
+        if command == "forward":
             move_forward()
-        elif command == "BACKWARD":
+        elif command == "backwards":
             move_backward()
-        elif command == "LEFT":
+        elif command == "left":
             move_left()
-        elif command == "RIGHT":
+        elif command == "right":
             move_right()
         else:
             stop_motors()

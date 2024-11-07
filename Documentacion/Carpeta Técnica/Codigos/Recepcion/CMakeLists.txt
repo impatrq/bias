@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.13)
+include(pico_sdk_import.cmake)
+project(reception)
+pico_sdk_init()
+add_executable(reception reception.c)
+target_link_libraries(reception pico_stdlib hardware_adc hardware_uart)
+pico_enable_stdio_usb(reception 1)
+pico_add_extra_outputs(reception)

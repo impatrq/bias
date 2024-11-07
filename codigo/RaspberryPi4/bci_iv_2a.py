@@ -1,219 +1,490 @@
-from scipy.stats import skew, kurtosis
-from scipy.signal import welch
-import numpy as np
-from scipy.signal import butter, filtfilt
-import os
-import mne
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Dropout, InputLayer
-from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.layers import Dense, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.svm import SVC
+from sklearn.pipeline import Pipeline
+from scipy.signal import welch, cwt, morlet
+from scipy.stats import skew, kurtosis, entropy
+import numpy as np
+from sklearn.metrics import confusion_matrix
+from mne.decoding import CSP
+from sklearn.model_selection import GridSearchCV
+from bias_dsp import ProcessingBias, FilterBias
+from bias_reception import ReceptionBias
+from signals import generate_synthetic_eeg, generate_synthetic_eeg_bandpower
 
-DATA_PATH = 'BCI_IV_2a/'  # Define your dataset directory
+CNN = False
+SVM = False
+CSPT = False
+ALL = False
 
-# Define frequency bands for EEG
-BANDS = {
-    'delta': (0.5, 4),
-    'theta': (4, 8),
-    'alpha': (8, 13),
-    'beta': (13, 30),
-    'gamma': (30, 100)
-}
-
-# Step 2
-def load_gdf_data(filepath):
-    # Load the dataset using MNE
-    raw = mne.io.read_raw_gdf(filepath, preload=True)
-    # Select motor imagery (event 769 = left hand, 770 = right hand, 771 = feet, 772 = tongue)
-    events, event_ids = mne.events_from_annotations(raw)
+def main():
+    n = 750
+    fs = 250
+    number_of_channels = 4
+    port = '/dev/serial0'
+    baudrate = 115200
+    timeout = 1 
     
-    # Pick EEG channels only
-    raw.pick_types(eeg=True)
+    biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
+    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
+    biasProcessing = ProcessingBias(n=n, fs=fs)
+    commands = ["forward", "backwards", "left", "right"]
+    algorithm = input("Choose an algorithm: (cnn/svm/csp/all): ")
 
-    # Apply bandpass filter (0.5 Hz to 100 Hz)
-    raw.filter(0.5, 100)
+    global CNN, SVM, CSPT, ALL
 
-    # Epoch the data around motor imagery events (event_id for different tasks)
-    tmin, tmax = 0, 4  # Define the time window for motor imagery (0-4s)
-    epochs = mne.Epochs(raw, events, event_id=event_ids, tmin=tmin, tmax=tmax,
-                        baseline=None, preload=True, event_repeated='merge')
+    if algorithm.lower().strip() == "cnn":
+        CNN = True
+    elif algorithm.lower().strip() == "svm":
+        SVM = True
+    elif algorithm.lower().strip() == "csp":
+        CSPT = True
+    elif algorithm.lower().strip() == "all":
+        ALL = True
 
-    # Extract EEG data and corresponding labels
-    X = epochs.get_data()  # Shape: (n_epochs, n_channels, n_times)
-    y = epochs.events[:, -1]  # Labels
+    biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
 
-    return X, y
+    model_lt = input("Do you want to load or train a model? (l/t): ")
+    if model_lt.lower() == "t":
+        saved_dataset_path = None
+        save_path = None
+        loading_dataset = input("Do you want to load an existent dataset? (y/n): ")
+        if loading_dataset.lower() == "y":
+            saved_dataset_path = input("Write the name of the file where dataset was saved: ")
+        else:
+            save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
+            if save_new_dataset == "y":
+                save_path = input("Write the path where you want to save the dataset: ")
+        biasAI.collect_and_train_from_bci_dataset(filter_instance=biasFilter, processing_instance=biasProcessing, save_path=save_path,
+                                                  saved_dataset_path=saved_dataset_path)
+    elif model_lt.lower():
+        model_name = input("Write the filname where model is saved: ")
+        print("Charging model")
 
-# Create a bandpass filter for a given band
-def bandpass_filter(data, band, fs):
-    low, high = band
-    nyquist = 0.5 * fs
-    low /= nyquist
-    high /= nyquist
-    b, a = butter(4, [low, high], btype='band')
-    return filtfilt(b, a, data)
+    #biasAI.make_predictions(filter_instance=biasFilter, processing_instance=biasProcessing)
+    real_data = input("Do you want to get real data? (y/n): ")
+    if real_data.lower().strip() == 'y':
+        signals = biasReception.get_real_data(channels=number_of_channels, n=n)
+    else:
+        signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
+    filtered_data = biasFilter.filter_signals(eeg_signals=signals)
+    # Process data
+    times, eeg_signals = biasProcessing.process_signals(eeg_signals=filtered_data)
 
-# Apply the bandpass filter to extract different bands
-def extract_bands(eeg_data, fs):
-    band_data = {}
-    for band_name, band_range in BANDS.items():
-        band_data[band_name] = bandpass_filter(eeg_data, band_range, fs)
-    return band_data
+    predicted_command = biasAI.predict_command(eeg_data=eeg_signals)
+    print(f"Predicted Command: {predicted_command}")
 
-def extract_features(band_data, fs):
-    """Extract scalar features for each frequency band from the EEG signal."""
-    features = []
+# Import MotorImageryDataset class from your dataset code.
+class MotorImageryDataset:
+    def __init__(self, dataset='A01T.npz'):
+        if not dataset.endswith('.npz'):
+            dataset += '.npz'
+        self.data = np.load(dataset)
 
-    for band_name, signal in band_data.items():
-        # Check if the signal is 1D, as required for scalar functions like skew and kurtosis
-        signal = np.asarray(signal).flatten()  # Ensure signal is 1D
+        self.Fs = 250  # 250Hz from original paper
+        self.raw = self.data['s'].T
+        self.events_type = self.data['etyp'].T
+        self.events_position = self.data['epos'].T
+        self.events_duration = self.data['edur'].T
+        self.artifacts = self.data['artifacts'].T
+        self.mi_types = {769: 'left', 770: 'right', 771: 'foot', 772: 'tongue', 783: 'unknown'}
 
-        # Extract statistical features (ensure scalar values)
-        mean_val = np.mean(signal)  # Scalar
-        var_val = np.var(signal)  # Scalar
-        skew_val = np.mean(skew(signal))  # Scalar, take mean in case it's an array
-        kurt_val = np.mean(kurtosis(signal))  # Scalar, take mean in case it's an array
-        power_val = np.sum(signal ** 2)  # Scalar (sum of squares)
+    def get_trials_from_channel(self, channel=7):
+        starttrial_code = 768
+        starttrial_events = self.events_type == starttrial_code
+        idxs = [i for i, x in enumerate(starttrial_events[0]) if x]
+        trials, classes = [], []
+        for index in idxs:
+            try:
+                type_e = self.events_type[0, index + 1]
+                class_e = self.mi_types[type_e]
+                classes.append(class_e)
+                start = self.events_position[0, index]
+                stop = start + self.events_duration[0, index]
+                trial = self.raw[channel, start:stop].reshape((1, -1))
+                trials.append(trial)
+            except:
+                continue
+        return trials, classes
 
-        # Frequency domain feature: entropy and power spectral density
-        freqs, psd = welch(signal, fs=fs)  # PSD is an array
-        entropy_val = np.sum(psd * np.log(psd + 1e-10))  # Scalar entropy value
+    def get_trials_from_channels(self, channels=[0, 7, 9, 11]):
+        trials_c, classes_c = [], []
+        for c in channels:
+            t, c = self.get_trials_from_channel(channel=c)
 
-        # Summary statistics for PSD (array)
-        psd_mean = np.mean(psd)  # Scalar summary of the PSD array
-        psd_variance = np.var(psd)  # Variance of the PSD array
+            tt = np.concatenate(t, axis=0)
+            trials_c.append(tt)
+            classes_c.append(c)
+        return trials_c, classes_c
 
-        # Combine all features into a list of scalars
-        band_features = [
-            mean_val, var_val, skew_val, kurt_val, power_val,
-            psd_mean, psd_variance, entropy_val
-        ]
+class AIBias:
+    def __init__(self, n, fs, channels, commands):
+        self._n = n
+        self._fs = fs
+        self._number_of_channels = channels
+        self._features_length = len(["mean", "variance", "skewness", "kurt", "energy", "band_power", "wavelet_energy", "entropy"])
+        self._number_of_waves_per_channel = len(["signal", "alpha", "beta", "gamma", "delta", "theta"])
+        self._num_features_per_channel = self._features_length * self._number_of_waves_per_channel
+        self._commands = commands
+        self._model = self.build_model(output_dimension=len(self._commands))
+        self._is_trained = False
+        self._pca = PCA(n_components=0.95)
+        self._scaler = StandardScaler()
+        self._label_map = {command: idx for idx, command in enumerate(self._commands)}
+        self._reverse_label_map = {idx: command for command, idx in self._label_map.items()}
+        self._command_map = {"left": "left", "right": "right", "foot": "forward", "tongue": "backwards"}
 
-        features.extend(band_features)  # Add the scalars to the feature list
+    def ai_is_trained(self):
+        return self._is_trained
 
-    return features  # Return consistent-length feature vector
+    def build_model(self, output_dimension):
+        global CNN, SVM, CSPT, ALL
+        if CNN or CSP:
+            model = Sequential([
+                InputLayer(shape=(self._number_of_channels, 750)),
+                Conv1D(filters=128, kernel_size=3, activation='relu'),
+                BatchNormalization(),
+                MaxPooling1D(pool_size=2),
+                Dropout(0.3),
+                LSTM(50, return_sequences=False),
+                Dense(128, activation='relu'),
+                Dropout(0.5),
+                Dense(64, activation='relu'),
+                Dropout(0.5),
+                Dense(32, activation='relu'),
+                Dropout(0.5),
+                Dense(output_dimension, activation='softmax')
+            ])
+            model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+            model.summary()
+        
+        if SVM or ALL:
+            # CSP to extract spatial features + SVM classifier pipeline
+            model = SVC(kernel='linear', C=0.1, gamma='scale', class_weight='balanced')
+            #model = SVC(kernel='linear', C=1)
+            #model = SVC(class_weight='balanced')
 
-def preprocess_data(X, fs):
-    """Preprocess EEG data by extracting features for each channel and frequency band."""
-    features_list = []
+        return model
+
+    def extract_features(self, eeg_data):
+        features = []
+        for ch, signals_per_channel in eeg_data.items():
+            channel_features = []
+            assert(len(signals_per_channel) == self._number_of_waves_per_channel)
+            for band_name, signal_wave in signals_per_channel.items():
+                signal_wave = np.array(signal_wave)
+                mean = np.mean(signal_wave)
+                variance = np.var(signal_wave)
+                skewness = skew(signal_wave)
+                kurt = kurtosis(signal_wave)
+                energy = np.sum(signal_wave ** 2)
+                freqs, psd = welch(signal_wave, fs=self._fs)
+                band_power = np.sum(psd)
+                scales = np.arange(1, 31)
+                coeffs = cwt(signal_wave, morlet, scales)
+                wavelet_energy = np.sum(coeffs ** 2)
+                signal_entropy = entropy(np.histogram(signal_wave, bins=10)[0])
+                list_of_features = [mean, variance, skewness, kurt, energy, band_power, wavelet_energy, signal_entropy]
+                channel_features.extend(list_of_features)
+                assert(len(list_of_features) == self._features_length)
+            features.append(channel_features)
+        features = np.abs(np.array(features))
+        features = self._scaler.fit_transform(features)
+        num_features_per_channel = features.shape[1]
+        assert(self._num_features_per_channel == num_features_per_channel)
+        features = features.reshape((self._number_of_channels, self._num_features_per_channel))
+        return features
+
+    def train_model(self, X, y):
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        print(f"Unique classes in y_test: {np.unique(y_test)}")
+        
+        global CNN, SVM, ALL, CSPT
+
+        if CNN:
+            self._model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+            self._is_trained = True
+            self.model_evaluation(X_test, y_test)
+
+        if SVM:
+            # StandardScaler expects 2D data, so it's fine now
+            scaler = StandardScaler()
+
+            # Scale the CSP-transformed data
+            X_train_scaled = scaler.fit_transform(X_train)
+            X_test_scaled = scaler.transform(X_test)
+
+            self._model.fit(X_train_scaled, y_train)
+            self._is_trained = True
+            self.rendimiento_modelo_svm(self._model, X_test_scaled, y_test)
+       
+        if ALL:
+            print("hola")
+            # Step 1: Set up a pipeline to combine PCA and CSP
+            pca_csp_pipeline = Pipeline([
+                #('csp', CSP(n_components=4, reg='ledoit_wolf', log=True)),  # CSP to extract spatial patterns
+                ('pca', PCA(n_components=0.95)),      # PCA to reduce feature dimensionality 
+                ('scaler', StandardScaler()),         # Standardize the features
+                ('svm', SVC(kernel='rbf', C=1, gamma='scale', class_weight='balanced'))  # SVM classifier
+            ])
+
+            # Step 2: Fit the pipeline to the training data
+            pca_csp_pipeline.fit(X_train, y_train)  # X_train should be raw EEG data (samples x channels x time)
+            self._is_trained = True
+            # Step 3: Evaluate the pipeline on test data
+            y_pred = pca_csp_pipeline.predict(X_test)
+            print(f"Test Accuracy: {accuracy_score(y_test, y_pred)}")
+            print(f"Classification Report:\n {classification_report(y_test, y_pred)}")
+
+        if CSPT:
+            # Train model
+            # Build a pipeline
+            # CSP to extract spatial features + SVM classifier pipeline
+            # Initialize CSP (Common Spatial Patterns)
+            csp = CSP(n_components=4, reg='ledoit_wolf', log=True)  # Choose `n_components` based on your experiment
+
+            # Fit CSP to the training data (CSP will handle 3D shape internally)
+            X_train_csp = csp.fit_transform(X_train, y_train)
+            X_test_csp = csp.transform(X_test)
+
+            # Now X_train_csp and X_test_csp are 2D arrays of shape (samples, components)
+
+            # StandardScaler expects 2D data, so it's fine now
+            scaler = StandardScaler()
+
+            # Scale the CSP-transformed data
+            X_train_scaled = scaler.fit_transform(X_train_csp)
+            X_test_scaled = scaler.transform(X_test_csp)
+            
+            '''
+            # Define parameter grid
+            param_grid = {
+                'C': [0.1, 1, 10, 100],
+                'gamma': ['scale', 'auto'],
+                'kernel': ['linear', 'rbf', 'sigmoid', 'poly']
+            }
+
+            # Initialize SVM with balanced class weight
+            svm = SVC(class_weight='balanced')
+
+            # Perform grid search
+            grid_search = GridSearchCV(svm, param_grid, cv=5, scoring='accuracy')
+            grid_search.fit(X_train_scaled, y_train)
+
+            # Best parameters and model
+            best_params = grid_search.best_params_
+            best_model = grid_search.best_estimator_
+            print(f"Best SVM parameters: {best_params}")  
+
+            # Train SVM
+            self._model.fit(X_train_scaled, y_train)
+            self._is_trained = True
+            self.rendimiento_modelo_svm(self._model, X_test_scaled, y_test)
+            '''
+            
+            # Convert labels to one-hot encoded format using OneHotEncoder
+            one_hot_encoder = OneHotEncoder(sparse_output=False)
+            y_one_hot_test = one_hot_encoder.fit_transform(y_test.reshape(-1, 1))
+            y_one_hot_train = one_hot_encoder.fit_transform(y_train.reshape(-1, 1))
+
+            print(f"y_one_hot_shape: {y_one_hot_test.shape}")
+
+            self._model.fit(X_train, y_one_hot_train, epochs=100, batch_size=32, validation_data=(X_test, y_one_hot_test))
+            self._is_trained = True
+            self.model_evaluation(X_test, y_one_hot_test)
+
+    def predict_command(self, eeg_data):
+        if not self._is_trained:
+            raise Exception("Model has not been trained yet.")
+        features = self.extract_features(eeg_data)
+        features_reshaped = features.reshape(1, self._number_of_channels, self._num_features_per_channel)
+        if SVM:
+            features_reshaped = features_reshaped.reshape(features_reshaped.shape[0], -1)
+        prediction = self._model.predict(features_reshaped)
+        predicted_label_index = np.argmax(prediction, axis=1)[0]
+        predicted_command = self._reverse_label_map[predicted_label_index]
+        return predicted_command
+
+    def load_datasets(self, file_names):
+        all_trials = []
+        all_classes = []
+        for file_name in file_names:
+            dataset = MotorImageryDataset(file_name)
+            trials, classes = dataset.get_trials_from_channels([7, 9, 11, 19])
+            # Invert the dimensions of trials and classes using zip
+            inverted_trials = list(map(list, zip(*trials)))
+            inverted_classes = list(map(list, zip(*classes)))
+            print(f"trial length: {len(inverted_trials)}")
+            all_trials.extend(inverted_trials)
+            all_classes.extend(inverted_classes)
+        print(f"trials length: {len(all_trials)}")
+
+        return all_trials, all_classes
     
-    for epoch in X:
-        epoch_features = []
+    def rendimiento_modelo_svm(self, svm, X_test, y_test):
+        # Make predictions
+        y_pred_test = svm.predict(X_test)
 
-        for ch in range(epoch.shape[0]):  # Loop over each channel
-            channel_data = epoch[ch]
+        # Calculate accuracy
+        test_accuracy = accuracy_score(y_test, y_pred_test)
+        print(f"Test Accuracy: {test_accuracy:.4f}")
 
-            # Step 1: Extract frequency bands from the channel data
-            bands = extract_bands(channel_data, fs)
+        # Classification report
+        print("Classification Report:")
+        print(classification_report(y_test, y_pred_test, target_names=["forward", "backwards", "left", "right"]))  # Adjust class names as needed
 
-            # Step 2: Extract features from the bands for this channel
-            channel_features = extract_features(bands, fs)
-            #print(f"Channel features: {channel_features}")
-            # Add the channel's features
-            epoch_features.append(channel_features)
+        # Confusion Matrix
+        cm = confusion_matrix(y_test, y_pred_test)
+        print("Confusion Matrix:")
+        print(cm)
 
-        # Print the shape of features for each epoch to
-        #print(f"Shape of epoch_features: {epoch_features}")
+    def make_predictions(self, filter_instance, processing_instance):
+        file_list = [f"bcidatasetIV2a-master/A09T.npz"]
+        trials, classes = self.load_datasets(file_list)
 
-        # Ensure all epochs produce the same feature size
-        epoch_features = np.array(epoch_features)  # This line fails if inconsistent
-        features_list.append(epoch_features)  # Append the features for this epoch
+        for num_trial in range(len(trials)):
+            label = classes[num_trial][0]
+            print(f"Label: {label}")
+            if label in self._command_map.keys():
+                # Create a dictionary to hold the EEG signals for each channel
+                eeg_signals = {f"ch{ch}": trials[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 3 channels: C3, Cz, C4
 
-   # Convert the list of features to a numpy array (epochs x channels x features)
-    X_processed = np.array(features_list)
+                filtered_data = filter_instance.filter_signals(eeg_signals)
+                # Process the raw EEG signals using ProcessingBias to extract frequency bands
+                _, processed_signals = processing_instance.process_signals(filtered_data)
 
-    # Normalize the features
-    n_epochs, n_channels, n_features = X_processed.shape
-    X_processed = X_processed.reshape(n_epochs, -1)  # Flatten for normalization
-    scaler = StandardScaler()
-    X_processed = scaler.fit_transform(X_processed)  # Normalize
-    X_processed = X_processed.reshape(n_epochs, n_channels, n_features)  # Reshape back
-    X_processed = np.vstack(features_list)  # Ensure this is done after processing all epochs
-    return X_processed
+                predicted_command = self.predict_command(processed_signals)
+                command = self._command_map[label]
+                if predicted_command == command:
+                    print(f"Prediction ok. Command: {command}")
 
-def build_model(input_shape, output_dimension):
-    """Build a 2D CNN model that takes (channels, features) as input."""
-    model = Sequential([
-        # Input layer
-        InputLayer(input_shape=input_shape),  # Shape: (n_channels, n_features)
+                else:
+                    print(f"Wrong prediction. Predicted {predicted_command}. Actual command: {command}")
+            else:
+                 print("Label not in command_map")
 
-        # Convolutional layer
-        Conv1D(filters=32, kernel_size=3, activation='relu', padding='same'),
-        MaxPooling1D(pool_size=2),
-        Dropout(0.5),
+    def segmentar_seniales(self, matrix, inicio, fin, fs=250):
+        # Listas para almacenar los segmentos por canal
+        segmentos_de_seniales = []  # Matriz de todos los bloques de las señales (ANTES, CRISIS, DESPUÉS)
+        segmentos_de_seniales_completa = []  # Señales completas (Antes + Durante + Después)
 
-        # Flatten and dense layers for classification
-        Flatten(),
-        Dense(128, activation='relu'),
-        Dropout(0.5),
-        Dense(64, activation='relu'),
-        Dropout(0.5),
-        Dense(output_dimension, activation='softmax')  # 6 output classes (forward, backward, etc.)
-    ])
-    # Print the model summary
-    model.summary()
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    return model
+        # Listas globales para almacenar todos los segmentos concatenados de todos los canales
+        antes_total = []
+        durante_total = []
+        despues_total = []
 
-fs = 250
+        print(f"len matrix: {len(matrix)}, {len(matrix[0])}, {len(matrix[0][0])}")
 
-# Assuming you have the load_gdf_data function defined
-X_all = []
-y_all = []
+        for trial in range(len(matrix)):
+            matriz_trial = matrix[trial]
+            antes_channel = []
+            despues_channel = []
+            durante_channel = []
 
-# List of GDF files (adjust based on the number of files you have)
-GDF_FILES = ['A01T.gdf', 'A02T.gdf', 'A03T.gdf']
+            for ch in range(self._number_of_channels):
+                antes_motor_imagery = matriz_trial[ch][(inicio -  3) * fs : inicio * fs].tolist()
+                durante_motor_imagery = matriz_trial[ch][inicio * fs : fin * fs].tolist()
+                despues_motor_imagery = matriz_trial[ch][fin * fs : (fin + 2) * fs].tolist()
 
-# Load data from each GDF file
-for file in GDF_FILES:
-    filepath = os.path.join(DATA_PATH, file)
-    print(f"Loading data from {filepath}")
-    X, y = load_gdf_data(filepath)
-    X_all.append(X)
-    y_all.append(y)
+                senial = [antes_motor_imagery, durante_motor_imagery, despues_motor_imagery]
+                senial_completa = np.concatenate(senial)
 
-# Preprocess the data
-X_all_processed = preprocess_data(X_all, fs)
+                # Guardar en las listas por canal
+                segmentos_de_seniales.append(senial)
+                segmentos_de_seniales_completa.append(senial_completa)
 
-# Flatten y_all if it's an array of arrays
-y_all_flattened = np.concatenate(y_all)
+                # Concatenar los segmentos a las listas globales
+                antes_channel.append(antes_motor_imagery)
+                durante_channel.append(durante_motor_imagery)
+                despues_channel.append(despues_motor_imagery)
 
-# Check the shape of y_all after flattening
-print(y_all_flattened.shape)
-# Filter to only include classes 7, 8, 9, and 10 (representing event codes 769, 770, 771, 772)
-valid_classes = [7, 8, 9, 10]
-y_all_filtered = y_all_flattened[np.isin(y_all_flattened, valid_classes)]
+            antes_total.append(antes_channel)
+            durante_total.append(durante_channel)
+            despues_total.append(despues_channel)
 
-# Reshape y_all_flattened into 2D if necessary
-y_all_shaped = y_all_flattened.reshape(-1, 1)
+        n_samples_totales = len(segmentos_de_seniales_completa[0])  # Número total de muestras de la señal completa
+        tiempo_inicial = inicio - 3  # En segundos, desde donde comenzamos el recorte
+        time_total = tiempo_inicial + np.arange(n_samples_totales) / fs  # Vector de tiempo en segundos
 
-# Initialize the OneHotEncoder
-encoder = OneHotEncoder(sparse_output=False)
+        return segmentos_de_seniales, np.array(segmentos_de_seniales_completa), time_total, antes_total, durante_total, despues_total
 
-# One-hot encode the labels
-y_all_encoded = encoder.fit_transform(y_all_shaped)
+    def model_evaluation(self, X_test, y_test):
+        # Evaluate model performance on the test set
+        loss, accuracy = self._model.evaluate(X_test, y_test)
+        print(f"Test Accuracy: {accuracy}")
 
-print(f"Shape of X_all_processed: {X_all_processed.shape}")
-print(f"Shape of y_all_encoded: {y_all_encoded.shape}")
-# Convert labels to one-hot encoding
-#lb = LabelBinarizer()
-#y_all = lb.fit_transform(y_all)
+        # Get model predictions on the test set
+        y_pred = self._model.predict(X_test)
+        y_pred_classes = np.argmax(y_pred, axis=1)  # Convert one-hot encoding to class labels
 
-# Train/test split
-X_train, X_test, y_train, y_test = train_test_split(X_all_processed, y_all_encoded, test_size=0.2, random_state=42)
+        # Confusion matrix
+        cm = confusion_matrix(np.argmax(y_test, axis=1), y_pred_classes)
 
-# Build and train the model
-input_shape = (X_train.shape[1], X_train.shape[2])  # Channels, features, and 1 for "depth"
-X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], X_train.shape[2], 1)  # Add depth channel
-X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], X_test.shape[2], 1)
+        print(cm)
 
-model = build_model(input_shape, output_dimension=y_train.shape[1])
+    def collect_and_train_from_bci_dataset(self, filter_instance, processing_instance, save_path, saved_dataset_path):
+        # Initialize X and y as empty lists
+        X = []
+        y = []
 
-# Train the model
-model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+        if saved_dataset_path is None:
+            file_list = [f"bcidatasetIV2a-master/A0{i}T.npz" for i in range(1, 9)]
+            trials, classes = self.load_datasets(file_list)
+            seniales, senial_completa, time_total, antes_total, durante_total, despues_total = self.segmentar_seniales(trials, 3, 6)
+            for num_trial in range(len(trials)):
+                label = classes[num_trial][0]
+                if label in self._command_map.keys():
+                    # Create a dictionary to hold the EEG signals for each channel
+                    #eeg_signals = {f"ch{ch}": antes_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4, FPz
 
-# Evaluate the model
-loss, accuracy = model.evaluate(X_test, y_test)
-print(f"Test Accuracy: {accuracy * 100:.2f}%")
+                    #filtered_data = filter_instance.filter_signals(eeg_signals)
+                    # Process the raw EEG signals using ProcessingBias to extract frequency bands
+                    #_, processed_signals = processing_instance.process_signals(filtered_data)
+
+                    # Extract features from the processed signals (frequency bands)
+                    #features = self.extract_features(processed_signals)
+
+                    # Append the extracted features and the corresponding command label
+                    #X.append(features)
+                    X.append(antes_total[num_trial])
+                    y.append(self._label_map[self._command_map[label]])
+
+            if save_path:
+                # Save the dataset as a compressed NumPy file
+                np.savez_compressed(f"{save_path}.npz", X=X, y=y)
+                print(f"Dataset saved to {save_path}.npz")
+
+        else:
+            data = np.load(f"{saved_dataset_path}.npz")
+            X, y = data['X'], data['y']
+
+        # Convert lists to arrays for training
+        X = np.array(X)
+        print(X.shape)
+        y = np.array(y)
+
+        if CNN:
+            # Convert labels to one-hot encoded format using OneHotEncoder
+            one_hot_encoder = OneHotEncoder(sparse_output=False)
+            y_one_hot = one_hot_encoder.fit_transform(y.reshape(-1, 1))
+            print(f"y_one_hot_shape: {y_one_hot.shape}")
+
+            unique_classes, counts = np.unique(y_one_hot, return_counts=True)
+            print(f"Classes in dataset: {unique_classes}, Counts: {counts}")
+            self.train_model(X, y_one_hot)
+
+        if SVM:
+            X_reshaped = X.reshape(X.shape[0], -1)
+            self.train_model(X_reshaped, y)
+
+        if ALL or CSPT:
+            self.train_model(X, y)
+
+        print("Training complete.")
+
+if __name__ == "__main__":
+    main()
