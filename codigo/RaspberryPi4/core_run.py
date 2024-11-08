@@ -20,6 +20,27 @@ def task_motors():
 
 def task_reception():
     print("Executing reception task")
+
+    n = 1000
+    fs = 500
+    number_of_channels = 4
+    port = '/dev/serial0'
+    baudrate = 115200
+    timeout = 1
+
+    biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
+
+    real_data = input("Do you want to get real data? (y/n): ")
+
+    if real_data.lower().strip() == "y":
+        signals = biasReception.get_real_data(n=n, channels=number_of_channels)
+    else:
+        signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
+
+    biasGraphing = GraphingBias(graph_in_terminal=True)
+    for ch, signal in signals.items():
+        t = np.arange(len(signals[ch])) / fs
+        biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
     
     print("Reception task executed")
 
