@@ -47,6 +47,54 @@ def task_reception():
 def task_AI():
     print("Executing AI task")
 
+    n = 1000
+    fs = 500
+    number_of_channels = 4
+    port = '/dev/serial0'
+    baudrate = 115200
+    timeout = 1
+    biasReception = ReceptionBias(port, baudrate, timeout)
+    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
+    biasProcessing = ProcessingBias(n=n, fs=fs)
+    commands = ["forward", "backwards", "left", "right"] #, "stop", "rest"]
+    biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
+
+    model_lt = input("Do you want to load or train a model (l/t): ")
+    if model_lt.lower() == "t":
+        save_path = None
+        saved_dataset_path = None
+
+        training_real_data = False
+        loading_dataset = input("Do you want to load an existent dataset? (y/n): ")
+        if loading_dataset.lower() == "y":
+            saved_dataset_path = input("Write the name of the file where dataset was saved: ")
+        else:
+            want_real_data = input("Do you want to train it with real data? (y/n): ")
+
+            if want_real_data.lower().strip() == "y":
+                training_real_data = True
+            else:
+                training_real_data = False
+
+            save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
+            if save_new_dataset == "y":
+                save_path = input("Write the path where you want to save the dataset: ")
+
+        biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
+                            trials_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, training_real_data=training_real_data)
+
+    elif model_lt.lower() == 'l':
+        model_name = input("Write the filname where model is saved: ")
+        print("Charging model")
+
+    signals = generate_synthetic_eeg_bandpower(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
+
+    filtered_data = biasFilter.filter_signals(eeg_signals=signals)
+
+    times, eeg_signals = biasProcessing.process_signals(eeg_signals=filtered_data)
+    predicted_command = biasAI.predict_command(eeg_data=eeg_signals)
+    print(f"Predicted Command: {predicted_command}")
+
     print("AI task executed")
 
 if __name__ == "__main__":
