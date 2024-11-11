@@ -1,0 +1,267 @@
+\documentclass{article} 
+\UseRawInputEncoding
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{selinput}
+\usepackage[spanish]{babel}
+\usepackage{hyphenat}
+\usepackage{graphicx} 
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{array}
+\usepackage[a4paper, total={6in, 9in}]{geometry}
+\SelectInputMappings{%
+  eacute={é},
+}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstdefinelanguage{CSS}{
+  keywords={color,background-image:,margin,padding,font,weight,display,position,top,left,right,bottom,list,style,border,size,white,space,min,width, transition:, transform:, transition-property, transition-duration, transition-timing-function},	
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  alsoletter={:},
+  alsodigit={-}
+}
+\lstset{style=mystyle}
+
+\title{Manual de Usuario} 
+
+\date{} 
+
+\begin{document} 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Images/LogoBIASbn.png}
+\end{figure}
+
+\tableofcontents
+
+\newpage
+
+\section{Introduccion}
+Bienvenido/a
+
+Gracias por elegir nuestra silla de ruedas controlada mediante señales cerebrales. Este manual le guiará en los pasos para el correcto uso y la colocación de los electrodos de forma segura y efectiva.
+
+\section{Precauciones Generales}
+\begin{itemize}
+    \item Use el dispositivo en un entorno controlado y seguro.
+    \item Verifique que todos los componentes estén en buen estado antes de cada uso.
+    \item No intente modificar el equipo.
+\end{itemize}
+
+\section{Descripcion del Sistema}
+Este sistema utiliza un EEG de 9 electrodos que detectan señales cerebrales para controlar la dirección de la silla de ruedas. El dispositivo incluye un sistema de emergencia que se activa al detectar obstáculos.
+
+\section{Instrucciones de Preparacion}
+\subsection{Colocacion de Electrodos}
+\begin{enumerate}
+    \item \textbf{Preparación de la Piel}
+    \begin{itemize}
+        \item Limpie el cuero cabelludo para eliminar aceites y residuos.
+        \item Aplique una pequeña cantidad de pasta conductora en cada electrodo para luego colocarlo sobre el cuero cabelludo (asegurese de mover el pelo para que el electrodo toque la mayor cantidad de piel posible).
+    \end{itemize}
+    \item \textbf{Posicionamiento de los Electrodos (Sistema 10-20):}
+    \begin{itemize}
+        \item \textbf{Electrodo de Tierra:} Coloque el electrodo de referencia (electrodo de color verde) en el lobulo de la oreja.
+        \item Electrodos de Señal:
+        \begin{itemize}
+            \item Coloque los electrodos de acuerdo a los puntos específicos designados en el EEG. Estos puntos son:
+            
+            Para los electrodos positivos (electrodos de color rojo): C3, C4, Cz y Fc3
+            
+            Para los electrodos negativos (electrodos de color negro): Fc1, Fc2, Pz, Fc4
+            \item Asegure cada electrodo en su lugar sin que queden sueltos, para obtener una lectura de señal estable.
+        \end{itemize}
+    \end{itemize}
+    \item \textbf{Revisión Final}
+    \begin{itemize}
+        \item Verifique que todos los electrodos estén bien conectados y que el sistema esté ajustado pero cómodo.
+    \end{itemize}
+    
+\end{enumerate}
+
+
+\section{Uso de la Silla de Ruedas}
+\subsection{Encendido del Sistema}
+\begin{enumerate}
+    \item Encienda la silla de ruedas y el EEG presionando los botones de encendido en ambos dispositivos.
+    \item Espere unos segundos mientras el sistema realiza las calibraciones iniciales.
+\end{enumerate}
+
+\subsection{Control de Movimientos}
+Relájese y concéntrese en pensar en los parametros de la siguiente tabla para poder moverse en la direccion deseada:
+\\
+\\
+\begin{table}[H]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{|p{4cm}|p{4cm}|}
+        \hline
+        Movimiento a Pensar & Direccion hacia donde se mueve la silla \\
+        \hline
+        Pies & Adelante \\
+        \hline
+        Lengua & Atras \\
+        \hline
+        Mano izquierda & Izquierda \\
+        \hline
+        Mano derecha & Derecha \\
+        \hline
+    \end{tabular}
+\end{table}
+El sistema traducirá las señales cerebrales en movimiento hacia adelante, atrás, izquierda o derecha.
+
+\subsection{Sistema de Emergencia}
+\begin{enumerate}
+    \item En caso de detectar un obstáculo, la silla de ruedas se detendrá automáticamente.
+    \item Un indicador sonoro y visual (buzzer y LED) se activará si un obstáculo impide el movimiento en la dirección deseada.
+    \item A los lados, al frente y atras de la silla se encuentran los ultrasonidos. Antes de usar la silla, asegurese que estos no esten tapados.
+\end{enumerate}
+
+\section{Mantenimiento y Cuidado}
+\begin{itemize}
+    \item Limpie los electrodos y las bandas regularmente.
+    \item Revise la carga de la batería del EEG y de la silla.
+    \item Si la bateria del EEG esta agotada, puede cambiarla por 2 baterias de 9V y poner a cargar las otras 2 agotadas.
+    \item Si la bateria del motor esta agotada, debe cambiarse la bateria por otra de 24V y 36 Amph y poner a cargar la anterior en una estacion especializada.
+\end{itemize}
+
+\section{Solucion de Problemas}
+
+\begin{table}[H]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{|p{4cm}|p{4cm}|p{4cm}|}
+        \hline
+        Problema & Posible Causa & Solucion \\
+        \hline
+        La silla no responde & Conexion inadecuada del EEG & Verifique los electrodos \\
+        \hline
+        Señal de EEG inestable & Electrodos mal conectados & Asegure y ajuste los electrodos \\
+        \hline
+        Sistema de Emergencia se activa sin razon & Obstruccion o interferencia en sensores & Limpie o revise el area de los sensores \\
+        \hline
+    \end{tabular}
+\end{table}
+\textbf{Contacte al servicio técnico} en caso de problemas recurrentes.
+
+\section{Preguntas Frecuentes (FAQ)}
+\begin{enumerate}
+    \item \textbf{¿Qué debo hacer antes de empezar a usar la silla de ruedas?}
+    \begin{itemize}
+        \item Asegúrese de que la batería de la silla de ruedas esté completamente cargada.
+        \item Coloque correctamente los electrodos en las posiciones indicadas. Estos deben estar en buen contacto con el cuero cabelludo para una señal precisa.
+        \item Verifique que todos los componentes estén en funcionamiento, como la Raspberry Pi, el EEG y el sistema de emergencia de sensores ultrasónicos.
+    \end{itemize}
+    \item \textbf{¿Cómo debo colocar los electrodos correctamente?}
+    
+    Coloque los electrodos en el cuero cabelludo siguiendo las instrucciones del manual. Asegúrese de que estén bien ajustados y en contacto firme. Puede consultar la sección de "Colocación de Electrodos" para una guía detallada.
+    \item \textbf{¿Cómo se controla la dirección de la silla de ruedas?}
+    
+    La silla utiliza un sistema de inteligencia artificial que interpreta patrones específicos de las señales cerebrales para determinar la dirección: adelante, atrás, izquierda o derecha. Es importante estar relajado y enfocado en la dirección que desea.
+    \item \textbf{¿Qué sucede si se detecta un obstáculo en el camino de la silla?}
+    
+    El sistema de emergencia activará los sensores ultrasónicos, y si detecta un obstáculo en la dirección de movimiento, encenderá un LED y activará el buzzer para advertirle y detener el movimiento.
+    \item \textbf{¿Puedo usar la silla de ruedas en exteriores?}
+    
+    Sí, la silla puede utilizarse en exteriores, pero debe evitarse su uso en entornos donde los sensores ultrasónicos puedan no funcionar adecuadamente, como superficies irregulares o áreas con mucha interferencia electromagnética.
+    \item \textbf{¿Qué debo hacer si la silla de ruedas no responde a los comandos mentales?}
+    \begin{itemize}
+        \item Asegúrese de que los electrodos estén bien conectados y que haya un buen contacto con el cuero cabelludo.
+        \item Verifique que la batería de la Raspberry Pi y del EEG estén cargadas.
+        \item Reinicie el sistema si persiste el problema.
+    \end{itemize}
+    \item \textbf{¿Cuánto dura la batería y cómo la recargo?}
+    
+    La duración de la batería puede variar según el uso, pero generalmente dura unas pocas horas.
+    \item \textbf{¿Qué hago si necesito ayuda para el uso del dispositivo?}
+    
+    Si tiene alguna duda adicional o problema técnico, consulte la sección de Recursos Adicionales en el manual o contacte al equipo de soporte utilizando el número o correo electrónico proporcionado en la última página del manual.
+    \item \textbf{¿Se necesita un entrenamiento especial para usar esta silla de ruedas?}
+    
+    Sí bien no es necesario, es recomendable que el usuario pase por una sesión de entrenamiento breve para aprender a controlar la silla con las señales cerebrales. Esto ayuda a familiarizarse con el proceso de enfoque y control de la dirección.
+    \item \textbf{¿Qué debo hacer si se presenta una falla en el sistema?}
+    
+    Apague la silla de ruedas y desconecte la batería si es seguro hacerlo. Luego, revise la sección de "Solución de Problemas" en el manual. Si el problema persiste, póngase en contacto con el servicio técnico.
+\end{enumerate}
+\newpage
+
+\section{Recursos Adicionales}
+\begin{multicols}{2}
+
+    \subsection{Integrantes} 
+    \begin{itemize}
+        \item Adell, Nicolas Fabian 
+        \item De Blasi, Luca 
+        \item Diaz Melion, Danilo Sebastian 
+        \item Gil Soria, Ian Lucas 
+        \item Montenegro, Luciano Nahuel 
+        \item Sojka, Santiago Alejandro 
+    \end{itemize}
+    
+    \subsection{Soporte Técnico} 
+    \begin{itemize}
+        \item \textbf{Telefono:}
+        
+        +54 9 11 6939-8053
+        \item \textbf{Correo Electronico:}
+        
+        bias.project.impa@gmail.com
+    \end{itemize}
+    
+    \columnbreak
+    
+    \subsection{Actualizaciones y Descargas} 
+    Consulta la página de descargas en nuestro sitio web para obtener actualizaciones de software y mejoras del sistema: 
+    
+    
+    \texttt {https://sojkaa.github.io/BIAS-WEB/}
+    
+    \subsection{Comunidad en Linea}
+    \textbf{Redes Sociales} 
+    
+    \texttt{https://linktr.ee/biasproject} 
+    
+    \textbf{GitHub} 
+    
+    \texttt{https://github.com/impatrq/bias} 
+    
+    \textbf{Trello} 
+    
+    \texttt{https://trello.com/w/2024_722c_bias} 
+
+\end{multicols}
+
+\end{document}
