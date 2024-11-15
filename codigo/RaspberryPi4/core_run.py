@@ -44,6 +44,52 @@ def task_reception():
     
     print("Reception task executed")
 
+def task_dsp():
+    n = 1000
+    fs = 500
+    number_of_channels = 4
+    duration = n / fs
+
+    number_of_channels = 4
+    port = '/dev/serial0'
+    baudrate = 115200
+    timeout = 1
+
+    # Receive data
+    biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
+
+    # Generate data
+    real_data = input("Do you want to get real data? (y/n): ")
+
+    if real_data.lower().strip() == "y":
+        signals = biasReception.get_real_data(n=n, channels=number_of_channels)
+    else:
+        signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
+
+    # Graph signals
+    biasGraphing = GraphingBias(graph_in_terminal=True)
+    for ch, signal in signals.items():
+        t = np.arange(len(signals[ch])) / fs
+        biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
+
+    # Apply digital filtering
+    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
+    filtered_data = biasFilter.filter_signals(eeg_signals=signals)
+
+    # Calculate the time vector
+    t = np.linspace(0, duration, n, endpoint=False)
+
+    for ch, signal in filtered_data.items():
+        # Graph filtered signal
+        biasGraphing.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
+
+    # Process data
+    biasProcessing = ProcessingBias(n=n, fs=fs)
+    signals = biasProcessing.process_signals(eeg_signals=filtered_data)
+
+    # Plot
+    biasGraphing.plot_now()
+
 def task_AI():
     print("Executing AI task")
 
@@ -101,6 +147,9 @@ if __name__ == "__main__":
     while True:
         # Ejecuta la tarea de recepción
         task_reception()
+        time.sleep(1)  # Espera 1 segundo antes de la siguiente tarea
+
+        task_dsp()
         time.sleep(1)  # Espera 1 segundo antes de la siguiente tarea
 
         # Ejecuta la tarea de IA
