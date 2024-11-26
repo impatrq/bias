@@ -1,6 +1,6 @@
 # BIAS: Brain-Intelligence Artificial System
 
-![BIAS Logo](/Página Web/images/LogoBIAS.nobckg.png)
+Link a video de presentación: https://youtu.be/uJyJxOkbonA?si=HoqrQriFnUhKq0Xh
 
 
 ## Descripción del Proyecto
