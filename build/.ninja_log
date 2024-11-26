@@ -51,7 +51,7 @@
 75518	96235	7394615372730881	CMakeFiles/i2c_slave.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/lib/tinyusb/src/device/usbd_control.c.obj	a7c9390d29e8c19a
 546	8687	7394614494672128	CMakeFiles/i2c_slave.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj	72ce07c460775757
 1217	10016	7394614506901827	CMakeFiles/i2c_slave.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/pico_printf/printf.c.obj	2bc93074db8b7216
-17390	18925	7505421892465451	reception.elf	6b7d2af4ef46cf82
+2603	4652	7518441749932967	reception.elf	6b7d2af4ef46cf82
 2180	11478	7394614521608908	CMakeFiles/i2c_slave.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/pico_bit_ops/bit_ops_aeabi.S.obj	8662775cc7c682f
 70615	89105	7394615300978847	CMakeFiles/i2c_slave.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/lib/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c.obj	331ac029b535e0a3
 85334	104416	7394615439782811	CMakeFiles/i2c_slave.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/lib/tinyusb/src/class/dfu/dfu_device.c.obj	43ac7b9e8d51373d
@@ -83,7 +83,7 @@
 125943	142502	7394615834390939	CMakeFiles/i2c_slave.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/rp2040_usb_device_enumeration.c.obj	5c5abcd23e9697c8
 129524	144017	7394615850285199	CMakeFiles/i2c_slave.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_i2c/i2c.c.obj	38dff3f735537fc6
 134037	144902	7394615859119751	CMakeFiles/i2c_slave.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_adc/adc.c.obj	fbfb653ab70e9f9a
-1438	3794	7505421747044244	CMakeFiles/reception.dir/reception.c.obj	2bc5197ee2238ef1
+195	2601	7518441736379412	CMakeFiles/reception.dir/reception.c.obj	2bc5197ee2238ef1
 1455	3163	7505421738238002	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj	da1669a197f96c61
 1468	2828	7505421736523753	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj	48b149444ee20c19
 4197	5222	7505421761057390	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/common/pico_time/timeout_helper.c.obj	313133ff7a39df08
@@ -156,3 +156,5 @@
 16442	17219	7505421881709965	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_adc/adc.c.obj	8a836c113c55313c
 259774	285434	7440932868842365	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj	e0e88c3166844374
 270203	288046	7440932896846830	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_dma/dma.c.obj	2907fa806d8ca74d
+127	2680	7526871864988554	CMakeFiles/reception.dir/reception.c.obj	2bc5197ee2238ef1
+2683	9586	7526871920752712	reception.elf	6b7d2af4ef46cf82

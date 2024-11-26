@@ -9,8 +9,8 @@
 #define UART_ID uart0
 #define BAUDRATE 115200
 #define NUMBER_OF_CHANNELS 4
-#define NUMBER_OF_TOTAL_SAMPLES 1000
-#define ADC_DELAY_US -2000
+#define NUMBER_OF_TOTAL_SAMPLES 1125
+#define ADC_DELAY_US -4000
 
 // Value for conversion
 const float CONVERSION_FACTOR = 3.3f * 1000 / (1 << 12);

@@ -48,9 +48,10 @@ class MotorBias:
 
     def move_if_possible(self, command):
         try:
+            distance = 30
             # Move forward
             if command == "forward":
-                distance = self._ultrasonic_forward.distance * 100
+                #distance = self._ultrasonic_forward.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Forward is blocked
@@ -65,7 +66,7 @@ class MotorBias:
                     self.move_forward(25)
             # Move backwards
             elif command == "backwards":
-                distance = self._ultrasonic_backwards.distance * 100
+                #distance = self._ultrasonic_backwards.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Backwards is blocked
@@ -80,7 +81,7 @@ class MotorBias:
                     self.move_backward(25)
             # Turn left
             elif command == "left":
-                distance = self._ultrasonic_left.distance * 100
+                #distance = self._ultrasonic_left.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Left is blocked
@@ -95,7 +96,7 @@ class MotorBias:
                     self.turn_left(25)
             # Turn right
             elif command == "right":
-                distance = self._ultrasonic_right.distance * 100
+                #distance = self._ultrasonic_right.distance * 100
                 # Maximum distance of 20 cm
                 if distance < 20:
                     # Right is blocked
