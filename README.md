@@ -36,6 +36,7 @@ BIAS es un proyecto innovador que busca mejorar la movilidad de las personas con
     
 ## Contacto
 
+- **LinkTree**: https://linktr.ee/biasproject?fbclid=PAZXh0bgNhZW0CMTEAAabechGqsvT3-QW-yQmUXelS48TQTC5eHy8vA9WU8YvmVHwiVOr6TlDTsC8_aem__CdOJhCiWx7UtaIUtjac-A
 - **Correo**: [bias.project@gmail.com](mailto:https://www.instagram.com/proyecto.bias/)
 - **Instagram**: [@proyecto.bias](https://www.instagram.com/proyecto.bias)
 
