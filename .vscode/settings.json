@@ -9,6 +9,7 @@
         "malloc.h": "c",
         "stdio.h": "c",
         "type_traits": "c",
-        "uart.h": "c"
+        "uart.h": "c",
+        "tpintegrador": "cpp"
     }
 }
