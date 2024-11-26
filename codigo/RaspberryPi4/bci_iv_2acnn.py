@@ -1,6 +1,6 @@
 from tensorflow.keras.models import Sequential, Model, load_model
-from tensorflow.keras.layers import Dense, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization, AveragePooling1D, Activation, GlobalAveragePooling1D, Flatten, Conv2D, DepthwiseConv2D, SeparableConv2D, BatchNormalization, AveragePooling2D, Input, MultiHeadAttention, LayerNormalization, Reshape
-from tensorflow.keras.regularizers import L2
+from tensorflow.keras.layers import Dense, Conv1D, MaxPooling1D, Dropout, InputLayer, LSTM, BatchNormalization, AveragePooling1D, Activation, GlobalAveragePooling1D, Flatten, Conv2D, DepthwiseConv2D, SeparableConv2D, BatchNormalization, AveragePooling2D, Input, MultiHeadAttention, LayerNormalization, Reshape, SpatialDropout2D
+from tensorflow.keras.regularizers import l2
 from sklearn.utils import shuffle
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.losses import binary_crossentropy
@@ -19,8 +19,9 @@ from scipy.signal import welch, cwt, morlet
 from scipy.stats import skew, kurtosis, entropy
 import numpy as np
 import tensorflow as tf
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 from mne.decoding import CSP
+from tensorflow.keras import backend as K
 from sklearn.model_selection import GridSearchCV
 from bias_dsp import ProcessingBias, FilterBias
 from bias_reception import ReceptionBias
@@ -211,6 +212,23 @@ class AIBias:
                          'Cz': 9, 'C2': 10, 'C4': 11, 'C6': 12, 'CP3': 13, 'CP1': 14, 'CPz': 15, 'CP2': 16,
                          'CP4': 17, 'P3': 18, 'Pz': 19, 'P4': 20, 'Oz':21}
 
+    # Augmentation function
+    def augment_data(self, data):
+        # Gaussian noise
+        noise = np.random.normal(0, 0.01, data.shape)
+        data_with_noise = data + noise
+    
+        # Amplitude scaling
+        scale = np.random.uniform(0.9, 1.1)
+        data_scaled = data_with_noise * scale
+    
+        # Baseline shift
+        shift = np.random.uniform(-0.05, 0.05)
+        data_shifted = data_scaled + shift
+    
+        return data_shifted
+
+
     def standardize_data(self, X_train, X_test): 
         # X_train & X_test :[Trials, MI-tasks, Channels, Time points]
         for j in range(self._number_of_channels):
@@ -221,52 +239,95 @@ class AIBias:
 
         return X_train, X_test
 
+    def bandpass_filter(self, data, low_freq, high_freq, fs=250, order=4):
+        sos = butter(order, [low_freq, high_freq], btype='band', fs=fs, output='sos')
+        return sosfilt(sos, data)
+
+    def ShallowConvNet(self, nb_classes=4, dropoutRate = 0.7, l2_rate=0.01):
+        # start the model
+        # input_main   = Input((Chans, Samples, 1))
+        input_main   = Input((1, self._number_of_channels, self._n))
+        input_2 = Permute((2,3,1))(input_main) 
+        block1       = Conv2D(40, (1, 25), 
+                              input_shape=(self._number_of_channels, self._n, 1),
+                              kernel_constraint = max_norm(2., axis=(0,1,2)), kernel_regularizer=l2(l2_rate))(input_2)
+        block1       = Conv2D(40, (self._number_of_channels, 1), use_bias=False, 
+                          kernel_constraint = max_norm(2., axis=(0,1,2)), kernel_regularizer=l2(l2_rate))(block1)
+        block1       = BatchNormalization(epsilon=1e-05, momentum=0.8)(block1)
+        block1       = Activation(self.square)(block1)
+        block1       = AveragePooling2D(pool_size=(1, 75), strides=(1, 15))(block1)
+        block1       = Activation(self.log)(block1)
+        block1 = Dropout(dropoutRate)(block1)
+        #block1 = SpatialDropout2D(dropoutRate)(block1)
+        flatten      = Flatten()(block1)
+        dense        = Dense(nb_classes, kernel_constraint = max_norm(0.5))(flatten)
+        softmax      = Activation('softmax')(dense)
+    
+        model =  Model(inputs=input_main, outputs=softmax)
+
+        # Compile the model
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+        model.summary()
+        
+        return model
+
+    #%% need these for ShallowConvNet
+    def square(self, x):
+        return K.square(x)
+
+    def log(self, x):
+        return K.log(K.clip(x, min_value = 1e-7, max_value = 10000))
+    
+    def EEGNet(self):
+        F1=8
+        D=2
+        kernLength=64
+        dropout=0.25
+
+        input1 = Input(shape = (1, self._number_of_channels, self._n))   
+        input2 = Permute((3,2,1))(input1) 
+        regRate=.25
+
+        F2 = F1*D
+        block1 = Conv2D(F1, (kernLength, 1), padding = 'same',data_format='channels_last',use_bias = False)(input2)
+        block1 = BatchNormalization(axis = -1)(block1)
+        block2 = DepthwiseConv2D((1, self._number_of_channels), use_bias = False, 
+        depth_multiplier = D,
+        data_format='channels_last',
+        depthwise_constraint = max_norm(1.))(block1)
+
+        block2 = BatchNormalization(axis = -1)(block2)
+        block2 = Activation('elu')(block2)
+        block2 = AveragePooling2D((8,1),data_format='channels_last')(block2)
+        block2 = Dropout(dropout)(block2)
+        block3 = SeparableConv2D(F2, (16, 1),
+        data_format='channels_last',
+        use_bias = False, padding = 'same')(block2)
+
+        block3 = BatchNormalization(axis = -1)(block3)
+        block3 = Activation('elu')(block3)
+        block3 = AveragePooling2D((8,1),data_format='channels_last')(block3)
+        block3 = Dropout(dropout)(block3)
+            
+        eegnet = Flatten()(block3)
+        dense = Dense(4, name = 'dense',kernel_constraint = max_norm(regRate))(eegnet)
+        softmax = Activation('softmax', name = 'softmax')(dense)
+
+        model = Model(inputs=input1, outputs=softmax) 
+
+        # Compile the model
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+        model.summary()
+
+        return model
+
+
     def build_model(self, output_dimension):
         global CNN, SVM, CSPT, ALL
         if CNN or CSP:
-            F1=8
-            D=2
-            kernLength=64
-            dropout=0.25
-
-            input1 = Input(shape = (1, self._number_of_channels, self._n))   
-            input2 = Permute((3,2,1))(input1) 
-            regRate=.25
-
-            F2= F1*D
-            block1 = Conv2D(F1, (kernLength, 1), padding = 'same',data_format='channels_last',use_bias = False)(input2)
-            block1 = BatchNormalization(axis = -1)(block1)
-            block2 = DepthwiseConv2D((1, self._number_of_channels), use_bias = False, 
-            depth_multiplier = D,
-            data_format='channels_last',
-            depthwise_constraint = max_norm(1.))(block1)
-
-            block2 = BatchNormalization(axis = -1)(block2)
-            block2 = Activation('elu')(block2)
-            block2 = AveragePooling2D((8,1),data_format='channels_last')(block2)
-            block2 = Dropout(dropout)(block2)
-            block3 = SeparableConv2D(F2, (16, 1),
-            data_format='channels_last',
-            use_bias = False, padding = 'same')(block2)
-
-            block3 = BatchNormalization(axis = -1)(block3)
-            block3 = Activation('elu')(block3)
-            block3 = AveragePooling2D((8,1),data_format='channels_last')(block3)
-            block3 = Dropout(dropout)(block3)
-            
-            eegnet = Flatten()(block3)
-            dense = Dense(4, name = 'dense',kernel_constraint = max_norm(regRate))(eegnet)
-            softmax = Activation('softmax', name = 'softmax')(dense)
-
-            model = Model(inputs=input1, outputs=softmax) 
-
-            # Compile the model
-            model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-            model.summary()
-
-            return model
-
+            model = self.ShallowConvNet()
 
         if SVM or ALL:
             # CSP to extract spatial features + SVM classifier pipeline
@@ -304,12 +365,18 @@ class AIBias:
         assert(self._num_features_per_channel == num_features_per_channel)
         features = features.reshape((self._number_of_channels, self._num_features_per_channel))
         return features
+    
+    def plot_confusion_matrix(y_true, y_pred_classes, labels):
+        cm = confusion_matrix(y_true, y_pred_classes)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+        disp.plot(cmap=plt.cm.Blues)
+        plt.show()
 
     def train_model(self, X, y, model_path=None):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         #X_train = shuffle(X_train)
         #X_test = shuffle(X_test)
-        #X_train, X_test = self.standardize_data(X_train, X_test)
+        X_train, X_test = self.standardize_data(X_train, X_test)
         print(f"Unique classes in y_test: {np.unique(y_test)}")
         
         global CNN, SVM, ALL, CSPT
@@ -317,12 +384,12 @@ class AIBias:
         if CNN:
             # Define all class labels explicitly
             all_classes = np.arange(y_train.shape[1])  # This will be [0, 1, 2, 3] for 4 classes
-            class_weights = dict(enumerate(compute_class_weight('balanced', classes=np.unique(y_train), y=y_train.argmax(axis=1))))
+            class_weights = dict(enumerate(compute_class_weight('balanced', classes=all_classes, y=y_train.argmax(axis=1))))
             print("Training")
 
             # Define EarlyStopping to monitor validation loss with a patience of 20 epochs
-            early_stopping_callback = EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True, mode='min')
-            lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, min_lr=1e-6)
+            early_stopping_callback = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True, mode='min')
+            lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=10, min_lr=1e-5)
             if model_path is not None:
                 checkpoint_callback = ModelCheckpoint(f'{model_path}.keras', monitor='val_accuracy', save_best_only=True, mode='max')
         
@@ -481,22 +548,6 @@ st_params_
         print("Confusion Matrix:")
         print(cm)
 
-   # Assuming eeg_data has the shape (trials, channels, samples)
-    def normalize_eeg_data_zscore(self, eeg_data):
-        scaler = StandardScaler()
-        normalized_data = []
-    
-        # Normalize each channel separately for each trial
-        for trial in range(eeg_data.shape[0]):  # Loop over trials
-            trial_data = []
-            for channel in range(eeg_data.shape[1]):  # Loop over channels
-                # Normalize the channel data using StandardScaler
-                normalized_channel = scaler.fit_transform(eeg_data[trial, channel, :].reshape(-1, 1)).flatten()
-                trial_data.append(normalized_channel.tolist())  # Convert to list and append
-            normalized_data.append(trial_data)
-    
-        return normalized_data
-
     def segmentar_seniales(self, matrix, inicio, fin, fs=250):
         # Listas para almacenar los segmentos por canal
         segmentos_de_seniales = []  # Matriz de todos los bloques de las señales (ANTES, CRISIS, DESPUÉS)
@@ -557,7 +608,7 @@ st_params_
         print(cm)
     
         print(classification_report(y_true, y_pred_classes, target_names=['Class 0', 'Class 1', 'Class 2', 'Class 3']))
-        plot_confusion_matrix(y_true, y_pred_classes)
+        self.plot_confusion_matrix(y_true, y_pred_classes)
     
     def collect_and_train_from_bci_dataset(self, filter_instance, processing_instance, save_new_dataset_path, saved_dataset_path, model_path):
         # Initialize X and y as empty lists
@@ -568,17 +619,20 @@ st_params_
             file_list = [f"bcidatasetIV2a-master/A0{i}T.npz" for i in range(1, 9)]
             trials, classes = self.load_datasets(file_list)
             seniales, senial_completa, time_total, antes_total, durante_total, despues_total = self.segmentar_seniales(trials, 2, 6)
-            durante_total = self.normalize_eeg_data_zscore(durante_total)
+            #durante_total = self.normalize_eeg_data_zscore(durante_total)
             for num_trial in range(len(trials)):
                 label = classes[num_trial][0]
                 if label in self._command_map.keys():
                     # Create a dictionary to hold the EEG signals for each channel
                     eeg_signals = {f"ch{ch}": durante_total[num_trial][ch] for ch in range(self._number_of_channels)}  # Assuming 4 channels: C3, Cz, C4, FPz
+                    
+                    for ch, signal in eeg_signals.items():
+                        signal = self.augment_data(signal)
 
                     filtered_data = filter_instance.filter_signals(eeg_signals)
                     # Process the raw EEG signals using ProcessingBias to extract frequency bands
                     #_, processed_signals = processing_instance.process_signals(filtered_data)
-
+                    
                     # Extract features from the processed signals (frequency bands)
                     #features = self.extract_features(processed_signals)
 
