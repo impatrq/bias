@@ -156,3 +156,5 @@
 16442	17219	7505421881709965	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_adc/adc.c.obj	8a836c113c55313c
 259774	285434	7440932868842365	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj	e0e88c3166844374
 270203	288046	7440932896846830	CMakeFiles/reception.dir/C_/Program_Files/Raspberry_Pi/Pico_SDK_v1.5.1/pico-sdk/src/rp2_common/hardware_dma/dma.c.obj	2907fa806d8ca74d
+127	2680	7526871864988554	CMakeFiles/reception.dir/reception.c.obj	2bc5197ee2238ef1
+2683	9586	7526871920752712	reception.elf	6b7d2af4ef46cf82
