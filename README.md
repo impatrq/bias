@@ -18,7 +18,7 @@ BIAS es un proyecto innovador que busca mejorar la movilidad de las personas con
 
 - **Electrodos** para captar las señales cerebrales.
 - **Raspberry Pi 4** para el procesamiento de datos.
-- **Python y C++** para el desarrollo del software y control de la IA.
+- **Python y C** para el desarrollo del software y control de la IA.
 - **Diseño PCB personalizado** para la integración de los componentes.
 - **Motores DC** controlados por puentes H.
 
