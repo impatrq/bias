@@ -2,7 +2,7 @@
 
 ![BIAS Logo](/Página%20Web/images/LogoBIAS.nobckg.png)
 
-Link a video de presentación: https://youtu.be/uJyJxOkbonA?si=HoqrQriFnUhKq0Xh
+Video de presentación: .[YouTube](https://youtu.be/uJyJxOkbonA?si=HoqrQriFnUhKq0Xh)
 
 
 ## Descripción del Proyecto
@@ -41,7 +41,7 @@ BIAS es un proyecto innovador que busca mejorar la movilidad de las personas con
 - **LinkTree**: https://linktr.ee/biasproject?fbclid=PAZXh0bgNhZW0CMTEAAabechGqsvT3-QW-yQmUXelS48TQTC5eHy8vA9WU8YvmVHwiVOr6TlDTsC8_aem__CdOJhCiWx7UtaIUtjac-A
 - **Correo**: [bias.project@gmail.com](mailto:https://www.instagram.com/proyecto.bias/)
 - **Instagram**: [@proyecto.bias](https://www.instagram.com/proyecto.bias)
-- **Pagina Web**: https://sojkaa.github.io/BIAS-WEB/
+- **Pagina Web**: .[Web](https://sojkaa.github.io/BIAS-WEB/)
 
 
 
