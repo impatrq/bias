@@ -26,7 +26,7 @@ BIAS es un proyecto innovador que busca mejorar la movilidad de las personas con
 
 | Integrante          | Responsabilidad                               |
 |---------------------|-----------------------------------------------|
-| **Nicolás Adell**        | Programación de la IA                         |
+| **Nicolás Adell**        | Programación de la IA y procesamiento de señales                       |
 | **Luca De Blasi**        | Código para los motores                       |
 | **Ian Gil Soria**        | Diseño de las placas PCB                      |
 | **Danilo Díaz**        | Desarrollo de puentes H y drivers de motor    |
