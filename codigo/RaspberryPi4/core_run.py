@@ -1,4 +1,4 @@
-import multiprocessing
+import time
 from bias_graphing import GraphingBias
 from bias_motors import MotorBias
 from bias_reception import ReceptionBias
@@ -12,89 +12,150 @@ def task_motors():
         led_forward=16, led_backwards=20, led_left=21, led_right=26,
         buzzer=12, motor1_in1=13, motor1_in2=19, motor2_in1=7, motor2_in2=8
     )
-    biasMotor.brake() 
+    biasMotor.brake()
 
-    while True:
-        command = input("Enter command (forward/left/backwards/right/stop): ").strip()
-        biasMotor.move_if_possible(command)
-    # print("Executing motor task")
+    command = input("Enter command (forward/left/backwards/right/stop): ").strip()
+    biasMotor.move_if_possible(command)
+    print("Motor task executed")
 
 def task_reception():
-
     print("Executing reception task")
 
-def task_AI():
+    n = 1000
+    fs = 500
+    number_of_channels = 4
+    port = '/dev/serial0'
+    baudrate = 115200
+    timeout = 1
+
+    biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
+
+    real_data = input("Do you want to get real data? (y/n): ")
+
+    if real_data.lower().strip() == "y":
+        signals = biasReception.get_real_data(n=n, channels=number_of_channels)
+    else:
+        signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
+
+    biasGraphing = GraphingBias(graph_in_terminal=True)
+    for ch, signal in signals.items():
+        t = np.arange(len(signals[ch])) / fs
+        biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
     
+    print("Reception task executed")
+
+def task_dsp():
+    n = 1000
+    fs = 500
+    number_of_channels = 4
+    duration = n / fs
+
+    number_of_channels = 4
+    port = '/dev/serial0'
+    baudrate = 115200
+    timeout = 1
+
+    # Receive data
+    biasReception = ReceptionBias(port=port, baudrate=baudrate, timeout=timeout)
+
+    # Generate data
+    real_data = input("Do you want to get real data? (y/n): ")
+
+    if real_data.lower().strip() == "y":
+        signals = biasReception.get_real_data(n=n, channels=number_of_channels)
+    else:
+        signals = generate_synthetic_eeg(n_samples=n, n_channels=number_of_channels, fs=fs)
+
+    # Graph signals
+    biasGraphing = GraphingBias(graph_in_terminal=True)
+    for ch, signal in signals.items():
+        t = np.arange(len(signals[ch])) / fs
+        biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
+
+    # Apply digital filtering
+    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
+    filtered_data = biasFilter.filter_signals(eeg_signals=signals)
+
+    # Calculate the time vector
+    t = np.linspace(0, duration, n, endpoint=False)
+
+    for ch, signal in filtered_data.items():
+        # Graph filtered signal
+        biasGraphing.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
+
+    # Process data
+    biasProcessing = ProcessingBias(n=n, fs=fs)
+    signals = biasProcessing.process_signals(eeg_signals=filtered_data)
+
+    # Plot
+    biasGraphing.plot_now()
+
+def task_AI():
     print("Executing AI task")
 
-if __name__ == "__main__":
-    command_queue = multiprocessing.Queue()
+    n = 1000
+    fs = 500
+    number_of_channels = 4
+    port = '/dev/serial0'
+    baudrate = 115200
+    timeout = 1
+    biasReception = ReceptionBias(port, baudrate, timeout)
+    biasFilter = FilterBias(n=n, fs=fs, notch=True, bandpass=True, fir=False, iir=False)
+    biasProcessing = ProcessingBias(n=n, fs=fs)
+    commands = ["forward", "backwards", "left", "right"] #, "stop", "rest"]
+    biasAI = AIBias(n=n, fs=fs, channels=number_of_channels, commands=commands)
 
-    # Crear procesos para cada tarea
-    process_motors = multiprocessing.Process(target=task_motors)
-    process_reception = multiprocessing.Process(target=task_reception)
-    process_AI = multiprocessing.Process(target=task_AI)
+    model_lt = input("Do you want to load or train a model (l/t): ")
+    if model_lt.lower() == "t":
+        save_path = None
+        saved_dataset_path = None
 
-    # Iniciar los procesos
-    process_motors.start()
-    process_reception.start()
-    process_AI.start()
+        training_real_data = False
+        loading_dataset = input("Do you want to load an existent dataset? (y/n): ")
+        if loading_dataset.lower() == "y":
+            saved_dataset_path = input("Write the name of the file where dataset was saved: ")
+        else:
+            want_real_data = input("Do you want to train it with real data? (y/n): ")
 
-    while True:
-        command = input("Enter command (forward/left/backwards/right/stop): ").strip()
-        command_queue.put(command)
-
-    # Esperar a que los procesos terminen
-    process_motors.join()
-    process_reception.join()
-    process_AI.join()
-
-'''
-def app_run(self, real_data):
-        if self._model_name is None:
-            self.train_ai_model()
-
-        self._biasMotor.brake()
-
-        while True:
-            # Receive eeg data
-            if real_data:
-                signals = self._biasReception.get_real_data(n=self._n, channels=self._number_of_channels)
+            if want_real_data.lower().strip() == "y":
+                training_real_data = True
             else:
-                signals = generate_synthetic_eeg(n_samples=self._n, n_channels=self._number_of_channels, fs=self._fs)
+                training_real_data = False
 
-            # Graph signals
-            for ch, signal in signals.items():
-                t = np.arange(len(signals[ch])) / self._fs
-                self._biasGraphing.graph_signal_voltage_time(t=t, signal=np.array(signal), title="Signal {}".format(ch))
+            save_new_dataset = input("Do you want to save the new dataset? (y/n): ")
+            if save_new_dataset == "y":
+                save_path = input("Write the path where you want to save the dataset: ")
 
-            # Apply digital filtering
-            filtered_data = self._biasFilter.filter_signals(eeg_signals=signals)
+        biasAI.collect_and_train(reception_instance=biasReception, filter_instance=biasFilter, processing_instance=biasProcessing, 
+                            trials_per_command=1, save_path=save_path, saved_dataset_path=saved_dataset_path, training_real_data=training_real_data)
 
-            # Calculate the time vector
-            t = np.linspace(0, self._duration, self._n, endpoint=False)
-            
-            # Graph signals
-            for ch, signal in filtered_data.items():
-                # Graph filtered signal
-                self._biasGraphing.graph_signal_voltage_time(t=t, signal=signal, title="Filtered Signal {}".format(ch))
+    elif model_lt.lower() == 'l':
+        model_name = input("Write the filname where model is saved: ")
+        print("Charging model")
 
-            # Process data
-            times, eeg_signals = self._biasProcessing.process_signals(eeg_signals=filtered_data)
+    signals = generate_synthetic_eeg_bandpower(n_samples=n, n_channels=number_of_channels, fs=fs, command="left")
 
-            
-            # Plot 4 signals with its resepctive bands
-            for ch, signals in eeg_signals.items():
-                # Plot the interpolated signals
-                for band_name, wave in signals.items():
-                    self._biasGraphing.graph_signal_voltage_time(t=times[ch], signal=wave, title=f"{band_name.capitalize()} interpolated. {ch}")
-            
-            # Plot
-            self._biasGraphing.plot_now()
-            
+    filtered_data = biasFilter.filter_signals(eeg_signals=signals)
 
-            command = self._biasAI.predict_command(eeg_data=eeg_signals)
-            print(f"command: {command}")
+    times, eeg_signals = biasProcessing.process_signals(eeg_signals=filtered_data)
+    predicted_command = biasAI.predict_command(eeg_data=eeg_signals)
+    print(f"Predicted Command: {predicted_command}")
 
-            self._biasMotor.move_if_possible(command)
-'''
+    print("AI task executed")
+
+if __name__ == "__main__":
+    while True:
+        # Ejecuta la tarea de recepción
+        task_reception()
+        time.sleep(1)  # Espera 1 segundo antes de la siguiente tarea
+
+        task_dsp()
+        time.sleep(1)  # Espera 1 segundo antes de la siguiente tarea
+
+        # Ejecuta la tarea de IA
+        task_AI()
+        time.sleep(1)  # Espera 1 segundo antes de la siguiente tarea
+
+        # Ejecuta la tarea de motores
+        task_motors()
+        time.sleep(1)  # Espera 1 segundo antes de la siguiente iteración
