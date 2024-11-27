@@ -1,5 +1,7 @@
 # BIAS: Brain-Intelligence Artificial System
 
+![BIAS Logo](/Página%20Web/images/LogoBIAS.nobckg.png)
+
 Link a video de presentación: https://youtu.be/uJyJxOkbonA?si=HoqrQriFnUhKq0Xh
 
 
@@ -18,7 +20,7 @@ BIAS es un proyecto innovador que busca mejorar la movilidad de las personas con
 
 - **Electrodos** para captar las señales cerebrales.
 - **Raspberry Pi 4** para el procesamiento de datos.
-- **Python y C++** para el desarrollo del software y control de la IA.
+- **Python y C** para el desarrollo del software y control de la IA.
 - **Diseño PCB personalizado** para la integración de los componentes.
 - **Motores DC** controlados por puentes H.
 
@@ -26,7 +28,7 @@ BIAS es un proyecto innovador que busca mejorar la movilidad de las personas con
 
 | Integrante          | Responsabilidad                               |
 |---------------------|-----------------------------------------------|
-| **Nicolás Adell**        | Programación de la IA                         |
+| **Nicolás Adell**        | Programación de la IA y procesamiento de señales                       |
 | **Luca De Blasi**        | Código para los motores                       |
 | **Ian Gil Soria**        | Diseño de las placas PCB                      |
 | **Danilo Díaz**        | Desarrollo de puentes H y drivers de motor    |
