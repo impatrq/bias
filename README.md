@@ -1,6 +1,6 @@
 # BIAS: Brain-Intelligence Artificial System
 
-![BIAS Grupo](/Documentacion/Informe%20Técnico%20ONIET/BIAS/fotogrupo.png)
+![BIAS Grupo](/Documentacion/Informe%20Técnico%20ONIET/Imagenes/BIAS/fotogrupo.png)
 ![BIAS Logo](/Página%20Web/images/LogoBIAS.nobckg.png)
 
 [Video de Presentación](https://youtu.be/uJyJxOkbonA?si=HoqrQriFnUhKq0Xh)
